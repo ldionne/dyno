@@ -5,6 +5,12 @@
 #ifndef TE_HPP
 #define TE_HPP
 
+#include <boost/hana/at_key.hpp>
+#include <boost/hana/first.hpp>
+#include <boost/hana/map.hpp>
+#include <boost/hana/pair.hpp>
+#include <boost/hana/second.hpp>
+
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
@@ -109,19 +115,6 @@ public:
   }
 };
 
-} // end namespace te
-
-#include <boost/hana/at_key.hpp>
-#include <boost/hana/first.hpp>
-#include <boost/hana/map.hpp>
-#include <boost/hana/pair.hpp>
-#include <boost/hana/second.hpp>
-
-#include <type_traits>
-#include <utility>
-
-
-namespace te {
 // Class implementing a simple vtable.
 template <typename ...Method>
 struct vtable {
