@@ -13,27 +13,44 @@
 
 
 namespace te {
+// Encapsulates the minimal amount of information required to allocate
+// storage for an object of a given type.
+//
+// This should never be created explicitly; always use `te::type_info_for`.
+struct type_info {
+  std::size_t size;
+  std::size_t alignment;
+};
+
+template <typename T>
+constexpr type_info type_info_for{sizeof(T), alignof(T)};
+
 // Class implementing the small buffer optimization (SBO).
 //
 // This class represents a value of an unknown type that is stored either on
 // the heap, or on the stack if it fits in the specific small buffer size.
 //
 // This class is a building block for other, more complex utilities. It handles
-// only the logic related to the storage and construction of the object, but
-// __nothing__ else. In particular, the object stored in this class is never
-// destroyed (but we do reclaim heap storage if it was allocated). Indeed,
-// properly handling destruction would require the `small_buffer` to remember
-// the destructor that must be called, which is beyond its scope. Instead, the
-// user of `small_buffer` is expected to set up some virtual dispatching
-// mechanism on its own, which should include virtual destruction if desirable.
+// only the logic related to the storage of the object, but __nothing__ else.
+// In particular, the object stored in this class is never constructed and
+// never destroyed (but we do reclaim heap storage if it was allocated).
+//
+// Indeed, properly handling construction and destruction would require the
+// `small_buffer` to remember the constructor/destructor that must be called,
+// which is beyond its scope. Instead, the user of `small_buffer` is expected
+// to set up some virtual dispatching mechanism on its own, which should
+// include virtual construction/destruction if desirable.
 //
 // General usage goes like this:
 //
-//    small_buffer<8> buf{std::string{"abcdef"}};
-//    // `buf` holds a string, maybe in the small buffer or maybe on the heap.
-//    // However, `buf` does not "remember" the type of the object it contains;
-//    // this is the responsibility of the user.
+//    small_buffer<8> buf{te::type_info_for<std::string>};
+//    // `buf` is able to hold a string, maybe in the small buffer or maybe on
+//    // the heap. However, `buf` does not contain anything at this point and
+//    // it does not remember the type that it can contain. Constructing and
+//    // destroying are the responsibility of the user.
+//    new (buf.get()) std::string{"abcdef"};  // may be on the heap or on the stack
 //    std::string* p = buf.get<std::string>();
+//    buf.get<std::string>()->~std::string(); // must be called manually too
 //
 // The nice thing about `small_buffer` is that it has a single type and its
 // ABI does not change even if the type of what it holds changes. However, it
@@ -44,9 +61,10 @@ class small_buffer {
   static constexpr std::size_t SBSize = Size < sizeof(void*) ? sizeof(void*) : Size;
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<SBSize>) : Align;
   using SBStorage = std::aligned_storage_t<SBSize, SBAlign>;
-  template <typename T>
-  static constexpr bool can_use_sbo = sizeof(T) <= sizeof(SBStorage) &&
-                                      alignof(SBStorage) % alignof(T) == 0;
+
+  static constexpr bool can_use_sbo(std::size_t size, std::size_t alignment) {
+    return size <= sizeof(SBStorage) && alignof(SBStorage) % alignment == 0;
+  }
 
   union {
     void* ptr_;
@@ -59,21 +77,17 @@ public:
   small_buffer() = delete;
   small_buffer& operator=(small_buffer const&) = delete;
 
-  template <typename T, typename Decayed = std::decay_t<T>>
-  explicit small_buffer(T&& t) {
+  explicit small_buffer(te::type_info info) {
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
-    if (can_use_sbo<Decayed>) {
+    if (can_use_sbo(info.size, info.alignment)) {
       uses_heap_ = false;
-      new (&sb_) Decayed(std::forward<T>(t));
-    }
-    else {
+    } else {
       uses_heap_ = true;
-      ptr_ = std::malloc(sizeof(Decayed));
+      ptr_ = std::malloc(info.size);
       // TODO: That's not a really nice way to handle this
       assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
-      new (ptr_) Decayed(std::forward<T>(t));
     }
   }
 
