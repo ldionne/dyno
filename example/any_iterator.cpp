@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 namespace hana = boost::hana;
-using namespace hana::literals;
+using namespace te::literals;
 
 
 // This is the definition of an Iterator concept using a "generic" language.
@@ -30,16 +30,16 @@ template <
   typename Category,
   typename Reference
 >
-using iterator_vtable = te::vtable<
-  decltype(hana::make_pair("increment"_s, hana::type_c<void (void*)>)),
-  decltype(hana::make_pair("dereference"_s, hana::type_c<Reference (void*)>)),
-  decltype(hana::make_pair("operator=="_s, hana::type_c<bool (void const*, void const*)>)),
+using iterator_vtable = decltype(te::make_vtable(
+  "increment"_s       = te::function<void (void*)>,
+  "dereference"_s     = te::function<Reference (void*)>,
+  "equal"_s           = te::function<bool (void const*, void const*)>,
 
-  decltype(hana::make_pair("type_info"_s, hana::type_c<te::type_info ()>)),
-  decltype(hana::make_pair("copy-construct"_s, hana::type_c<void (void*, void const*)>)),
-  decltype(hana::make_pair("move-construct"_s, hana::type_c<void (void*, void*)>)),
-  decltype(hana::make_pair("destruct"_s, hana::type_c<void (void*)>))
->;
+  "type_info"_s       = te::function<te::type_info ()>,
+  "copy-construct"_s  = te::function<void (void*, void const*)>,
+  "move-construct"_s  = te::function<void (void*, void*)>,
+  "destruct"_s        = te::function<void (void*)>
+));
 
 
 template <typename T> struct not_defined;
@@ -52,34 +52,34 @@ template <typename T>
 auto iterator_vtable_for<T, hana::when<
   std::is_base_of<std::random_access_iterator_tag,
                   typename std::iterator_traits<T>::iterator_category>{}
->> = hana::make_map(
-  hana::make_pair("increment"_s, [](void* this_) {
+>> = te::make_vtable(
+  "increment"_s = [](void* this_) {
     ++*static_cast<T*>(this_);
-  }),
+  },
 
-  hana::make_pair("dereference"_s, [](void* this_) -> decltype(auto) {
+  "dereference"_s = [](void* this_) -> decltype(auto) {
     return (**static_cast<T*>(this_));
-  }),
+  },
 
-  hana::make_pair("operator=="_s, [](void const* a, void const* b) {
+  "equal"_s = [](void const* a, void const* b) {
     return *static_cast<T const*>(a) == *static_cast<T const*>(b);
-  }),
+  },
 
-  hana::make_pair("type_info"_s, [] {
+  "type_info"_s = []() {
     return te::type_info_for<T>;
-  }),
+  },
 
-  hana::make_pair("copy-construct"_s, [](void* this_, void const* other) {
+  "copy-construct"_s = [](void* this_, void const* other) {
     new (this_) T(*static_cast<T const*>(other));
-  }),
+  },
 
-  hana::make_pair("move-construct"_s, [](void* this_, void* other) {
+  "move-construct"_s = [](void* this_, void* other) {
     new (this_) T(std::move(*static_cast<T*>(other)));
-  }),
+  },
 
-  hana::make_pair("destruct"_s, [](void* this_) {
+  "destruct"_s = [](void* this_) {
     static_cast<T*>(this_)->~T();
-  })
+  }
 );
 
 // This defines a type-erased wrapper satisfying a specific concept (Iterator)
@@ -174,8 +174,8 @@ struct any_iterator {
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    assert(a.virtual_("operator=="_s) == b.virtual_("operator=="_s));
-    return a.virtual_("operator=="_s)(a.storage(), b.storage());
+    assert(a.virtual_("equal"_s) == b.virtual_("equal"_s));
+    return a.virtual_("equal"_s)(a.storage(), b.storage());
   }
 
   friend bool operator!=(any_iterator const& a, any_iterator const& b) {

@@ -6,10 +6,11 @@
 #define TE_HPP
 
 #include <boost/hana/at_key.hpp>
-#include <boost/hana/first.hpp>
+#include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
-#include <boost/hana/second.hpp>
+#include <boost/hana/string.hpp>
+#include <boost/hana/type.hpp>
 
 #include <cassert>
 #include <cstddef>
@@ -116,34 +117,63 @@ public:
 };
 
 // Class implementing a simple vtable.
-template <typename ...Method>
-struct vtable {
+template <typename ...Functions>
+struct vtable;
+
+template <typename ...Name, typename ...Signature>
+struct vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
   template <typename VTable>
   constexpr explicit vtable(VTable vtable)
     : vtbl_{boost::hana::make_map(
-      [&](){
-        Method m;
-        auto name = boost::hana::first(m);
-        using Signature = typename decltype(+boost::hana::second(m))::type;
-        using StoredFptr = std::decay_t<Signature>;
-        return boost::hana::make_pair(name, static_cast<StoredFptr>(vtable[name]));
-      }()...
+      boost::hana::make_pair(
+        Name{},
+        static_cast<std::decay_t<Signature>>(vtable[Name{}])
+      )...
     )}
   { }
 
-  template <typename Name>
-  constexpr auto operator[](Name name) const {
+  template <typename Name_>
+  constexpr auto operator[](Name_ name) const {
     return vtbl_[name];
   }
 
 private:
   boost::hana::map<
-    boost::hana::pair<
-      std::decay_t<decltype(boost::hana::first(std::declval<Method>()))>,
-      std::decay_t<typename decltype(+boost::hana::second(std::declval<Method>()))::type>
-    >...
+    boost::hana::pair<Name, std::decay_t<Signature>>...
   > vtbl_;
 };
+
+// Never defined; just a helper to use as decltype(make_vtable(...)) when
+// defining concepts.
+template <typename ...Name, typename ...Signature>
+vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...>
+make_vtable(boost::hana::pair<Name, boost::hana::basic_type<Signature>>...);
+
+// This one is actually defined, and it should be used to define actual
+// concept maps.
+template <typename ...Functions>
+constexpr auto make_vtable(Functions ...f) {
+  return boost::hana::make_map(f...);
+}
+
+// Helpers to create a Hana-map using a nicer DSEL.
+template <typename Signature>
+constexpr boost::hana::basic_type<Signature> function{};
+
+namespace detail {
+  template <char ...c>
+  struct string : boost::hana::string<c...> {
+    template <typename Function>
+    constexpr boost::hana::pair<string, Function>
+    operator=(Function f) const { return {{}, f}; }
+    using hana_tag = typename boost::hana::tag_of<boost::hana::string<c...>>::type;
+  };
+} // end namespace detail
+
+namespace literals {
+  template <typename CharT, CharT ...c>
+  constexpr auto operator""_s() { return detail::string<c...>{}; }
+} // end namespace literals
 
 } // end namespace te
 
