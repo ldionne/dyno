@@ -9,15 +9,17 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 
-# Setup Hana, which is a dependency
+# Setup Hana and callable_traits, which are dependencies
 add_library(hana INTERFACE)
 target_include_directories(hana INTERFACE ~/code/hana/include)
+add_library(callable_traits INTERFACE)
+target_include_directories(callable_traits INTERFACE ~/code/callable_traits/include)
 
 
 # Setup the `te` library target
 add_library(te INTERFACE)
 target_include_directories(te INTERFACE include)
-target_link_libraries(te INTERFACE hana)
+target_link_libraries(te INTERFACE hana callable_traits)
 
 
 # Setup the `check` target to build and then run all the tests and examples.

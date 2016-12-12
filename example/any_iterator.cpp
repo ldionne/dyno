@@ -31,14 +31,14 @@ template <
   typename Reference
 >
 using iterator_vtable = decltype(te::make_vtable(
-  "increment"_s       = te::function<void (void*)>,
-  "dereference"_s     = te::function<Reference (void*)>,
-  "equal"_s           = te::function<bool (void const*, void const*)>,
+  "increment"_s       = te::function<void (te::T&)>,
+  "dereference"_s     = te::function<Reference (te::T&)>,
+  "equal"_s           = te::function<bool (te::T const&, te::T const&)>,
 
   "type_info"_s       = te::function<te::type_info ()>,
-  "copy-construct"_s  = te::function<void (void*, void const*)>,
-  "move-construct"_s  = te::function<void (void*, void*)>,
-  "destruct"_s        = te::function<void (void*)>
+  "copy-construct"_s  = te::function<void (void*, te::T const&)>,
+  "move-construct"_s  = te::function<void (void*, te::T&&)>,
+  "destruct"_s        = te::function<void (te::T&)>
 ));
 
 
@@ -53,32 +53,32 @@ auto iterator_vtable_for<T, hana::when<
   std::is_base_of<std::random_access_iterator_tag,
                   typename std::iterator_traits<T>::iterator_category>{}
 >> = te::make_vtable(
-  "increment"_s = [](void* this_) {
-    ++*static_cast<T*>(this_);
+  "increment"_s = [](T& self) {
+    ++self;
   },
 
-  "dereference"_s = [](void* this_) -> decltype(auto) {
-    return (**static_cast<T*>(this_));
+  "dereference"_s = [](T& self) -> decltype(auto) {
+    return *self;
   },
 
-  "equal"_s = [](void const* a, void const* b) {
-    return *static_cast<T const*>(a) == *static_cast<T const*>(b);
+  "equal"_s = [](T const& a, T const& b) {
+    return a == b;
   },
 
   "type_info"_s = []() {
     return te::type_info_for<T>;
   },
 
-  "copy-construct"_s = [](void* this_, void const* other) {
-    new (this_) T(*static_cast<T const*>(other));
+  "copy-construct"_s = [](void* p, T const& other) {
+    new (p) T(other);
   },
 
-  "move-construct"_s = [](void* this_, void* other) {
-    new (this_) T(std::move(*static_cast<T*>(other)));
+  "move-construct"_s = [](void* p, T&& other) {
+    new (p) T(std::move(other));
   },
 
-  "destruct"_s = [](void* this_) {
-    static_cast<T*>(this_)->~T();
+  "destruct"_s = [](T& self) {
+    self.~T();
   }
 );
 
