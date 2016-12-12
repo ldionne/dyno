@@ -103,7 +103,7 @@ struct any_iterator {
     : vtable_{iterator_vtable_for<Iterator>}
     , storage_{te::type_info_for<Iterator>}
   {
-    new (storage_.get()) Iterator(std::move(it));
+    new (storage()) Iterator(std::move(it));
 
     using IteratorTraits = std::iterator_traits<Iterator>;
     using Source_value_type = typename IteratorTraits::value_type;
@@ -125,18 +125,18 @@ struct any_iterator {
 
   any_iterator(any_iterator const& other)
     : vtable_{other.vtable_}
-    , storage_{vtable_["type_info"_s]()}
+    , storage_{virtual_("type_info"_s)()}
   {
-    vtable_["copy-construct"_s](storage_.get(), other.storage_.get());
+    virtual_("copy-construct"_s)(storage(), other.storage());
   }
 
   // TODO: Here, we could avoid allocating and just move the pointer inside
   // the storage.
   any_iterator(any_iterator&& other)
     : vtable_{std::move(other.vtable_)}
-    , storage_{vtable_["type_info"_s]()}
+    , storage_{virtual_("type_info"_s)()}
   {
-    vtable_["move-construct"_s](storage_.get(), other.storage_.get());
+    virtual_("move-construct"_s)(storage(), other.storage());
   }
 
   any_iterator& operator=(any_iterator const& other) {
@@ -161,21 +161,21 @@ struct any_iterator {
   }
 
   any_iterator& operator++() {
-    vtable_["increment"_s](storage_.get());
+    virtual_("increment"_s)(storage());
     return *this;
   }
 
   reference operator*() {
-    return vtable_["dereference"_s](storage_.get());
+    return virtual_("dereference"_s)(storage());
   }
 
   ~any_iterator() {
-    vtable_["destruct"_s](storage_.get());
+    virtual_("destruct"_s)(storage());
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    assert(a.vtable_["operator=="_s] == b.vtable_["operator=="_s]);
-    return a.vtable_["operator=="_s](a.storage_.get(), b.storage_.get());
+    assert(a.virtual_("operator=="_s) == b.virtual_("operator=="_s));
+    return a.virtual_("operator=="_s)(a.storage(), b.storage());
   }
 
   friend bool operator!=(any_iterator const& a, any_iterator const& b) {
@@ -185,6 +185,14 @@ struct any_iterator {
 private:
   iterator_vtable<value_type, iterator_category, reference> vtable_;
   te::small_buffer<8> storage_;
+
+  template <typename Method>
+  constexpr decltype(auto) virtual_(Method m) const {
+    return vtable_[m];
+  }
+
+  auto storage() { return storage_.get(); }
+  auto storage() const { return storage_.get(); }
 };
 
 
