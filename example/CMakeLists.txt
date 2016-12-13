@@ -12,7 +12,7 @@ function(te_set_target_properties target)
   target_compile_options(${target} PRIVATE -Wno-gnu-string-literal-operator-template)
 endfunction()
 
-foreach(target any_iterator)
+foreach(target any_iterator codegen.any_iterator codegen.vector_iterator codegen.handrolled_iterator)
   add_executable(example.${target} EXCLUDE_FROM_ALL "${target}.cpp")
   te_set_target_properties(example.${target})
   add_test(example.${target} example.${target})
