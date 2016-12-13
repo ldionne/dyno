@@ -41,15 +41,18 @@ using iterator_vtable = decltype(te::make_vtable(
   "destruct"_s        = te::function<void (te::T&)>
 ));
 
-
 template <typename T> struct not_defined;
 template <typename T, typename = hana::when<true>> not_defined<T> iterator_vtable_for;
+
+template <typename T, typename Value, typename Category, typename Reference>
+iterator_vtable<Value, Category, Reference> const erased_iterator_vtable_for{iterator_vtable_for<T>};
+
 
 // This is some kind of concept map; it maps the "generic" iterator interface
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
 template <typename T>
-auto iterator_vtable_for<T, hana::when<
+auto const iterator_vtable_for<T, hana::when<
   std::is_base_of<std::random_access_iterator_tag,
                   typename std::iterator_traits<T>::iterator_category>{}
 >> = te::make_vtable(
@@ -100,7 +103,7 @@ struct any_iterator {
 
   template <typename Iterator>
   explicit any_iterator(Iterator it)
-    : vtable_{iterator_vtable_for<Iterator>}
+    : vtable_{&erased_iterator_vtable_for<Iterator, Value, Category, Reference>}
     , storage_{te::type_info_for<Iterator>}
   {
     new (storage()) Iterator(std::move(it));
@@ -183,12 +186,12 @@ struct any_iterator {
   }
 
 private:
-  iterator_vtable<value_type, iterator_category, reference> vtable_;
+  iterator_vtable<value_type, iterator_category, reference> const* vtable_;
   te::small_buffer<8> storage_;
 
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {
-    return vtable_[m];
+    return (*vtable_)[m];
   }
 
   auto storage() { return storage_.get(); }
