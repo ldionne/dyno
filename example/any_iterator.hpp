@@ -187,7 +187,7 @@ struct any_iterator {
 
 private:
   iterator_vtable<value_type, iterator_category, reference> const* vtable_;
-  te::small_buffer<8> storage_;
+  te::heap_storage storage_;
 
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {

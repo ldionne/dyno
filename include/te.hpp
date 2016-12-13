@@ -118,6 +118,38 @@ public:
   }
 };
 
+// Class implementing storage on the heap. Just like the `small_buffer`, it
+// only handles allocation and deallocation; construction and destruction
+// must be handled externally.
+struct heap_storage {
+  heap_storage() = delete;
+  heap_storage& operator=(heap_storage const&) = delete;
+
+  explicit heap_storage(te::type_info info)
+    : ptr_{std::malloc(info.size)}
+  {
+    // TODO: That's not a really nice way to handle this
+    assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
+  }
+
+  ~heap_storage() {
+    std::free(ptr_);
+  }
+
+  template <typename T = void>
+  T* get() {
+    return static_cast<T*>(ptr_);
+  }
+
+  template <typename T = void>
+  T const* get() const {
+    return static_cast<T const*>(ptr_);
+  }
+
+private:
+  void* ptr_;
+};
+
 // Placeholder type representing the type of ref-unqualified `*this`
 // when defining vtables.
 struct T;
