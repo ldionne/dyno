@@ -84,6 +84,9 @@ class small_buffer {
 
 public:
   small_buffer() = delete;
+  small_buffer(small_buffer const&) = delete;
+  small_buffer(small_buffer&&) = delete;
+  small_buffer& operator=(small_buffer&&) = delete;
   small_buffer& operator=(small_buffer const&) = delete;
 
   explicit small_buffer(te::type_info info) {
@@ -123,6 +126,9 @@ public:
 // must be handled externally.
 struct heap_storage {
   heap_storage() = delete;
+  heap_storage(heap_storage const&) = delete;
+  heap_storage(heap_storage&&) = delete;
+  heap_storage& operator=(heap_storage&&) = delete;
   heap_storage& operator=(heap_storage const&) = delete;
 
   explicit heap_storage(te::type_info info)
