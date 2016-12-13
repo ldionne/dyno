@@ -32,7 +32,14 @@ struct type_info {
 };
 
 template <typename T>
-constexpr type_info type_info_for{sizeof(T), alignof(T)};
+struct static_type_info {
+  static constexpr std::size_t size = sizeof(T);
+  static constexpr std::size_t alignment = alignof(T);
+  constexpr operator type_info() const { return {size, alignment}; }
+};
+
+template <typename T>
+constexpr static_type_info<T> type_info_for{};
 
 // Class implementing the small buffer optimization (SBO).
 //
@@ -71,8 +78,9 @@ class small_buffer {
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<SBSize>) : Align;
   using SBStorage = std::aligned_storage_t<SBSize, SBAlign>;
 
-  static constexpr bool can_use_sbo(std::size_t size, std::size_t alignment) {
-    return size <= sizeof(SBStorage) && alignof(SBStorage) % alignment == 0;
+  template <typename TypeInfo>
+  static constexpr bool can_use_sbo(TypeInfo info) {
+    return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
   }
 
   union {
@@ -93,7 +101,7 @@ public:
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
-    if (can_use_sbo(info.size, info.alignment)) {
+    if (can_use_sbo(info)) {
       uses_heap_ = false;
     } else {
       uses_heap_ = true;
@@ -169,8 +177,9 @@ class local_storage {
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<Size>) : Align;
   using SBStorage = std::aligned_storage_t<Size, SBAlign>;
 
-  static constexpr bool can_use_sbo(std::size_t size, std::size_t alignment) {
-    return size <= sizeof(SBStorage) && alignof(SBStorage) % alignment == 0;
+  template <typename TypeInfo>
+  static constexpr bool can_use_sbo(TypeInfo info) {
+    return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
   }
 
   SBStorage buffer_;
@@ -182,8 +191,16 @@ public:
   local_storage& operator=(local_storage&&) = delete;
   local_storage& operator=(local_storage const&) = delete;
 
+  // When we try to assign from something that's statically known, we
+  // can do some compile-time checks.
+  template <typename T>
+  explicit local_storage(static_type_info<T>) {
+    static_assert(can_use_sbo(static_type_info<T>{}),
+      "trying to use te::local_storage with an object that won't fit in the local storage");
+  }
+
   explicit local_storage(te::type_info info) {
-    assert(can_use_sbo(info.size, info.alignment) &&
+    assert(can_use_sbo(info) &&
       "trying to use te::local_storage with an object that won't fit in the local storage");
   }
 
