@@ -215,7 +215,7 @@ namespace detail {
       static_assert(std::is_empty<Function>{},
         "This trick won't work if `Function` is not empty.");
       return detail::special_cast<R_pl, R_ac>(
-        (*static_cast<Function*>(nullptr))(
+        (*static_cast<Function*>(nullptr))( // <-------------- UB ALERT
           detail::special_cast<Args_pl, Args_ac>(args)...
         )
       );
@@ -231,7 +231,7 @@ namespace detail {
     auto adapter = [](typename sig_replace<Args_pl>::type ...args) -> void {
       static_assert(std::is_empty<Function>{},
         "This trick won't work if `Function` is not empty.");
-      (*static_cast<Function*>(nullptr))(
+      (*static_cast<Function*>(nullptr))( // <-------------- UB ALERT
         detail::special_cast<Args_pl, Args_ac>(args)...
       );
     };
