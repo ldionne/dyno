@@ -156,6 +156,48 @@ private:
   void* ptr_;
 };
 
+// Class implementing unconditional storage in a local buffer.
+//
+// This is like a small buffer optimization, except the behavior is undefined
+// when the object can't fit inside the buffer. Since we know the object always
+// sits inside the local buffer, we can get rid of a branch when accessing the
+// object.
+template <std::size_t Size, std::size_t Align = static_cast<std::size_t>(-1)>
+class local_storage {
+  // TODO: This is actually copied from the small_buffer implementation, and
+  // it would be nice to share some of this.
+  static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<Size>) : Align;
+  using SBStorage = std::aligned_storage_t<Size, SBAlign>;
+
+  static constexpr bool can_use_sbo(std::size_t size, std::size_t alignment) {
+    return size <= sizeof(SBStorage) && alignof(SBStorage) % alignment == 0;
+  }
+
+  SBStorage buffer_;
+
+public:
+  local_storage() = delete;
+  local_storage(local_storage const&) = delete;
+  local_storage(local_storage&&) = delete;
+  local_storage& operator=(local_storage&&) = delete;
+  local_storage& operator=(local_storage const&) = delete;
+
+  explicit local_storage(te::type_info info) {
+    assert(can_use_sbo(info.size, info.alignment) &&
+      "trying to use te::local_storage with an object that won't fit in the local storage");
+  }
+
+  template <typename T = void>
+  T* get() {
+    return static_cast<T*>(&buffer_);
+  }
+
+  template <typename T = void>
+  T const* get() const {
+    return static_cast<T const*>(&buffer_);
+  }
+};
+
 // Placeholder type representing the type of ref-unqualified `*this`
 // when defining vtables.
 struct T;
