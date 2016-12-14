@@ -7,7 +7,6 @@
 
 #include <te.hpp>
 
-#include <boost/hana/core/when.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/string.hpp>
@@ -21,38 +20,66 @@ namespace hana = boost::hana;
 using namespace te::literals;
 
 
+constexpr auto Storable = te::requires(
+  "type_info"_s = te::function<te::type_info()>
+);
+
+constexpr auto MoveConstructible = te::requires(
+  Storable,
+  "move-construct"_s = te::function<void (void*, te::T&&)>
+);
+
+constexpr auto CopyConstructible = te::requires(
+  Storable,
+  MoveConstructible,
+  "copy-construct"_s = te::function<void (void*, te::T const&)>
+);
+
+constexpr auto MoveAssignable = te::requires(
+  // No virtual function required to support this
+);
+
+constexpr auto CopyAssignable = te::requires(
+  MoveAssignable
+  // No virtual function required to support this
+);
+
+constexpr auto Swappable = te::requires(
+  // No virtual function required to support this so far
+);
+
+constexpr auto Destructible = te::requires(
+  "destruct"_s = te::function<void (te::T&)>
+);
+
 // This is the definition of an Iterator concept using a "generic" language.
 // Instead of defining specific methods that must be defined, it defines its
 // interface in terms of compile-time strings, assuming these may be fulfilled
 // in possibly many different ways.
-template <
-  typename Value,
-  typename Category,
-  typename Reference
->
-using iterator_vtable = decltype(te::make_vtable(
-  "increment"_s       = te::function<void (te::T&)>,
-  "dereference"_s     = te::function<Reference (te::T&)>,
-  "equal"_s           = te::function<bool (te::T const&, te::T const&)>,
-
-  "type_info"_s       = te::function<te::type_info ()>,
-  "copy-construct"_s  = te::function<void (void*, te::T const&)>,
-  "move-construct"_s  = te::function<void (void*, te::T&&)>,
-  "destruct"_s        = te::function<void (te::T&)>
-));
+template <typename Reference>
+constexpr auto Iterator = te::requires(
+  CopyConstructible,
+  CopyAssignable,
+  Destructible,
+  Swappable,
+  "increment"_s = te::function<void (te::T&)>,
+  "dereference"_s = te::function<Reference (te::T&)>,
+  "equal"_s = te::function<bool (te::T const&, te::T const&)>
+);
 
 template <typename T> struct not_defined;
-template <typename T, typename = hana::when<true>> not_defined<T> iterator_vtable_for;
+template <typename T, typename = void>
+not_defined<T> Iterator_vtable;
 
-template <typename T, typename Value, typename Category, typename Reference>
-iterator_vtable<Value, Category, Reference> const erased_iterator_vtable_for{iterator_vtable_for<T>};
+template <typename T, typename Reference>
+decltype(Iterator<Reference>.vtable) const erased_iterator_vtable_for{Iterator_vtable<T>};
 
 
 // This is some kind of concept map; it maps the "generic" iterator interface
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
 template <typename T>
-auto const iterator_vtable_for<T, hana::when<
+auto const Iterator_vtable<T, std::enable_if_t<
   std::is_base_of<std::random_access_iterator_tag,
                   typename std::iterator_traits<T>::iterator_category>{}
 >> = te::make_vtable(
@@ -107,7 +134,7 @@ struct any_iterator
 
   template <typename Iterator>
   explicit any_iterator(Iterator it)
-    : vtable_{&erased_iterator_vtable_for<Iterator, Value, Category, Reference>}
+    : vtable_{&erased_iterator_vtable_for<Iterator, Reference>}
     , storage_{te::type_info_for<Iterator>}
   {
     new (storage()) Iterator(std::move(it));
@@ -166,7 +193,7 @@ struct any_iterator
   }
 
 private:
-  iterator_vtable<value_type, iterator_category, reference> const* vtable_;
+  decltype(Iterator<reference>.vtable) const* vtable_;
   te::local_storage<8> storage_;
 
 public: // TODO: Find a way not to make this public

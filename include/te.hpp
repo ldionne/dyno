@@ -7,10 +7,14 @@
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/core/tag_of.hpp>
+#include <boost/hana/flatten.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
+#include <boost/hana/set.hpp>
 #include <boost/hana/string.hpp>
+#include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
+#include <boost/hana/unpack.hpp>
 
 #include <boost/callable_traits/function_type.hpp>
 
@@ -26,6 +30,9 @@ namespace te {
 // storage for an object of a given type.
 //
 // This should never be created explicitly; always use `te::type_info_for`.
+//
+// TODO: Rename this to `storage_info` or something along those lines, which
+// is more tailored to storage only.
 struct type_info {
   std::size_t size;
   std::size_t alignment;
@@ -373,6 +380,7 @@ private:
 
 // Never defined; just a helper to use as decltype(make_vtable(...)) when
 // defining concepts.
+vtable<> make_vtable();
 template <typename ...Name, typename ...Signature>
 vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...>
 make_vtable(boost::hana::pair<Name, boost::hana::basic_type<Signature>>...);
@@ -407,6 +415,43 @@ namespace literals {
   constexpr auto operator""_s() { return detail::string<c...>{}; }
 } // end namespace literals
 
+//////////////////////////////////////////////////////////////////////////////
+// Concepts
+//////////////////////////////////////////////////////////////////////////////
+template <typename ...Clauses>
+struct concept {
+  // Never defined; only used as `decltype(concept<...>::vtable)`.
+  static decltype(te::make_vtable(std::declval<Clauses>()...)) vtable;
+
+  static constexpr boost::hana::tuple<Clauses...> clauses{};
+};
+
+namespace detail {
+  template <typename ...Reqs>
+  constexpr auto expand_clauses(te::concept<Reqs...> const& c) {
+    return c.clauses;
+  }
+
+  template <typename Str, typename Fun>
+  constexpr auto expand_clauses(boost::hana::pair<Str, Fun> const& p) {
+    return boost::hana::make_tuple(p);
+  }
+
+  struct make_concept {
+    template <typename ...Reqs>
+    constexpr te::concept<Reqs...> operator()(Reqs ...) const {
+      return {};
+    }
+  };
+} // end namespace detail
+
+template <typename ...Reqs>
+constexpr auto requires(Reqs ...reqs) {
+  auto all = boost::hana::make_tuple(detail::expand_clauses(reqs)...);
+  auto flat = boost::hana::flatten(all);
+  auto uniqued = boost::hana::to_set(flat); // TODO: Oh my, this is going to be slow
+  return boost::hana::unpack(uniqued, detail::make_concept{});
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // Basic concepts provided by the library
