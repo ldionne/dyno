@@ -7,16 +7,10 @@
 
 #include <te.hpp>
 
-#include <boost/hana/map.hpp>
-#include <boost/hana/pair.hpp>
-#include <boost/hana/string.hpp>
-#include <boost/hana/type.hpp>
-
 #include <cassert>
 #include <iterator>
 #include <type_traits>
 #include <utility>
-namespace hana = boost::hana;
 using namespace te::literals;
 
 
