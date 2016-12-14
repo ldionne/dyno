@@ -3,20 +3,16 @@
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 cmake_minimum_required(VERSION 3.7)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+
 project(TE VERSION 0.0.1 LANGUAGES CXX)
 # TODO: Set these as interface properties when supported
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 
-# Setup Hana and callable_traits, which are dependencies
-add_library(hana INTERFACE)
-target_include_directories(hana INTERFACE ~/code/hana/include)
-add_library(callable_traits INTERFACE)
-target_include_directories(callable_traits INTERFACE ~/code/callable_traits/include)
-
-
 # Setup the `te` library target
+include(dependencies)
 add_library(te INTERFACE)
 target_include_directories(te INTERFACE include)
 target_link_libraries(te INTERFACE hana callable_traits)
