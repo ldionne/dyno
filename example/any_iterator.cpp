@@ -90,4 +90,19 @@ int main() {
     first = std::move(mid);
     assert(*first == 3);
   }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Swap
+  ////////////////////////////////////////////////////////////////////////////
+  {
+    using Iterator = any_iterator<int, std::random_access_iterator_tag>;
+    std::vector<int> input{1, 2, 3, 4};
+    Iterator first{input.begin()}, last{input.end()};
+    using std::swap;
+    swap(first, last);
+    assert(*last == 1);
+    ++last;
+    assert(*last == 2);
+    assert(first == Iterator{input.end()});
+  }
 }

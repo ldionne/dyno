@@ -407,6 +407,34 @@ namespace literals {
   constexpr auto operator""_s() { return detail::string<c...>{}; }
 } // end namespace literals
 
+
+//////////////////////////////////////////////////////////////////////////////
+// Basic concepts provided by the library
+//////////////////////////////////////////////////////////////////////////////
+template <typename Derived>
+struct swappable {
+  // TODO: That is NOT a proper implementation of swap!
+  void swap(Derived& other) {
+    Derived tmp(std::move(other));
+
+    other.~Derived();
+    new (&other) Derived(std::move(static_cast<Derived&>(*this)));
+
+    static_cast<Derived*>(this)->~Derived();
+    new (this) Derived(std::move(tmp));
+  }
+};
+
+template <typename Derived>
+struct destructible {
+  ~destructible() {
+    using literals::operator""_s;
+    static_cast<Derived&>(*this).virtual_("destruct"_s)(
+      static_cast<Derived&>(*this).storage()
+    );
+  }
+};
+
 } // end namespace te
 
 #endif // TE_HPP

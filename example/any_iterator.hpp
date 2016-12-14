@@ -95,7 +95,10 @@ template <
   typename Category,
   typename Reference = Value&
 >
-struct any_iterator {
+struct any_iterator
+  : te::swappable<any_iterator<Value, Category, Reference>>
+  , te::destructible<any_iterator<Value, Category, Reference>>
+{
   using iterator_category = Category;
   using value_type = Value;
   using reference = Reference;
@@ -152,17 +155,6 @@ struct any_iterator {
     return *this;
   }
 
-  // TODO: That is NOT a proper implementation of swap!
-  void swap(any_iterator& other) {
-    any_iterator tmp(std::move(other));
-
-    other.~any_iterator();
-    new (&other) any_iterator(std::move(*this));
-
-    this->~any_iterator();
-    new (this) any_iterator(std::move(tmp));
-  }
-
   any_iterator& operator++() {
     virtual_("increment"_s)(storage());
     return *this;
@@ -170,10 +162,6 @@ struct any_iterator {
 
   reference operator*() {
     return virtual_("dereference"_s)(storage());
-  }
-
-  ~any_iterator() {
-    virtual_("destruct"_s)(storage());
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
@@ -189,6 +177,7 @@ private:
   iterator_vtable<value_type, iterator_category, reference> const* vtable_;
   te::local_storage<8> storage_;
 
+public: // TODO: Find a way not to make this public
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {
     return (*vtable_)[m];
