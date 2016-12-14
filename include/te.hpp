@@ -435,6 +435,19 @@ struct destructible {
   }
 };
 
+template <typename Derived>
+struct comparable {
+  friend bool operator==(Derived const& a, Derived const& b) {
+    using literals::operator""_s;
+    assert(a.virtual_("equal"_s) == b.virtual_("equal"_s));
+    return a.virtual_("equal"_s)(a.storage(), b.storage());
+  }
+
+  friend bool operator!=(Derived const& a, Derived const& b) {
+    return !(a == b);
+  }
+};
+
 } // end namespace te
 
 #endif // TE_HPP

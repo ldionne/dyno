@@ -98,6 +98,7 @@ template <
 struct any_iterator
   : te::swappable<any_iterator<Value, Category, Reference>>
   , te::destructible<any_iterator<Value, Category, Reference>>
+  , te::comparable<any_iterator<Value, Category, Reference>>
 {
   using iterator_category = Category;
   using value_type = Value;
@@ -162,15 +163,6 @@ struct any_iterator
 
   reference operator*() {
     return virtual_("dereference"_s)(storage());
-  }
-
-  friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    assert(a.virtual_("equal"_s) == b.virtual_("equal"_s));
-    return a.virtual_("equal"_s)(a.storage(), b.storage());
-  }
-
-  friend bool operator!=(any_iterator const& a, any_iterator const& b) {
-    return !(a == b);
   }
 
 private:
