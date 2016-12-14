@@ -378,15 +378,7 @@ private:
   > vtbl_;
 };
 
-// Never defined; just a helper to use as decltype(make_vtable(...)) when
-// defining concepts.
-vtable<> make_vtable();
-template <typename ...Name, typename ...Signature>
-vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...>
-make_vtable(boost::hana::pair<Name, boost::hana::basic_type<Signature>>...);
-
-// This one is actually defined, and it should be used to define actual
-// concept maps.
+// Used to define concept maps.
 template <typename ...Functions>
 constexpr auto make_vtable(Functions ...f) {
   return boost::hana::make_map(f...);
@@ -421,7 +413,7 @@ namespace literals {
 template <typename ...Clauses>
 struct concept {
   // Never defined; only used as `decltype(concept<...>::vtable)`.
-  static decltype(te::make_vtable(std::declval<Clauses>()...)) vtable;
+  static te::vtable<Clauses...> vtable;
 
   static constexpr boost::hana::tuple<Clauses...> clauses{};
 };
