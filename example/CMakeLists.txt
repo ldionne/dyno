@@ -8,7 +8,6 @@ add_dependencies(check examples)
 function(te_set_target_properties target)
   target_link_libraries(${target} PRIVATE te)
   set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
-  target_compile_definitions(${target} PRIVATE BOOST_HANA_CONFIG_ENABLE_STRING_UDL)
   target_compile_options(${target} PRIVATE -Wno-gnu-string-literal-operator-template)
 endfunction()
 
