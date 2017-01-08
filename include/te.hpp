@@ -5,6 +5,7 @@
 #ifndef TE_HPP
 #define TE_HPP
 
+#include <te/concept.hpp>
 #include <te/concept_map.hpp>
 
 #include <boost/hana/at_key.hpp>
@@ -402,44 +403,6 @@ namespace literals {
   template <typename CharT, CharT ...c>
   constexpr auto operator""_s() { return detail::string<c...>{}; }
 } // end namespace literals
-
-//////////////////////////////////////////////////////////////////////////////
-// Concepts
-//////////////////////////////////////////////////////////////////////////////
-template <typename ...Clauses>
-struct concept {
-  // Never defined; only used as `decltype(concept<...>::vtable)`.
-  static te::vtable<Clauses...> vtable;
-
-  static constexpr boost::hana::tuple<Clauses...> clauses{};
-};
-
-namespace detail {
-  template <typename ...Reqs>
-  constexpr auto expand_clauses(te::concept<Reqs...> const& c) {
-    return c.clauses;
-  }
-
-  template <typename Str, typename Fun>
-  constexpr auto expand_clauses(boost::hana::pair<Str, Fun> const& p) {
-    return boost::hana::make_tuple(p);
-  }
-
-  struct make_concept {
-    template <typename ...Reqs>
-    constexpr te::concept<Reqs...> operator()(Reqs ...) const {
-      return {};
-    }
-  };
-} // end namespace detail
-
-template <typename ...Reqs>
-constexpr auto requires(Reqs ...reqs) {
-  auto all = boost::hana::make_tuple(detail::expand_clauses(reqs)...);
-  auto flat = boost::hana::flatten(all);
-  auto uniqued = boost::hana::to_set(flat); // TODO: Oh my, this is going to be slow
-  return boost::hana::unpack(uniqued, detail::make_concept{});
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // Basic concepts provided by the library

@@ -66,7 +66,8 @@ template <typename T, typename = void>
 not_defined<T> Iterator_concept_map;
 
 template <typename T, typename Reference>
-decltype(Iterator<Reference>.vtable) const erased_iterator_vtable_for{Iterator_concept_map<T>};
+typename decltype(Iterator<Reference>)::template make_vtable<te::vtable> const
+  erased_iterator_vtable_for{Iterator_concept_map<T>};
 
 
 // This is some kind of concept map; it maps the "generic" iterator interface
@@ -187,7 +188,8 @@ struct any_iterator
   }
 
 private:
-  decltype(Iterator<reference>.vtable) const* vtable_;
+  using VTable = typename decltype(Iterator<reference>)::template make_vtable<te::vtable>;
+  VTable const* vtable_;
   te::local_storage<8> storage_;
 
 public: // TODO: Find a way not to make this public
