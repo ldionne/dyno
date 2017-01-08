@@ -5,6 +5,8 @@
 #ifndef TE_HPP
 #define TE_HPP
 
+#include <te/concept_map.hpp>
+
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/flatten.hpp>
@@ -349,8 +351,8 @@ struct vtable;
 
 template <typename ...Name, typename ...Signature>
 struct vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
-  template <typename VTable>
-  constexpr explicit vtable(VTable vtable)
+  template <typename ConceptMap>
+  constexpr explicit vtable(ConceptMap map)
     : vtbl_{boost::hana::make_map(
       boost::hana::make_pair(
         Name{},
@@ -358,10 +360,10 @@ struct vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
           boost::hana::basic_type<Signature>{},
           boost::hana::basic_type<
             boost::callable_traits::function_type_t<
-              std::decay_t<decltype(vtable[Name{}])>
+              std::decay_t<decltype(map[Name{}])>
             >
           >{},
-          vtable[Name{}]
+          map[Name{}]
         )
       )...
     )}
@@ -377,12 +379,6 @@ private:
     boost::hana::pair<Name, typename detail::sig_replace<Signature>::type>...
   > vtbl_;
 };
-
-// Used to define concept maps.
-template <typename ...Functions>
-constexpr auto make_vtable(Functions ...f) {
-  return boost::hana::make_map(f...);
-}
 
 // Helpers to create a Hana-map using a nicer DSEL.
 template <typename Signature>

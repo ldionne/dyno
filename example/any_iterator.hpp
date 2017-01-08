@@ -63,20 +63,20 @@ constexpr auto Iterator = te::requires(
 
 template <typename T> struct not_defined;
 template <typename T, typename = void>
-not_defined<T> Iterator_vtable;
+not_defined<T> Iterator_concept_map;
 
 template <typename T, typename Reference>
-decltype(Iterator<Reference>.vtable) const erased_iterator_vtable_for{Iterator_vtable<T>};
+decltype(Iterator<Reference>.vtable) const erased_iterator_vtable_for{Iterator_concept_map<T>};
 
 
 // This is some kind of concept map; it maps the "generic" iterator interface
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
 template <typename T>
-auto const Iterator_vtable<T, std::enable_if_t<
+auto const Iterator_concept_map<T, std::enable_if_t<
   std::is_base_of<std::random_access_iterator_tag,
                   typename std::iterator_traits<T>::iterator_category>{}
->> = te::make_vtable(
+>> = te::make_concept_map(
   "increment"_s = [](T& self) {
     ++self;
   },
