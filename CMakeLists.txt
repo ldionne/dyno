@@ -24,7 +24,25 @@ add_custom_target(check
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   COMMENT "Build and run all the tests and examples.")
 
+# All unit tests and examples are given those properties.
+function(te_set_test_properties target)
+  target_link_libraries(${target} PRIVATE te)
+  set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
+  target_compile_options(${target} PRIVATE -Wno-gnu-string-literal-operator-template)
+endfunction()
+
+# Return the target name associated to a source file. If the path of the
+# source file relative from the root of the project is `path/to/file.cpp`,
+# the target name associated to it will be `path.to.file`.
+function(te_get_target_name out file)
+  file(RELATIVE_PATH _relative ${TE_SOURCE_DIR} ${file})
+  string(REPLACE ".cpp" "" _name ${_relative})
+  string(REGEX REPLACE "/" "." _name ${_name})
+  set(${out} "${_name}" PARENT_SCOPE)
+endfunction()
+
 
 # Setup subdirectories
 enable_testing()
 add_subdirectory(example)
+add_subdirectory(test)
