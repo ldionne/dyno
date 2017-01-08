@@ -7,6 +7,7 @@
 
 #include <te/concept.hpp>
 #include <te/concept_map.hpp>
+#include <te/dsl.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/core/tag_of.hpp>
@@ -225,10 +226,6 @@ public:
   }
 };
 
-// Placeholder type representing the type of ref-unqualified `*this`
-// when defining vtables.
-struct T;
-
 namespace detail {
   // Transform a signature from the way it is specified in a concept definition
   // to a type suitable for storage in a vtable.
@@ -380,29 +377,6 @@ private:
     boost::hana::pair<Name, typename detail::sig_replace<Signature>::type>...
   > vtbl_;
 };
-
-// Helpers to create a Hana-map using a nicer DSEL.
-template <typename Signature>
-constexpr boost::hana::basic_type<Signature> function{};
-
-namespace detail {
-  template <char ...c>
-  struct string : boost::hana::string<c...> {
-    template <typename Function>
-    constexpr boost::hana::pair<string, Function>
-    operator=(Function f) const {
-      static_assert(std::is_empty<Function>{},
-        "Only stateless function objects can be used to define vtables");
-      return {{}, f};
-    }
-    using hana_tag = typename boost::hana::tag_of<boost::hana::string<c...>>::type;
-  };
-} // end namespace detail
-
-namespace literals {
-  template <typename CharT, CharT ...c>
-  constexpr auto operator""_s() { return detail::string<c...>{}; }
-} // end namespace literals
 
 //////////////////////////////////////////////////////////////////////////////
 // Basic concepts provided by the library
