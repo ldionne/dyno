@@ -194,7 +194,8 @@ private:
   VTable const* vtable_;
   te::local_storage<8> storage_;
 
-public: // TODO: Find a way not to make this public
+
+  friend class te::access;
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {
     return (*vtable_)[m];
