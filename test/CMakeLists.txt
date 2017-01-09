@@ -22,18 +22,18 @@ generate_standalone_header_tests(HEADERS ${HEADERS}
 file(GLOB_RECURSE UNIT_TESTS "*.cpp")
 foreach(ut IN LISTS UNIT_TESTS)
   te_get_target_name(target "${ut}")
-  add_executable(test.${target} EXCLUDE_FROM_ALL "${ut}")
-  te_set_test_properties(test.${target})
+  add_executable(${target} EXCLUDE_FROM_ALL "${ut}")
+  te_set_test_properties(${target})
 
   if (target MATCHES "[.]fail")
     message(STATUS "ADDING TEST FAILURE UNIT TEST ${target}")
-    add_test(NAME test.${target}
+    add_test(NAME ${target}
       COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
-                               --target test.${target}
+                               --target ${target}
                                --config $<CONFIGURATION>)
-    set_tests_properties(test.${target} PROPERTIES WILL_FAIL TRUE)
+    set_tests_properties(${target} PROPERTIES WILL_FAIL TRUE)
   else()
-    add_test(test.${target} test.${target})
-    add_dependencies(tests test.${target})
+    add_test(${target} ${target})
+    add_dependencies(tests ${target})
   endif()
 endforeach()
