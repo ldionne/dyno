@@ -26,7 +26,6 @@ foreach(ut IN LISTS UNIT_TESTS)
   te_set_test_properties(${target})
 
   if (target MATCHES "[.]fail")
-    message(STATUS "ADDING TEST FAILURE UNIT TEST ${target}")
     add_test(NAME ${target}
       COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}
                                --target ${target}
