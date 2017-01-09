@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 include(dependencies)
 add_library(te INTERFACE)
 target_include_directories(te INTERFACE include)
+target_compile_options(te INTERFACE -Wno-gnu-string-literal-operator-template)
 target_link_libraries(te INTERFACE hana callable_traits)
 
 
@@ -28,7 +29,6 @@ add_custom_target(check
 function(te_set_test_properties target)
   target_link_libraries(${target} PRIVATE te)
   set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
-  target_compile_options(${target} PRIVATE -Wno-gnu-string-literal-operator-template)
 endfunction()
 
 # Return the target name associated to a source file. If the path of the
