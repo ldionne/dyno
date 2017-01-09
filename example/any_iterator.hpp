@@ -77,7 +77,9 @@ template <typename T>
 auto const Iterator_concept_map<T, std::enable_if_t<
   std::is_base_of<std::random_access_iterator_tag,
                   typename std::iterator_traits<T>::iterator_category>{}
->> = te::make_concept_map(
+>> = te::make_concept_map<
+  decltype(Iterator<typename std::iterator_traits<T>::reference>)
+>(
   "increment"_s = [](T& self) {
     ++self;
   },

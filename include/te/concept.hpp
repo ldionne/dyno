@@ -5,10 +5,15 @@
 #ifndef TE_CONCEPT_HPP
 #define TE_CONCEPT_HPP
 
+#include <te/detail/erase_signature.hpp>
+
+#include <boost/hana/at_key.hpp>
 #include <boost/hana/flatten.hpp>
+#include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/set.hpp>
 #include <boost/hana/tuple.hpp>
+#include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 
 
@@ -25,9 +30,25 @@ namespace te {
 // TODO:
 // - Creating a vtable from a concept is very clunky right now; fix this.
 template <typename ...Clauses>
-struct concept {
+struct concept;
+
+template <typename ...Name, typename ...Signature>
+struct concept<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
   template <template <typename ...> class VTable>
-  using make_vtable = VTable<Clauses...>;
+  using make_vtable = VTable<
+    boost::hana::pair<
+      Name,
+      boost::hana::basic_type<typename detail::erase_signature<Signature>::type*>
+    >...
+  >;
+
+  template <typename Name_>
+  constexpr auto get_signature(Name_ name) const {
+    boost::hana::map<
+      boost::hana::pair<Name, boost::hana::basic_type<Signature>>...
+    > clauses;
+    return clauses[name];
+  }
 };
 
 namespace detail {

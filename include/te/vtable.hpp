@@ -5,9 +5,6 @@
 #ifndef TE_VTABLE_HPP
 #define TE_VTABLE_HPP
 
-#include <te/detail/erase_signature.hpp>
-#include <te/detail/function_cast.hpp>
-
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/type.hpp>
@@ -31,15 +28,12 @@ namespace te {
 template <typename ...Mappings>
 struct vtable;
 
-template <typename ...Name, typename ...Signature>
-struct vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
+template <typename ...Name, typename ...Fptr>
+struct vtable<boost::hana::pair<Name, boost::hana::basic_type<Fptr>>...> {
   template <typename ConceptMap>
   constexpr explicit vtable(ConceptMap map)
     : vtbl_{boost::hana::make_map(
-      boost::hana::make_pair(
-        Name{},
-        detail::function_cast<Signature>(map[Name{}])
-      )...
+      boost::hana::make_pair(Name{}, map.erased(Name{}))...
     )}
   { }
 
@@ -49,9 +43,7 @@ struct vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
   }
 
 private:
-  boost::hana::map<
-    boost::hana::pair<Name, typename detail::erase_signature<Signature>::type*>...
-  > vtbl_;
+  boost::hana::map<boost::hana::pair<Name, Fptr>...> vtbl_;
 };
 
 } // end namespace te
