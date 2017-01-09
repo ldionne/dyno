@@ -5,6 +5,7 @@
 #ifndef TE_DETAIL_FUNCTION_CAST_HPP
 #define TE_DETAIL_FUNCTION_CAST_HPP
 
+#include <te/detail/erase_signature.hpp>
 #include <te/dsl.hpp>
 
 #include <boost/hana/type.hpp>
@@ -16,39 +17,6 @@
 
 
 namespace te { namespace detail {
-
-// Transform a signature from the way it is specified in a concept definition
-// to a type suitable for storage in a vtable.
-template <typename T>
-struct sig_replace {
-  static_assert(!std::is_same<T, te::T>{},
-    "te::T may not be passed by value in concept definitions; it is only a placeholder");
-  using type = T;
-};
-template <typename R, typename ...Args>
-struct sig_replace<R (Args...)> {
-  using type = typename sig_replace<R>::type (*)(typename sig_replace<Args>::type...);
-};
-template <>
-struct sig_replace<te::T const&> {
-  using type = void const*;
-};
-template <>
-struct sig_replace<te::T &> {
-  using type = void*;
-};
-template <>
-struct sig_replace<te::T &&> {
-  using type = void*;
-};
-template <>
-struct sig_replace<te::T *> {
-  using type = void*;
-};
-template <>
-struct sig_replace<te::T const *> {
-  using type = void const*;
-};
 
 // Cast an argument from a generic representation to the actual type expected
 // by a statically typed equivalent.
@@ -102,9 +70,9 @@ constexpr auto fun_replace(boost::hana::basic_type<R_pl(Args_pl...)> /*placehold
                            boost::hana::basic_type<R_ac(Args_ac...)> /*actual_sig*/,
                            Function)
 {
-  using Storage = typename sig_replace<R_pl(Args_pl...)>::type;
-  auto adapter = [](typename sig_replace<Args_pl>::type ...args)
-    -> typename sig_replace<R_pl>::type
+  using Storage = typename detail::erase_signature<R_pl(Args_pl...)>::type*;
+  auto adapter = [](typename detail::erase_placeholder<Args_pl>::type ...args)
+    -> typename detail::erase_placeholder<R_pl>::type
   {
     static_assert(std::is_empty<Function>{},
       "This trick won't work if `Function` is not empty.");
@@ -121,8 +89,8 @@ constexpr auto fun_replace(boost::hana::basic_type<void(Args_pl...)> /*placehold
                            boost::hana::basic_type<void(Args_ac...)> /*actual_sig*/,
                            Function)
 {
-  using Storage = typename sig_replace<void(Args_pl...)>::type;
-  auto adapter = [](typename sig_replace<Args_pl>::type ...args) -> void {
+  using Storage = typename detail::erase_signature<void(Args_pl...)>::type*;
+  auto adapter = [](typename detail::erase_placeholder<Args_pl>::type ...args) -> void {
     static_assert(std::is_empty<Function>{},
       "This trick won't work if `Function` is not empty.");
     (*static_cast<Function*>(nullptr))( // <-------------- UB ALERT

@@ -5,6 +5,7 @@
 #ifndef TE_VTABLE_HPP
 #define TE_VTABLE_HPP
 
+#include <te/detail/erase_signature.hpp>
 #include <te/detail/function_cast.hpp>
 
 #include <boost/hana/map.hpp>
@@ -49,7 +50,7 @@ struct vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
 
 private:
   boost::hana::map<
-    boost::hana::pair<Name, typename detail::sig_replace<Signature>::type>...
+    boost::hana::pair<Name, typename detail::erase_signature<Signature>::type*>...
   > vtbl_;
 };
 
