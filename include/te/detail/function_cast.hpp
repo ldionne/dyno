@@ -63,6 +63,13 @@ constexpr decltype(auto) special_cast(Arg&& arg) {
 // Transform an actual (stateless) function object with statically typed
 // parameters into a type-erased function object suitable for storage in
 // a vtable.
+//
+// TODO:
+//  - We should allow moving from rvalue-reference arguments that we
+//    receive in the adapter.
+//  - Allow models to differ slightly from the required concept, i.e. if
+//    a concept requires a `const&` it should probably be valid to implement
+//    it by taking by value.
 template <typename R_pl, typename ...Args_pl,
           typename R_ac, typename ...Args_ac,
           typename Function>
