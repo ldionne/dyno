@@ -16,32 +16,25 @@
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 
+#include <utility>
+
 
 namespace te {
 
 // A `concept` is a collection of clauses representing requirements for a type
 // to model the concept.
 //
-// From a `concept`, one can generate a virtual function table, but possibly
-// much more, like get a predicate that checks whether a type satisfies the
-// concept. When generating the vtable, one has the choice of which vtable
-// implementation to use. A concept is created by using `te::requires`.
+// A concept is created by using `te::requires`.
 //
-// TODO:
-// - Creating a vtable from a concept is very clunky right now; fix this.
+// From a `concept`, one can generate a virtual function table using
+// `unpack_vtable_layout`. In the future, it would also be possible to
+// do much more, like getting a predicate that checks whether a type
+// satisfies the concept.
 template <typename ...Clauses>
 struct concept;
 
 template <typename ...Name, typename ...Signature>
 struct concept<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
-  template <template <typename ...> class VTable>
-  using make_vtable = VTable<
-    boost::hana::pair<
-      Name,
-      boost::hana::basic_type<typename detail::erase_signature<Signature>::type*>
-    >...
-  >;
-
   template <typename Name_>
   constexpr auto get_signature(Name_ name) const {
     boost::hana::map<
@@ -49,6 +42,11 @@ struct concept<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
     > clauses;
     return clauses[name];
   }
+
+  template <template <typename ...> class VTable>
+  using unpack_vtable_layout_impl = VTable<
+    std::pair<Name, typename detail::erase_signature<Signature>::type*>...
+  >;
 };
 
 namespace detail {
@@ -69,6 +67,14 @@ namespace detail {
     }
   };
 } // end namespace detail
+
+// Provides the layout required for a vtable to hold all the functions defined
+// by the given `Concept`. The vtable layout is provided as a parameter pack of
+// `std::pair`s where the first element is the name of the function (as a compile-
+// time string), and the second element is a function pointer with the right type
+// to store in the vtable.
+template <typename Concept, template <typename ...> class VTable>
+using unpack_vtable_layout = typename Concept::template unpack_vtable_layout_impl<VTable>;
 
 // Creates a `concept` with the given clauses. Note that a clause may be a
 // concept itself, in which case the clauses of that concept are used, and

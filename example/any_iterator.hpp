@@ -61,13 +61,10 @@ constexpr auto Iterator = te::requires(
   "equal"_s = te::function<bool (te::T const&, te::T const&)>
 );
 
-template <typename T> struct not_defined;
-template <typename T, typename = void>
-not_defined<T> Iterator_concept_map;
+template <typename T, typename = void> auto Iterator_concept_map = 0;
 
 template <typename T, typename Reference>
-typename decltype(Iterator<Reference>)::template make_vtable<te::vtable> const
-  erased_iterator_vtable_for{Iterator_concept_map<T>};
+te::vtable<decltype(Iterator<Reference>)> const erased_iterator_vtable_for{Iterator_concept_map<T>};
 
 
 // This is some kind of concept map; it maps the "generic" iterator interface
@@ -190,8 +187,7 @@ struct any_iterator
   }
 
 private:
-  using VTable = typename decltype(Iterator<reference>)::template make_vtable<te::vtable>;
-  VTable const* vtable_;
+  te::vtable<decltype(Iterator<reference>)> const* vtable_;
   te::local_storage<8> storage_;
 
 

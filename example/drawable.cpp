@@ -90,8 +90,7 @@ namespace with_te {
   );
 
   template <typename T>
-  typename decltype(Drawable)::template make_vtable<te::vtable> const
-    Drawable_vtable{Drawable_model<T>};
+  te::vtable<decltype(Drawable)> const Drawable_vtable{Drawable_model<T>};
 
   class object_t {
   public:
@@ -107,8 +106,7 @@ namespace with_te {
 
   private:
     std::shared_ptr<void const> self_;
-    using VTable = decltype(Drawable)::make_vtable<te::vtable>;
-    VTable const* vtable_;
+    te::vtable<decltype(Drawable)> const* vtable_;
   };
 } // end namespace with_te
 
