@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 #include <te.hpp>
+#include <te/experimental/vtable.hpp>
 
 #include <cassert>
 #include <iostream>
@@ -110,6 +111,41 @@ namespace with_te {
   };
 } // end namespace with_te
 
+namespace with_te_experimental {
+  using namespace te::literals;
+
+  constexpr auto Drawable = te::requires(
+    "draw"_s = te::function<void (te::T const&, std::ostream&)>
+  );
+
+  template <typename T>
+  auto Drawable_model = te::make_concept_map<decltype(Drawable)>(
+    "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
+  );
+
+  template <typename T>
+  struct Drawable_model_maker {
+    auto operator()() const { return Drawable_model<T>; }
+  };
+
+  class object_t {
+  public:
+    template <typename T>
+    object_t(T x)
+      : self_{std::make_shared<T>(std::move(x))}
+      , vptr_{Drawable_model_maker<T>{}}
+    { }
+
+    friend void draw(object_t const& x, std::ostream& out) {
+      x.vptr_["draw"_s](x.self_.get(), out);
+    }
+
+  private:
+    std::shared_ptr<void const> self_;
+    te::experimental::vtable<decltype(Drawable)> vptr_;
+  };
+} // end namespace with_te_experimental
+
 namespace with_sean {
   //
   // Example taken from Sean Parent's talk "Inheritance Is The Base Class of Evil"
@@ -147,4 +183,5 @@ namespace with_sean {
 int main() {
   run_main<with_sean::object_t>();
   run_main<with_te::object_t>();
+  run_main<with_te_experimental::object_t>();
 }
