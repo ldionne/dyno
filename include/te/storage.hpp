@@ -67,6 +67,12 @@ constexpr static_type_info<T> type_info_for{};
 // ABI does not change even if the type of what it holds changes. However, it
 // provides this at the cost of "forgetting" this information, and type erasure
 // techniques must be used on top of `small_buffer` to do anything useful.
+//
+// TODO: - Consider having ptr_ always point to either sb_ or the heap.
+//       - Alternatively, if we had a way to access the vtable here, we could
+//         retrieve the size of the type from it and get rid of `uses_heap_`.
+//       - We could also use the low bits of the pointer to the vtable for
+//         `uses_heap_`.
 template <std::size_t Size, std::size_t Align = static_cast<std::size_t>(-1)>
 class small_buffer {
   static constexpr std::size_t SBSize = Size < sizeof(void*) ? sizeof(void*) : Size;
