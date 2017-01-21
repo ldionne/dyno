@@ -6,16 +6,11 @@ add_custom_target(tests COMMENT "Build all the unit tests.")
 add_dependencies(check tests)
 
 # Generate tests that include each public header.
+include(TestHeaders)
 file(GLOB_RECURSE HEADERS RELATIVE "${TE_SOURCE_DIR}/include"
                                    "${TE_SOURCE_DIR}/include/*.hpp")
-
-add_custom_target(test.headers COMMENT "Build all the header-inclusion unit tests.")
-add_dependencies(tests test.headers)
-include(TestHeaders)
-generate_standalone_header_tests(HEADERS ${HEADERS}
-                                 LINK_LIBRARIES te
-                                 MASTER_TARGET tests
-                                 EXCLUDE_FROM_ALL)
+generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES te
+                                 MASTER_TARGET tests EXCLUDE_FROM_ALL)
 
 # Add all the regular unit tests. When a test has `.fail` in its name, we
 # create a test that succeeds whenever the test fails to build.
