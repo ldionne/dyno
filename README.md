@@ -24,6 +24,11 @@ cmake --build build --target benchmarks # Build and run the benchmarks (requires
 ```
 
 
+## TODO
+- It should be possible to define a concept map using pointers to functions,
+  not only stateless lambdas. When that's the case, we should skip the
+  UB-inducing trick used for lambdas.
+
 <!-- Links -->
 [Boost.Hana]: https://github.com/boostorg/hana
 [CallableTraits]: https://github.com/badair/callable_traits
