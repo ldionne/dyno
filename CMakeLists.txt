@@ -11,12 +11,12 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 
-# Setup the `te` library target
+# Setup the `te` library target, assuming the dependencies are provided.
 include(dependencies)
 add_library(te INTERFACE)
 target_include_directories(te INTERFACE include)
 target_compile_options(te INTERFACE -Wno-gnu-string-literal-operator-template)
-target_link_libraries(te INTERFACE hana callable_traits)
+target_link_libraries(te INTERFACE ${DEPENDENCY_hana} ${DEPENDENCY_callable_traits})
 
 
 # Setup the `check` target to build and then run all the tests and examples.
