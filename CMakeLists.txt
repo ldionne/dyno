@@ -19,12 +19,6 @@ target_compile_options(te INTERFACE -Wno-gnu-string-literal-operator-template)
 target_link_libraries(te INTERFACE ${DEPENDENCY_hana} ${DEPENDENCY_callable_traits})
 
 
-# Setup the `check` target to build and then run all the tests and examples.
-add_custom_target(check
-  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Build and run all the tests and examples.")
-
 # All unit tests and examples are given those properties.
 function(te_set_test_properties target)
   target_link_libraries(${target} PRIVATE te)
@@ -47,3 +41,7 @@ enable_testing()
 add_subdirectory(benchmark)
 add_subdirectory(example)
 add_subdirectory(test)
+
+# Setup the `check` convenience target, which is equivalent to examples + tests.
+add_custom_target(check DEPENDS examples tests
+  COMMENT "Build and run all the tests and examples.")

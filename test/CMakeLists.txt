@@ -2,8 +2,9 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-add_custom_target(tests COMMENT "Build all the unit tests.")
-add_dependencies(check tests)
+add_custom_target(tests
+  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+  COMMENT "Build and run all the unit tests.")
 
 # Generate tests that include each public header.
 include(TestHeaders)
