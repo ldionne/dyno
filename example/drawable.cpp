@@ -76,29 +76,24 @@ void run_main() {
   draw(current(h), std::cout);
 }
 
-
-
 namespace with_te {
   using namespace te::literals;
 
-  constexpr auto Drawable = te::requires(
+  struct Drawable : decltype(te::requires(
     "draw"_s = te::function<void (te::T const&, std::ostream&)>
-  );
+  )) { };
 
   template <typename T>
-  auto Drawable_model = te::make_concept_map<decltype(Drawable)>(
+  te::vtable<Drawable> const vtable{te::make_concept_map<Drawable>(
     "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
-  );
-
-  template <typename T>
-  te::vtable<decltype(Drawable)> const Drawable_vtable{Drawable_model<T>};
+  )};
 
   class object_t {
   public:
     template <typename T>
     object_t(T x)
       : self_{std::make_shared<T>(std::move(x))}
-      , vtable_{&Drawable_vtable<T>}
+      , vtable_{&vtable<T>}
     { }
 
     friend void draw(object_t const& x, std::ostream& out) {
@@ -107,25 +102,25 @@ namespace with_te {
 
   private:
     std::shared_ptr<void const> self_;
-    te::vtable<decltype(Drawable)> const* vtable_;
+    te::vtable<Drawable> const* vtable_;
   };
 } // end namespace with_te
 
 namespace with_te_experimental {
   using namespace te::literals;
 
-  constexpr auto Drawable = te::requires(
+  struct Drawable : decltype(te::requires(
     "draw"_s = te::function<void (te::T const&, std::ostream&)>
-  );
+  )) { };
 
   template <typename T>
-  auto Drawable_model = te::make_concept_map<decltype(Drawable)>(
+  auto const Drawable_concept_map = te::make_concept_map<Drawable>(
     "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
   );
 
   template <typename T>
-  struct Drawable_model_maker {
-    auto operator()() const { return Drawable_model<T>; }
+  struct make_Drawable_concept_map {
+    auto operator()() const { return Drawable_concept_map<T>; }
   };
 
   class object_t {
@@ -133,7 +128,7 @@ namespace with_te_experimental {
     template <typename T>
     object_t(T x)
       : self_{std::make_shared<T>(std::move(x))}
-      , vptr_{Drawable_model_maker<T>{}}
+      , vptr_{make_Drawable_concept_map<T>{}}
     { }
 
     friend void draw(object_t const& x, std::ostream& out) {
@@ -142,7 +137,7 @@ namespace with_te_experimental {
 
   private:
     std::shared_ptr<void const> self_;
-    te::experimental::vtable<decltype(Drawable)> vptr_;
+    te::experimental::vtable<Drawable> vptr_;
   };
 } // end namespace with_te_experimental
 

@@ -113,11 +113,11 @@ namespace classic {
 namespace te_split_ptr {
   using namespace te::literals;
 
-  using Concept = decltype(te::requires(
+  struct Concept : decltype(te::requires(
     "f1"_s = te::function<void (te::T&)>,
     "f2"_s = te::function<void (te::T&)>,
     "f3"_s = te::function<void (te::T&)>
-  ));
+  )) { };
 
   template <typename T>
   static te::vtable<Concept> const vtable{te::make_concept_map<Concept>(

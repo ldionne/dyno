@@ -14,68 +14,66 @@
 using namespace te::literals;
 
 
-constexpr auto Storable = te::requires(
+struct Storable : decltype(te::requires(
   "type_info"_s = te::function<te::type_info()>
-);
+)) { };
 
-constexpr auto MoveConstructible = te::requires(
-  Storable,
+struct MoveConstructible : decltype(te::requires(
+  Storable{},
   "move-construct"_s = te::function<void (void*, te::T&&)>
-);
+)) { };
 
-constexpr auto CopyConstructible = te::requires(
-  Storable,
-  MoveConstructible,
+struct CopyConstructible : decltype(te::requires(
+  Storable{},
+  MoveConstructible{},
   "copy-construct"_s = te::function<void (void*, te::T const&)>
-);
+)) { };
 
-constexpr auto MoveAssignable = te::requires(
+struct MoveAssignable : decltype(te::requires(
   // No virtual function required to support this
-);
+)) { };
 
-constexpr auto CopyAssignable = te::requires(
-  MoveAssignable
+struct CopyAssignable : decltype(te::requires(
+  MoveAssignable{}
   // No virtual function required to support this
-);
+)) { };
 
-constexpr auto Swappable = te::requires(
+struct Swappable : decltype(te::requires(
   // No virtual function required to support this so far
-);
+)) { };
 
-constexpr auto Destructible = te::requires(
+struct Destructible : decltype(te::requires(
   "destruct"_s = te::function<void (te::T&)>
-);
+)) { };
 
 // This is the definition of an Iterator concept using a "generic" language.
 // Instead of defining specific methods that must be defined, it defines its
 // interface in terms of compile-time strings, assuming these may be fulfilled
 // in possibly many different ways.
 template <typename Reference>
-constexpr auto Iterator = te::requires(
-  CopyConstructible,
-  CopyAssignable,
-  Destructible,
-  Swappable,
+struct Iterator : decltype(te::requires(
+  CopyConstructible{},
+  CopyAssignable{},
+  Destructible{},
+  Swappable{},
   "increment"_s = te::function<void (te::T&)>,
   "dereference"_s = te::function<Reference (te::T&)>,
   "equal"_s = te::function<bool (te::T const&, te::T const&)>
-);
-
-template <typename T, typename = void> auto Iterator_concept_map = 0;
-
-template <typename T, typename Reference>
-te::vtable<decltype(Iterator<Reference>)> const erased_iterator_vtable_for{Iterator_concept_map<T>};
-
+)) { };
 
 // This is some kind of concept map; it maps the "generic" iterator interface
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
 template <typename T>
-auto const Iterator_concept_map<T, std::enable_if_t<
-  std::is_base_of<std::random_access_iterator_tag,
-                  typename std::iterator_traits<T>::iterator_category>{}
->> = te::make_concept_map<
-  decltype(Iterator<typename std::iterator_traits<T>::reference>)
+auto const te::concept_map<
+  Iterator<typename std::iterator_traits<T>::reference>,
+  T,
+  std::enable_if_t<
+    std::is_base_of<std::random_access_iterator_tag,
+                    typename std::iterator_traits<T>::iterator_category>{}
+  >
+> = te::make_concept_map<
+  Iterator<typename std::iterator_traits<T>::reference>
 >(
   "increment"_s = [](T& self) {
     ++self;
@@ -106,6 +104,9 @@ auto const Iterator_concept_map<T, std::enable_if_t<
   }
 );
 
+template <typename Concept, typename T>
+te::vtable<Concept> const vtable{te::concept_map<Concept, T>};
+
 // This defines a type-erased wrapper satisfying a specific concept (Iterator)
 // and providing the given interface (methods, etc..). The choice of how to
 // store the type-erased object and how to implement the VTable should be done
@@ -126,14 +127,14 @@ struct any_iterator
   using reference = Reference;
   using pointer = value_type*;
 
-  template <typename Iterator>
-  explicit any_iterator(Iterator it)
-    : vtable_{&erased_iterator_vtable_for<Iterator, Reference>}
-    , storage_{te::type_info_for<Iterator>}
+  template <typename It>
+  explicit any_iterator(It it)
+    : vtable_{&vtable<Iterator<reference>, It>}
+    , storage_{te::type_info_for<It>}
   {
-    new (storage()) Iterator(std::move(it));
+    new (storage()) It(std::move(it));
 
-    using IteratorTraits = std::iterator_traits<Iterator>;
+    using IteratorTraits = std::iterator_traits<It>;
     using Source_value_type = typename IteratorTraits::value_type;
     using Source_reference = typename IteratorTraits::reference;
     using Source_category = typename IteratorTraits::iterator_category;
@@ -187,7 +188,7 @@ struct any_iterator
   }
 
 private:
-  te::vtable<decltype(Iterator<reference>)> const* vtable_;
+  te::vtable<Iterator<reference>> const* vtable_;
   te::local_storage<8> storage_;
 
 

@@ -14,21 +14,26 @@
 
 namespace te {
 
-// A `concept_map` is a statically-known mapping from functions implemented by
-// a type `T` to functions defined by a concept. A `concept_map` is what's being
-// used to fill the vtable of the concept it represents. A `concept_map` is
-// never created as-is; `te::make_concept_map` should always be used.
+namespace ERROR {
+  template <typename ...>
+  struct no_concept_map_defined_for;
+}
+
+// A concept map is a statically-known mapping from functions implemented by
+// a type `T` to functions defined by a concept. A concept map is what's being
+// used to fill the vtable of the concept it represents. An instance of this
+// type is never created as-is; `te::make_concept_map` should always be used.
 //
 // Note that everything in the concept map is known statically. Specifically,
 // the types of the functions in the concept map are known statically, and
 // e.g. lambdas will be stored as-is (not as function pointers). To retrieve
 // a function with an erased representation instead, use the `erased` method.
 template <typename Concept, typename ...Mappings>
-struct concept_map;
+struct concept_map_t;
 
 template <typename Concept, typename ...Name, typename ...Function>
-struct concept_map<Concept, boost::hana::pair<Name, Function>...> {
-  constexpr explicit concept_map(boost::hana::pair<Name, Function> ...mappings)
+struct concept_map_t<Concept, boost::hana::pair<Name, Function>...> {
+  constexpr explicit concept_map_t(boost::hana::pair<Name, Function> ...mappings)
     : map_{mappings...}
   { }
 
@@ -47,12 +52,36 @@ private:
   boost::hana::map<boost::hana::pair<Name, Function>...> map_;
 };
 
-// Creates a `concept_map` for the given `Concept` mapping the given function
+// Creates a concept map for the given `Concept` mapping the given function
 // names (compile-time strings) to the given implementations.
 template <typename Concept, typename ...Name, typename ...Function>
 constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
-  return te::concept_map<Concept, boost::hana::pair<Name, Function>...>{mappings...};
+  return te::concept_map_t<Concept, boost::hana::pair<Name, Function>...>{mappings...};
 }
+
+// Customization point for users to define their models of concepts.
+//
+// This can be specialized by clients to provide concept maps for the concepts
+// and types they wish. The third parameter can be used to define a concept
+// map for a family of type, by using `std::enable_if`.
+//
+// Example usage:
+// ```
+// namespace my {
+//   struct Drawable : decltype(te::requires(
+//     "draw"_s = te::function<void (std::ostream&, te::T const&)>
+//   )) { };
+// }
+//
+// struct Foo { ... };
+//
+// template <>
+// auto const te::concept_map<my::Drawable, Foo> = te::make_concept_map<my::Drawable>(
+//   ...
+// );
+// ```
+template <typename Concept, typename T, typename = void>
+auto const concept_map = ERROR::no_concept_map_defined_for<Concept, T>{};
 
 } // end namespace te
 

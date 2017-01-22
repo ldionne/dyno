@@ -195,15 +195,15 @@ namespace te_style {
   using namespace te::literals;
 
   template <typename Reference>
-  constexpr auto Iterator = te::requires(
+  struct Iterator : decltype(te::requires(
     "increment"_s = te::function<void (te::T&)>,
     "dereference"_s = te::function<Reference (te::T&)>,
     "equal"_s = te::function<bool (te::T const&, te::T const&)>
-  );
+  )) { };
 
   template <typename T>
-  static te::vtable<decltype(Iterator<typename T::reference>)> const vtable{
-    te::make_concept_map<decltype(Iterator<typename T::reference>)>(
+  static te::vtable<Iterator<typename T::reference>> const vtable{
+    te::make_concept_map<Iterator<typename T::reference>>(
       "increment"_s = [](T& self) { ++self; },
       "dereference"_s = [](T& self) -> decltype(auto) { return *self; },
       "equal"_s = [](T const& a, T const& b) -> bool { return a == b; }
@@ -215,10 +215,10 @@ namespace te_style {
     using value_type = Value;
     using reference = Reference;
 
-    template <typename Iterator>
-    explicit any_iterator(Iterator it)
-      : vptr_{&vtable<Iterator>}
-      , self_{std::make_shared<Iterator>(std::move(it))}
+    template <typename It>
+    explicit any_iterator(It it)
+      : vptr_{&vtable<It>}
+      , self_{std::make_shared<It>(std::move(it))}
     { }
 
     any_iterator& operator++() {
@@ -235,7 +235,7 @@ namespace te_style {
     }
 
   private:
-    te::vtable<decltype(Iterator<reference>)> const* vptr_;
+    te::vtable<Iterator<reference>> const* vptr_;
     std::shared_ptr<void> self_;
   };
 } // end namespace te_style

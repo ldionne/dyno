@@ -82,12 +82,16 @@ using unpack_vtable_layout = typename Concept::template unpack_vtable_layout_imp
 //
 // ```
 // template <typename Reference>
-// auto Iterator = te::requires(
-//   Incrementable,
+// struct Iterator : decltype(te::requires(
+//   Incrementable{},
 //   "dereference"_s = te::function<Reference (te::T&)>
 //   ...
-// );
+// )) { };
 // ```
+//
+// It is recommended to make every concept its own structure (and not just an
+// alias), as above, because that ensures the uniqueness of concepts that have
+// the same clauses.
 template <typename ...Clauses>
 constexpr auto requires(Clauses ...clauses) {
   auto all = boost::hana::make_tuple(detail::expand_clauses(clauses)...);
