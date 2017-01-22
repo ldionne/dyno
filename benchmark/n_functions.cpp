@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
+#include <te.hpp>
+
 #include <benchmark/benchmark.h>
 
 
@@ -108,6 +110,35 @@ namespace classic {
   };
 } // end namespace classic
 
+namespace te_split_ptr {
+  using namespace te::literals;
+
+  using Concept = decltype(te::requires(
+    "f1"_s = te::function<void (te::T&)>,
+    "f2"_s = te::function<void (te::T&)>,
+    "f3"_s = te::function<void (te::T&)>
+  ));
+
+  template <typename T>
+  static te::vtable<Concept> const vtable{te::make_concept_map<Concept>(
+    "f1"_s = [](T& self) { ++self; },
+    "f2"_s = [](T& self) { --self; },
+    "f3"_s = [](T& self) { ++self; }
+  )};
+
+  struct any {
+    template <typename T>
+    explicit any(T t) : vptr_{&vtable<T>}, self_{new T(t)} { }
+    any& f1() { (*vptr_)["f1"_s](self_); return *this; }
+    any& f2() { (*vptr_)["f2"_s](self_); return *this; }
+    any& f3() { (*vptr_)["f3"_s](self_); return *this; }
+
+  private:
+    te::vtable<Concept> const* vptr_;
+    void* self_;
+  };
+} // end namespace te_split_ptr
+
 template <typename Any>
 static void BM_any_1_function(benchmark::State& state) {
   Any a{0};
@@ -146,15 +177,18 @@ static void BM_any_3_function(benchmark::State& state) {
 
 static constexpr int N = 1000;
 
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_classic::any)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_classic::any)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_split_ptr::any )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, te_split_ptr::any         )->Arg(N);
 
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_split_ptr::any)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_split_ptr::any)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_split_ptr::any)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_split_ptr::any )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, te_split_ptr::any         )->Arg(N);
 
-BENCHMARK_TEMPLATE(BM_any_1_function, classic::any)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_2_function, classic::any)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_3_function, classic::any)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_split_ptr::any )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, te_split_ptr::any         )->Arg(N);
 BENCHMARK_MAIN();
