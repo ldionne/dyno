@@ -5,7 +5,7 @@
 #ifndef TE_CONCEPT_MAP_HPP
 #define TE_CONCEPT_MAP_HPP
 
-#include <te/detail/function_cast.hpp>
+#include <te/detail/erase_function.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/map.hpp>
@@ -40,7 +40,7 @@ struct concept_map<Concept, boost::hana::pair<Name, Function>...> {
   template <typename Name_>
   constexpr auto erased(Name_ name) const {
     using Signature = typename decltype(Concept{}.get_signature(name))::type;
-    return detail::function_cast<Signature>(map_[name]);
+    return detail::erase_function<Signature>(map_[name]);
   }
 
 private:

@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_FUNCTION_CAST_HPP
-#define TE_DETAIL_FUNCTION_CAST_HPP
+#ifndef TE_DETAIL_ERASE_FUNCTION_HPP
+#define TE_DETAIL_ERASE_FUNCTION_HPP
 
 #include <te/detail/erase_signature.hpp>
 #include <te/dsl.hpp>
@@ -60,62 +60,65 @@ constexpr decltype(auto) special_cast(Arg&& arg) {
                                    std::forward<Arg>(arg));
 }
 
+template <typename F, typename PlaceholderSig, typename ActualSig>
+struct thunk;
+
+template <typename F, typename R_pl, typename ...Args_pl, typename R_ac, typename ...Args_ac>
+struct thunk<F, R_pl(Args_pl...), R_ac(Args_ac...)> {
+  static_assert(std::is_empty<F>{},
+    "This trick won't work if `F` is not an empty function object.");
+
+  static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
+    -> typename detail::erase_placeholder<R_pl>::type
+  {
+    return detail::special_cast<R_pl, R_ac>(
+      (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
+        detail::special_cast<Args_pl, Args_ac>(args)...
+      )
+    );
+  }
+};
+
+template <typename F, typename ...Args_pl, typename R_ac, typename ...Args_ac>
+struct thunk<F, void(Args_pl...), R_ac(Args_ac...)> {
+  static_assert(std::is_empty<F>{},
+    "This trick won't work if `F` is not an empty function object.");
+
+  static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
+    -> void
+  {
+    return (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
+      detail::special_cast<Args_pl, Args_ac>(args)...
+    );
+  }
+};
+
 // Transform an actual (stateless) function object with statically typed
 // parameters into a type-erased function object suitable for storage in
 // a vtable.
 //
+// In a sense, this is the runtime equivalent of `detail::erase_signature`,
+// which only produces the type of the erased function. In other words,
+// `erase_function` takes a function and transforms it into a pointer to
+// a function whose signature is determined by `erase_signature`.
+//
+// The pointer returned by `erase_function` is what's called a thunk; it
+// makes a few adjustments to the arguments (in our case 0-overhead static
+// casts) and forwards them to another function.
+//
 // TODO:
-//  - We should allow moving from rvalue-reference arguments that we
-//    receive in the adapter.
+//  - Thunks should implement perfect forwarding.
 //  - Allow models to differ slightly from the required concept, i.e. if
 //    a concept requires a `const&` it should probably be valid to implement
 //    it by taking by value.
-template <typename R_pl, typename ...Args_pl,
-          typename R_ac, typename ...Args_ac,
-          typename Function>
-constexpr auto fun_replace(boost::hana::basic_type<R_pl(Args_pl...)> /*placeholder_sig*/,
-                           boost::hana::basic_type<R_ac(Args_ac...)> /*actual_sig*/,
-                           Function)
-{
-  using Storage = typename detail::erase_signature<R_pl(Args_pl...)>::type*;
-  auto adapter = [](typename detail::erase_placeholder<Args_pl>::type ...args)
-    -> typename detail::erase_placeholder<R_pl>::type
-  {
-    static_assert(std::is_empty<Function>{},
-      "This trick won't work if `Function` is not empty.");
-    return detail::special_cast<R_pl, R_ac>(
-      (*static_cast<Function*>(nullptr))( // <-------------- UB ALERT
-        detail::special_cast<Args_pl, Args_ac>(args)...
-      )
-    );
-  };
-  return static_cast<Storage>(adapter);
-}
-template <typename ...Args_pl, typename ...Args_ac, typename Function>
-constexpr auto fun_replace(boost::hana::basic_type<void(Args_pl...)> /*placeholder_sig*/,
-                           boost::hana::basic_type<void(Args_ac...)> /*actual_sig*/,
-                           Function)
-{
-  using Storage = typename detail::erase_signature<void(Args_pl...)>::type*;
-  auto adapter = [](typename detail::erase_placeholder<Args_pl>::type ...args) -> void {
-    static_assert(std::is_empty<Function>{},
-      "This trick won't work if `Function` is not empty.");
-    (*static_cast<Function*>(nullptr))( // <-------------- UB ALERT
-      detail::special_cast<Args_pl, Args_ac>(args)...
-    );
-  };
-  return static_cast<Storage>(adapter);
-}
-
-template <typename Signature, typename Function>
-constexpr auto function_cast(Function f) {
-  return detail::fun_replace(
-    boost::hana::basic_type<Signature>{},
-    boost::hana::basic_type<boost::callable_traits::function_type_t<Function>>{},
-    f
-  );
+//  - Would it be possible to erase a callable that's not a stateless function
+//    object? Would that necessarily require additional storage?
+template <typename Signature, typename F>
+constexpr typename detail::erase_signature<Signature>::type* erase_function(F const&) {
+  using Thunk = detail::thunk<F, Signature, boost::callable_traits::function_type_t<F>>;
+  return &Thunk::apply;
 }
 
 }} // end namespace te::detail
 
-#endif // TE_DETAIL_FUNCTION_CAST_HPP
+#endif // TE_DETAIL_ERASE_FUNCTION_HPP
