@@ -38,7 +38,7 @@ namespace detail {
   };
 } // end namespace detail
 
-namespace literals {
+inline namespace literals {
   // Creates a compile-time string that can be used as the left-hand-side when
   // defining clauses or filling concept maps.
   template <typename CharT, CharT ...c>

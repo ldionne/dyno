@@ -18,14 +18,9 @@ struct Storable : decltype(te::requires(
   "type_info"_s = te::function<te::type_info()>
 )) { };
 
-struct MoveConstructible : decltype(te::requires(
-  Storable{},
-  "move-construct"_s = te::function<void (void*, te::T&&)>
-)) { };
-
 struct CopyConstructible : decltype(te::requires(
   Storable{},
-  MoveConstructible{},
+  te::MoveConstructible{},
   "copy-construct"_s = te::function<void (void*, te::T const&)>
 )) { };
 
@@ -42,10 +37,6 @@ struct Swappable : decltype(te::requires(
   // No virtual function required to support this so far
 )) { };
 
-struct Destructible : decltype(te::requires(
-  "destruct"_s = te::function<void (te::T&)>
-)) { };
-
 // This is the definition of an Iterator concept using a "generic" language.
 // Instead of defining specific methods that must be defined, it defines its
 // interface in terms of compile-time strings, assuming these may be fulfilled
@@ -54,11 +45,11 @@ template <typename Reference>
 struct Iterator : decltype(te::requires(
   CopyConstructible{},
   CopyAssignable{},
-  Destructible{},
+  te::Destructible{},
+  te::EqualityComparable{},
   Swappable{},
   "increment"_s = te::function<void (te::T&)>,
-  "dereference"_s = te::function<Reference (te::T&)>,
-  "equal"_s = te::function<bool (te::T const&, te::T const&)>
+  "dereference"_s = te::function<Reference (te::T&)>
 )) { };
 
 // This is some kind of concept map; it maps the "generic" iterator interface
@@ -117,11 +108,7 @@ template <
   typename Category,
   typename Reference = Value&
 >
-struct any_iterator
-  : te::swappable<any_iterator<Value, Category, Reference>>
-  , te::destructible<any_iterator<Value, Category, Reference>>
-  , te::comparable<any_iterator<Value, Category, Reference>>
-{
+struct any_iterator {
   using iterator_category = Category;
   using value_type = Value;
   using reference = Reference;
@@ -187,12 +174,39 @@ struct any_iterator
     return virtual_("dereference"_s)(storage());
   }
 
+
+  ////////////////////////////////////////////////////////////////////////////
+  // BOILERPLATE THAT WE COULD PROBABLY SHARE SOMEWHERE
+  ////////////////////////////////////////////////////////////////////////////
+
+  // TODO: That is NOT a proper implementation of swap!
+  void swap(any_iterator& other) {
+    any_iterator tmp(std::move(other));
+
+    other.~any_iterator();
+    new (&other) any_iterator(std::move(*this));
+
+    this->~any_iterator();
+    new (this) any_iterator(std::move(tmp));
+  }
+
+  friend bool operator==(any_iterator const& a, any_iterator const& b) {
+    assert(a.virtual_("equal"_s) == b.virtual_("equal"_s));
+    return a.virtual_("equal"_s)(a.storage(), b.storage());
+  }
+
+  friend bool operator!=(any_iterator const& a, any_iterator const& b) {
+    return !(a == b);
+  }
+
+  ~any_iterator() {
+    virtual_("destruct"_s)(storage());
+  }
+
 private:
   te::vtable<Iterator<reference>> const* vtable_;
   te::local_storage<8> storage_;
 
-
-  friend class te::access;
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {
     return (*vtable_)[m];
