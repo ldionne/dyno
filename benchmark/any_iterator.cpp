@@ -12,7 +12,7 @@
 #include <vector>
 
 
-namespace classic {
+namespace { namespace classic {
   template <typename Value, typename Reference = Value&>
   struct any_iterator {
     using value_type = Value;
@@ -57,9 +57,9 @@ namespace classic {
 
     std::shared_ptr<concept_t> it_;
   };
-} // end namespace classic
+}} // end namespace classic
 
-namespace handrolled_split_ptr {
+namespace { namespace handrolled_split_ptr {
   template <typename Reference>
   struct VTable {
     void (*increment)(void*);
@@ -116,9 +116,9 @@ namespace handrolled_split_ptr {
     VTable<reference> const* vptr_;
     std::shared_ptr<void> self_;
   };
-} // end namespace handrolled_split_ptr
+}} // end namespace handrolled_split_ptr
 
-namespace handrolled_classic {
+namespace { namespace handrolled_classic {
   template <typename Reference>
   struct VTable {
     void (*increment)(void*);
@@ -189,9 +189,9 @@ namespace handrolled_classic {
 
     std::shared_ptr<concept_t> self_;
   };
-} // end namespace handrolled_classic
+}} // end namespace handrolled_classic
 
-namespace te_style {
+namespace { namespace te_style {
   using namespace te::literals;
 
   template <typename Reference>
@@ -238,7 +238,7 @@ namespace te_style {
     te::vtable<Iterator<reference>> const* vptr_;
     std::shared_ptr<void> self_;
   };
-} // end namespace te_style
+}} // end namespace te_style
 
 
 template <typename Iterator>

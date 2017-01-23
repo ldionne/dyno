@@ -7,7 +7,7 @@
 #include <benchmark/benchmark.h>
 
 
-namespace handrolled_classic {
+namespace { namespace handrolled_classic {
   struct VTable {
     void (*f1)(void*);
     void (*f2)(void*);
@@ -44,9 +44,9 @@ namespace handrolled_classic {
 
     concept_t* self_;
   };
-} // end namespace handrolled_classic
+}} // end namespace handrolled_classic
 
-namespace handrolled_split_ptr {
+namespace { namespace handrolled_split_ptr {
   struct VTable {
     void (*f1)(void*);
     void (*f2)(void*);
@@ -80,9 +80,9 @@ namespace handrolled_split_ptr {
     VTable const* vptr_;
     void* self_;
   };
-} // end namespace handrolled_split_ptr
+}} // end namespace handrolled_split_ptr
 
-namespace classic {
+namespace { namespace classic {
   struct any {
     template <typename T>
     explicit any(T t) : self_{new model_t<T>{t}} { }
@@ -108,9 +108,9 @@ namespace classic {
 
     concept_t* self_;
   };
-} // end namespace classic
+}} // end namespace classic
 
-namespace te_split_ptr {
+namespace { namespace te_split_ptr {
   using namespace te::literals;
 
   struct Concept : decltype(te::requires(
@@ -137,7 +137,7 @@ namespace te_split_ptr {
     te::vtable<Concept> const* vptr_;
     void* self_;
   };
-} // end namespace te_split_ptr
+}} // end namespace te_split_ptr
 
 template <typename Any>
 static void BM_any_1_function(benchmark::State& state) {
