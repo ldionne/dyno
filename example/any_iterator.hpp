@@ -18,12 +18,6 @@ struct Storable : decltype(te::requires(
   "type_info"_s = te::function<te::type_info()>
 )) { };
 
-struct CopyConstructible : decltype(te::requires(
-  Storable{},
-  te::MoveConstructible{},
-  "copy-construct"_s = te::function<void (void*, te::T const&)>
-)) { };
-
 struct MoveAssignable : decltype(te::requires(
   // No virtual function required to support this
 )) { };
@@ -43,11 +37,12 @@ struct Swappable : decltype(te::requires(
 // in possibly many different ways.
 template <typename Reference>
 struct Iterator : decltype(te::requires(
-  CopyConstructible{},
-  CopyAssignable{},
+  Storable{},
+  te::CopyConstructible{},
+  // CopyAssignable{},
+  // Swappable{},
   te::Destructible{},
   te::EqualityComparable{},
-  Swappable{},
   "increment"_s = te::function<void (te::T&)>,
   "dereference"_s = te::function<Reference (te::T&)>
 )) { };
@@ -55,6 +50,41 @@ struct Iterator : decltype(te::requires(
 // This is some kind of concept map; it maps the "generic" iterator interface
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
+template <typename T>
+auto const te::concept_map<Storable, T> = te::make_concept_map<Storable, T>(
+  "type_info"_s = []() {
+    return te::type_info_for<T>;
+  }
+);
+
+template <typename T>
+auto const te::concept_map<te::CopyConstructible, T> = te::make_concept_map<te::CopyConstructible, T>(
+  "copy-construct"_s = [](void* p, T const& other) {
+    new (p) T(other);
+  }
+);
+
+template <typename T>
+auto const te::concept_map<te::MoveConstructible, T> = te::make_concept_map<te::MoveConstructible, T>(
+  "move-construct"_s = [](void* p, T&& other) {
+    new (p) T(std::move(other));
+  }
+);
+
+template <typename T>
+auto const te::concept_map<te::Destructible, T> = te::make_concept_map<te::Destructible, T>(
+  "destruct"_s = [](T& self) {
+    self.~T();
+  }
+);
+
+template <typename T>
+auto const te::concept_map<te::EqualityComparable, T> = te::make_concept_map<te::EqualityComparable, T>(
+  "equal"_s = [](T const& a, T const& b) {
+    return a == b;
+  }
+);
+
 template <typename T>
 auto const te::concept_map<
   Iterator<typename std::iterator_traits<T>::reference>,
@@ -64,7 +94,7 @@ auto const te::concept_map<
                     typename std::iterator_traits<T>::iterator_category>{}
   >
 > = te::make_concept_map<
-  Iterator<typename std::iterator_traits<T>::reference>
+  Iterator<typename std::iterator_traits<T>::reference>, T
 >(
   "increment"_s = [](T& self) {
     ++self;
@@ -72,26 +102,6 @@ auto const te::concept_map<
 
   "dereference"_s = [](T& self) -> decltype(auto) {
     return *self;
-  },
-
-  "equal"_s = [](T const& a, T const& b) {
-    return a == b;
-  },
-
-  "type_info"_s = []() {
-    return te::type_info_for<T>;
-  },
-
-  "copy-construct"_s = [](void* p, T const& other) {
-    new (p) T(other);
-  },
-
-  "move-construct"_s = [](void* p, T&& other) {
-    new (p) T(std::move(other));
-  },
-
-  "destruct"_s = [](T& self) {
-    self.~T();
   }
 );
 

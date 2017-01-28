@@ -8,8 +8,11 @@
 #include <te/detail/erase_function.hpp>
 
 #include <boost/hana/at_key.hpp>
+#include <boost/hana/fold_left.hpp>
+#include <boost/hana/insert.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
+#include <boost/hana/unpack.hpp>
 
 
 namespace te {
@@ -48,16 +51,9 @@ struct concept_map_t<Concept, boost::hana::pair<Name, Function>...> {
     return detail::erase_function<Signature>(map_[name]);
   }
 
-private:
+public: // TODO: Make this private
   boost::hana::map<boost::hana::pair<Name, Function>...> map_;
 };
-
-// Creates a concept map for the given `Concept` mapping the given function
-// names (compile-time strings) to the given implementations.
-template <typename Concept, typename ...Name, typename ...Function>
-constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
-  return te::concept_map_t<Concept, boost::hana::pair<Name, Function>...>{mappings...};
-}
 
 // Customization point for users to define their models of concepts.
 //
@@ -76,12 +72,69 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
 // struct Foo { ... };
 //
 // template <>
-// auto const te::concept_map<my::Drawable, Foo> = te::make_concept_map<my::Drawable>(
+// auto const te::concept_map<my::Drawable, Foo> = te::make_concept_map<my::Drawable, Foo>(
 //   ...
 // );
 // ```
 template <typename Concept, typename T, typename = void>
 auto const concept_map = ERROR::no_concept_map_defined_for<Concept, T>{};
+
+namespace detail {
+  // TODO: This should be `boost::hana::union_` for maps, I think.
+  template <typename Map1, typename Map2>
+  constexpr auto merge(Map1 map1, Map2 map2) {
+    return boost::hana::fold_left(map2, map1, boost::hana::insert);
+  }
+} // end namespace detail
+
+// Creates a concept map for how the type `T` models the given `Concept`.
+//
+// This is achieved by providing a mapping from function names (as compile-time
+// strings) to function implementations (as stateless function objects).
+//
+// Note that the concept maps for all the concepts that `Concept` refines are
+// merged with the mappings provided explicitly. For example:
+// ```
+// struct A : decltype(te::requires(
+//   "f"_s = te::function<void (te::T&)>
+// )) { };
+//
+// struct B : decltype(te::requires(
+//   A{},
+//   "g"_s = te::function<int (te::T&)>
+// )) { };
+//
+// struct Foo { };
+//
+// template <>
+// auto const te::concept_map<A, Foo> = te::make_concept_map<A, Foo>(
+//   "f"_s = [](Foo&) { }
+// );
+//
+// template <>
+// auto const te::concept_map<B, Foo> = te::make_concept_map<B, Foo>(
+//   "g"_s = [](Foo&) { return 0; }
+//   // `f` is automatically pulled from the concept map for `A`
+// );
+// ```
+//
+// Furthermore, if the same function is defined in more than one concept map
+// in the full refinement tree, it is undefined which one is used. Therefore,
+// all of the implementations better be the same! This is easy to enforce by
+// never defining a function in a concept map where the concept does not
+// require that function.
+template <typename Concept, typename T, typename ...Name, typename ...Function>
+constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
+  auto mappings_ = boost::hana::make_map(mappings...);
+  auto refined = Concept::refined_concepts();
+  auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
+    using C = typename decltype(c)::type;
+    return detail::merge(mappings, te::concept_map<C, T>.map_);
+  });
+  return boost::hana::unpack(merged, [](auto ...m) {
+    return te::concept_map_t<Concept, decltype(m)...>{m...};
+  });
+}
 
 } // end namespace te
 

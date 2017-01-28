@@ -84,7 +84,7 @@ namespace with_te {
   )) { };
 
   template <typename T>
-  te::vtable<Drawable> const vtable{te::make_concept_map<Drawable>(
+  te::vtable<Drawable> const vtable{te::make_concept_map<Drawable, T>(
     "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
   )};
 
@@ -114,7 +114,7 @@ namespace with_te_experimental {
   )) { };
 
   template <typename T>
-  auto const Drawable_concept_map = te::make_concept_map<Drawable>(
+  auto const Drawable_concept_map = te::make_concept_map<Drawable, T>(
     "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
   );
 

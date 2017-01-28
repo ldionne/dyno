@@ -120,7 +120,7 @@ namespace { namespace te_split_ptr {
   )) { };
 
   template <typename T>
-  static te::vtable<Concept> const vtable{te::make_concept_map<Concept>(
+  static te::vtable<Concept> const vtable{te::make_concept_map<Concept, T>(
     "f1"_s = [](T& self) { ++self; },
     "f2"_s = [](T& self) { --self; },
     "f3"_s = [](T& self) { ++self; }

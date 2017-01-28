@@ -203,7 +203,7 @@ namespace { namespace te_style {
 
   template <typename T>
   static te::vtable<Iterator<typename T::reference>> const vtable{
-    te::make_concept_map<Iterator<typename T::reference>>(
+    te::make_concept_map<Iterator<typename T::reference>, T>(
       "increment"_s = [](T& self) { ++self; },
       "dereference"_s = [](T& self) -> decltype(auto) { return *self; },
       "equal"_s = [](T const& a, T const& b) -> bool { return a == b; }
