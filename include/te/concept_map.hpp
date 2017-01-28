@@ -55,6 +55,16 @@ public: // TODO: Make this private
   boost::hana::map<boost::hana::pair<Name, Function>...> map_;
 };
 
+// Customization point for concept writers to provide default models of
+// their concepts.
+//
+// This can be specialized by concept authors to provide a concept map that
+// will be used when no custom concept map is specified. The third parameter
+// can be used to define a default concept map for a family of type, by using
+// `std::enable_if`.
+template <typename Concept, typename T, typename = void>
+auto const default_concept_map = ERROR::no_concept_map_defined_for<Concept, T>{};
+
 // Customization point for users to define their models of concepts.
 //
 // This can be specialized by clients to provide concept maps for the concepts
@@ -77,7 +87,7 @@ public: // TODO: Make this private
 // );
 // ```
 template <typename Concept, typename T, typename = void>
-auto const concept_map = ERROR::no_concept_map_defined_for<Concept, T>{};
+auto const concept_map = te::default_concept_map<Concept, T>;
 
 namespace detail {
   // TODO: This should be `boost::hana::union_` for maps, I think.
