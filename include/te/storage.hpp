@@ -402,6 +402,54 @@ public:
   }
 };
 
+// Class implementing a non-owning polymorphic reference. Unlike the other
+// storage classes, this one does not own the object it holds, and hence it
+// does not construct or destruct it. The referenced object must outlive the
+// polymorphic storage that references it, otherwise the behavior is undefined.
+struct non_owning_storage {
+  non_owning_storage() = delete;
+  non_owning_storage(non_owning_storage const&) = delete;
+  non_owning_storage(non_owning_storage&&) = delete;
+  non_owning_storage& operator=(non_owning_storage&&) = delete;
+  non_owning_storage& operator=(non_owning_storage const&) = delete;
+
+  template <typename T>
+  explicit non_owning_storage(T& t)
+    : ptr_{&t}
+  { }
+
+  template <typename VTable>
+  non_owning_storage(non_owning_storage const& other, VTable const& vtable)
+    : ptr_{other.ptr_}
+  { }
+
+  template <typename VTable>
+  non_owning_storage(non_owning_storage&& other, VTable const&)
+    : ptr_{other.ptr_}
+  { }
+
+  template <typename MyVTable, typename OtherVTable>
+  void swap(MyVTable const&, non_owning_storage& other, OtherVTable const&) {
+    std::swap(this->ptr_, other.ptr_);
+  }
+
+  template <typename VTable>
+  void destruct(VTable const&) { }
+
+  template <typename T = void>
+  T* get() {
+    return static_cast<T*>(ptr_);
+  }
+
+  template <typename T = void>
+  T const* get() const {
+    return static_cast<T const*>(ptr_);
+  }
+
+private:
+  void* ptr_;
+};
+
 } // end namespace te
 
 #endif // TE_STORAGE_HPP
