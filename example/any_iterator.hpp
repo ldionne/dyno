@@ -257,7 +257,7 @@ public:
     te::vtable<Concept> const* const other_vtable = other.vtable_;
     te::vtable<Concept> const* const this_vtable = this->vtable_;
 
-    Storage tmp{(*other_vtable)["type_info"_s]};
+    Storage tmp{(*other_vtable)["type_info"_s]()};
     (*other_vtable)["move-construct"_s](tmp.get(), other.storage());
     (*other_vtable)["destruct"_s](other.storage());
 
@@ -268,7 +268,7 @@ public:
     (*other_vtable)["destruct"_s](tmp.get());
 
     using std::swap;
-    swap(this->vtable_, other_vtable);
+    swap(this->vtable_, other.vtable_);
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
