@@ -12,7 +12,14 @@ struct Fooable : decltype(te::requires(
   "foo"_s = te::function<void (te::T&)>
 )) { };
 
+template <>
+auto te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
+  "foo"_s = [](int& x) { ++x; }
+);
+
 int main() {
-  // No concept map was defined for `int`, and no default concept map is provided.
   auto const& map = te::concept_map<Fooable, int>;
+
+  // "bar" is not defined in the concept map
+  auto bar = map["bar"_s];
 }

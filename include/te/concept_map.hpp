@@ -8,6 +8,8 @@
 #include <te/detail/erase_function.hpp>
 
 #include <boost/hana/at_key.hpp>
+#include <boost/hana/bool.hpp>
+#include <boost/hana/contains.hpp>
 #include <boost/hana/fold_left.hpp>
 #include <boost/hana/insert.hpp>
 #include <boost/hana/map.hpp>
@@ -42,17 +44,37 @@ struct concept_map_t<Concept, boost::hana::pair<Name, Function>...> {
 
   template <typename Name_>
   constexpr auto operator[](Name_ name) const {
-    return map_[name];
+    return get_function(name, boost::hana::contains(map_, name));
   }
 
   template <typename Name_>
   constexpr auto erased(Name_ name) const {
+    auto function = (*this)[name];
     using Signature = typename decltype(Concept{}.get_signature(name))::type;
-    return detail::erase_function<Signature>(map_[name]);
+    return detail::erase_function<Signature>(function);
   }
 
 public: // TODO: Make this private
   boost::hana::map<boost::hana::pair<Name, Function>...> map_;
+
+private:
+  template <typename Name_>
+  constexpr auto get_function(Name_ name, boost::hana::true_) const {
+    return boost::hana::at_key(map_, name);
+  }
+
+  template <typename Name_>
+  constexpr auto get_function(Name_ name, boost::hana::false_) const {
+    constexpr bool always_false = sizeof(Name_) == 0;
+    static_assert(always_false,
+      "te::concept_map_t::operator[]: Request for the implementation of a "
+      "function that was not provided in the concept map. Make sure the "
+      "concept map contains the proper functions, and that you're requesting "
+      "the right function from the concept map. You can find the contents of "
+      "the concept map and the function you were trying to access in the "
+      "compiler error message, probably in the following format: "
+      "`concept_map_t<CONCEPT, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
+  }
 };
 
 // Customization point for concept writers to provide default models of

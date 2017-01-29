@@ -7,6 +7,9 @@
 
 #include <te/concept.hpp>
 
+#include <boost/hana/at_key.hpp>
+#include <boost/hana/bool.hpp>
+#include <boost/hana/contains.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 
@@ -30,10 +33,27 @@ namespace detail {
 
     template <typename Name_>
     constexpr auto operator[](Name_ name) const {
-      return vtbl_[name];
+      return get_function(name, boost::hana::contains(vtbl_, name));
     }
 
   private:
+    template <typename Name_>
+    constexpr auto get_function(Name_ name, boost::hana::true_) const {
+      return boost::hana::at_key(vtbl_, name);
+    }
+
+    template <typename Name_>
+    constexpr auto get_function(Name_ name, boost::hana::false_) const {
+      constexpr bool always_false = sizeof(Name_) == 0;
+      static_assert(always_false,
+        "te::vtable::operator[]: Request for a virtual function that is not "
+        "in the vtable. Was this function specified in the concept that was "
+        "used to instantiate this vtable? You can find the contents of the "
+        "vtable and the function you were trying to access in the compiler "
+        "error message, probably in the following format: "
+        "`vtable_impl<CONTENTS OF VTABLE>::get_function<FUNCTION NAME>`");
+    }
+
     boost::hana::map<boost::hana::pair<Name, Fptr>...> vtbl_;
   };
 } // end namespace detail

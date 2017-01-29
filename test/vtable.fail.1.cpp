@@ -5,6 +5,7 @@
 #include <te/concept.hpp>
 #include <te/concept_map.hpp>
 #include <te/dsl.hpp>
+#include <te/vtable.hpp>
 using namespace te::literals;
 
 
@@ -12,7 +13,14 @@ struct Fooable : decltype(te::requires(
   "foo"_s = te::function<void (te::T&)>
 )) { };
 
+template <>
+auto te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
+  "foo"_s = [](int& x) { ++x; }
+);
+
 int main() {
-  // No concept map was defined for `int`, and no default concept map is provided.
-  auto const& map = te::concept_map<Fooable, int>;
+  te::vtable<Fooable> vtable{te::concept_map<Fooable, int>};
+
+  // "bar" is not defined in the vtable
+  auto bar = vtable["bar"_s];
 }
