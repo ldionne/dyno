@@ -5,10 +5,13 @@
 #ifndef TE_STORAGE_HPP
 #define TE_STORAGE_HPP
 
+#include <te/dsl.hpp>
+
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
 #include <type_traits>
+#include <utility>
 
 
 namespace te {
@@ -35,38 +38,69 @@ struct static_type_info {
 template <typename T>
 constexpr static_type_info<T> type_info_for{};
 
+// concept PolymorphicStorage
+//
+// The nice thing about these PolymorphicStorage classes is that they have a
+// single type and their ABI does not change even when the type of what they
+// hold changes. However, they provide this functionality at the cost of
+// "forgetting" the type information of what they hold, which is why they
+// must be passed a vtable to perform most operations.
+//
+// A type `Storage` satisfying the `PolymorphicStorage` concept must provide
+// the following functions as part of its interface:
+//
+// template <typename T> explicit Storage(T&&);
+//  Semantics: Construct an object of type `std::decay_t<T>` in the polymorphic
+//             storage, forward the argument to the constructor of the object
+//             being created. A particular `Storage` class is not expected to
+//             support being constructed from any such `T`; for example, `T`
+//             could be too large to fit in a predefined buffer size, in which
+//             case this call would not compile.
+//
+// template <typename VTable> Storage(Storage const&, VTable const&);
+//  Semantics: Copy-construct the contents of the polymorphic storage,
+//             assuming the contents of the source storage can be
+//             manipulated using the provided vtable.
+//
+// template <typename VTable> Storage(Storage&&, VTable const&);
+//  Semantics: Move-construct the contents of the polymorphic storage,
+//             assuming the contents of the source storage can be
+//             manipulated using the provided vtable.
+//
+// template <typename MyVTable, typename OtherVTable>
+// void swap(MyVTable const&, Storage&, OtherVTable const&);
+//  Semantics: Swap the contents of the two polymorphic storages, assuming
+//             `*this` can be manipulated using `MyVTable` and the other
+//             storage can be manipulated using `OtherVTable`.
+//
+// template <typename VTable> void destruct(VTable const&);
+//  Semantics: Destruct the object held inside the polymorphic storage, assuming
+//             that object can be manipulated using the provided vtable. This
+//             must also free any resource associated to the storage. This is
+//             effectively a destructor, but destructors can't be passed
+//             arguments so this needs to be called explicitly.
+//
+//             WARNING: Since this is not using the usual destructor mechanism,
+//             it is of utmost importance that users of these storage classes
+//             call the `destruct` method explicitly in their destructor.
+//             Furthermore, it should be noted that if an exception is thrown
+//             in the constructor of a class (say `any_iterator`) using a
+//             storage class defined here, the cleanup will NOT be done
+//             automatically because the destructor of `any_iterator` will
+//             not be called.
+//
+// template <typename T = void> T* get();
+//  Semantics: Return a pointer to the object inside the polymorphic storage.
+//
+// template <typename T = void> T const* get() const;
+//  Semantics: Return a pointer to the object inside the polymorphic storage.
+//
+
+
 // Class implementing the small buffer optimization (SBO).
 //
 // This class represents a value of an unknown type that is stored either on
 // the heap, or on the stack if it fits in the specific small buffer size.
-//
-// This class is a building block for other, more complex utilities. It handles
-// only the logic related to the storage of the object, but __nothing__ else.
-// In particular, the object stored in this class is never constructed and
-// never destroyed (but we do reclaim heap storage if it was allocated).
-//
-// Indeed, properly handling construction and destruction would require the
-// `small_buffer` to remember the constructor/destructor that must be called,
-// which is beyond its scope. Instead, the user of `small_buffer` is expected
-// to set up some virtual dispatching mechanism on its own, which should
-// include virtual construction/destruction if desirable.
-//
-// General usage goes like this:
-// ```
-// small_buffer<8> buf{te::type_info_for<std::string>};
-// // `buf` is able to hold a string, maybe in the small buffer or maybe on
-// // the heap. However, `buf` does not contain anything at this point and
-// // it does not remember the type that it can contain. Constructing and
-// // destroying are the responsibility of the user.
-// new (buf.get()) std::string{"abcdef"};  // may be on the heap or on the stack
-// std::string* p = buf.get<std::string>();
-// buf.get<std::string>()->~std::string(); // must be called manually too
-// ```
-//
-// The nice thing about `small_buffer` is that it has a single type and its
-// ABI does not change even if the type of what it holds changes. However, it
-// provides this at the cost of "forgetting" this information, and type erasure
-// techniques must be used on top of `small_buffer` to do anything useful.
 //
 // TODO: - Consider having ptr_ always point to either sb_ or the heap.
 //       - Alternatively, if we had a way to access the vtable here, we could
@@ -98,26 +132,106 @@ public:
   small_buffer& operator=(small_buffer&&) = delete;
   small_buffer& operator=(small_buffer const&) = delete;
 
-  explicit small_buffer(te::type_info info) {
+  template <typename T, typename RawT = std::decay_t<T>>
+  explicit small_buffer(T&& t) {
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
-    if (can_use_sbo(info)) {
+    if (can_use_sbo(te::type_info_for<RawT>)) {
       uses_heap_ = false;
+      new (&sb_) RawT(std::forward<T>(t));
     } else {
       uses_heap_ = true;
-      ptr_ = std::malloc(info.size);
+      ptr_ = std::malloc(sizeof(RawT));
       // TODO: That's not a really nice way to handle this
       assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
+      new (ptr_) RawT(std::forward<T>(t));
     }
   }
 
-  ~small_buffer() {
-    if (uses_heap())
-      std::free(ptr_);
+  template <typename VTable>
+  small_buffer(small_buffer const& other, VTable const& vtable)
+    : small_buffer{vtable["type_info"_s]()}
+  {
+    vtable["copy-construct"_s](this->get(), other.get());
   }
 
-  bool uses_heap() const { return uses_heap_; }
+  template <typename VTable>
+  small_buffer(small_buffer&& other, VTable const& vtable)
+    : uses_heap_{other.uses_heap()}
+  {
+    if (uses_heap()) {
+      this->ptr_ = other.ptr_;
+      other.ptr_ = nullptr;
+    } else {
+      vtable["move-construct"_s](this->get(), other.get());
+    }
+  }
+
+  template <typename MyVTable, typename OtherVTable>
+  void swap(MyVTable const& this_vtable, small_buffer& other, OtherVTable const& other_vtable) {
+    if (this == &other)
+      return;
+
+    if (this->uses_heap()) {
+      if (other.uses_heap()) {
+        std::swap(this->ptr_, other.ptr_);
+
+      } else {
+        void *ptr = this->ptr_;
+
+        // Bring `other`'s contents to `*this`, destructively
+        other_vtable["move-construct"_s](&this->sb_, &other.sb_);
+        other_vtable["destruct"_s](&other.sb_);
+        this->uses_heap_ = false;
+
+        // Bring `*this`'s stuff to `other`
+        other.ptr_ = ptr;
+        other.uses_heap_ = true;
+      }
+    } else {
+      if (other.uses_heap()) {
+        void *ptr = other.ptr_;
+
+        // Bring `*this`'s contents to `other`, destructively
+        this_vtable["move-construct"_s](&other.sb_, &this->sb_);
+        this_vtable["destruct"_s](&this->sb_);
+        other.uses_heap_ = false;
+
+        // Bring `other`'s stuff to `*this`
+        this->ptr_ = ptr;
+        this->uses_heap_ = true;
+
+      } else {
+        // Move `other` into temporary local storage, destructively.
+        SBStorage tmp;
+        other_vtable["move-construct"_s](&tmp, &other.sb_);
+        other_vtable["destruct"_s](&other.sb_);
+
+        // Move `*this` into `other`, destructively.
+        this_vtable["move-construct"_s](&other.sb_, &this->sb_);
+        this_vtable["destruct"_s](&this->sb_);
+
+        // Now, bring `tmp` into `*this`, destructively.
+        other_vtable["move-construct"_s](&this->sb_, &tmp);
+        other_vtable["destruct"_s](&tmp);
+      }
+    }
+  }
+
+  template <typename VTable>
+  void destruct(VTable const& vtable) {
+    if (uses_heap()) {
+      // If we've been moved from, don't do anything.
+      if (ptr_ == nullptr)
+        return;
+
+      vtable["destruct"_s](ptr_);
+      std::free(ptr_);
+    } else {
+      vtable["destruct"_s](&sb_);
+    }
+  }
 
   template <typename T = void>
   T* get() {
@@ -128,6 +242,9 @@ public:
   T const* get() const {
     return static_cast<T const*>(uses_heap() ? ptr_ : &sb_);
   }
+
+private:
+  bool uses_heap() const { return uses_heap_; }
 };
 
 // Class implementing storage on the heap. Just like the `small_buffer`, it
@@ -140,14 +257,45 @@ struct heap_storage {
   heap_storage& operator=(heap_storage&&) = delete;
   heap_storage& operator=(heap_storage const&) = delete;
 
-  explicit heap_storage(te::type_info info)
-    : ptr_{std::malloc(info.size)}
+  template <typename T, typename RawT = std::decay_t<T>>
+  explicit heap_storage(T&& t)
+    : ptr_{std::malloc(sizeof(RawT))}
   {
     // TODO: That's not a really nice way to handle this
     assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
+
+    new (ptr_) RawT(std::forward<T>(t));
   }
 
-  ~heap_storage() {
+  template <typename VTable>
+  heap_storage(heap_storage const& other, VTable const& vtable)
+    : ptr_{std::malloc(vtable["type_info"_s]().size)}
+  {
+    // TODO: That's not a really nice way to handle this
+    assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
+
+    vtable["copy-construct"_s](this->get(), other.get());
+  }
+
+  template <typename VTable>
+  heap_storage(heap_storage&& other, VTable const&)
+    : ptr_{other.ptr_}
+  {
+    other.ptr_ = nullptr;
+  }
+
+  template <typename MyVTable, typename OtherVTable>
+  void swap(MyVTable const&, heap_storage& other, OtherVTable const&) {
+    std::swap(this->ptr_, other.ptr_);
+  }
+
+  template <typename VTable>
+  void destruct(VTable const& vtable) {
+    // If we've been moved from, don't do anything.
+    if (ptr_ == nullptr)
+      return;
+
+    vtable["destruct"_s](ptr_);
     std::free(ptr_);
   }
 
@@ -192,17 +340,55 @@ public:
   local_storage& operator=(local_storage&&) = delete;
   local_storage& operator=(local_storage const&) = delete;
 
-  // When we try to assign from something that's statically known, we
-  // can do some compile-time checks.
-  template <typename T>
-  explicit local_storage(static_type_info<T>) {
-    static_assert(can_use_sbo(static_type_info<T>{}),
-      "trying to use te::local_storage with an object that won't fit in the local storage");
+  template <typename T, typename RawT = std::decay_t<T>>
+  explicit local_storage(T&& t) {
+    static_assert(can_use_sbo(te::type_info_for<RawT>),
+      "te::local_storage: Trying to construct from an object that won't fit "
+      "in the local storage.");
+
+    new (&buffer_) RawT(std::forward<T>(t));
   }
 
-  explicit local_storage(te::type_info info) {
-    assert(can_use_sbo(info) &&
-      "trying to use te::local_storage with an object that won't fit in the local storage");
+  template <typename VTable>
+  local_storage(local_storage const& other, VTable const& vtable) {
+    assert(can_use_sbo(vtable["type_info"_s]()) &&
+      "te::local_storage: Trying to copy-construct using a vtable that "
+      "describes an object that won't fit in the storage.");
+
+    vtable["copy-construct"_s](this->get(), other.get());
+  }
+
+  template <typename VTable>
+  local_storage(local_storage&& other, VTable const& vtable) {
+    assert(can_use_sbo(vtable["type_info"_s]()) &&
+      "te::local_storage: Trying to move-construct using a vtable that "
+      "describes an object that won't fit in the storage.");
+
+    vtable["move-construct"_s](this->get(), other.get());
+  }
+
+  template <typename MyVTable, typename OtherVTable>
+  void swap(MyVTable const& this_vtable, local_storage& other, OtherVTable const& other_vtable) {
+    if (this == &other)
+      return;
+
+    // Move `other` into temporary local storage, destructively.
+    SBStorage tmp;
+    other_vtable["move-construct"_s](&tmp, &other.buffer_);
+    other_vtable["destruct"_s](&other.buffer_);
+
+    // Move `*this` into `other`, destructively.
+    this_vtable["move-construct"_s](&other.buffer_, &this->buffer_);
+    this_vtable["destruct"_s](&this->buffer_);
+
+    // Now, bring `tmp` into `*this`, destructively.
+    other_vtable["move-construct"_s](&this->buffer_, &tmp);
+    other_vtable["destruct"_s](&tmp);
+  }
+
+  template <typename VTable>
+  void destruct(VTable const& vtable) {
+    vtable["destruct"_s](&buffer_);
   }
 
   template <typename T = void>

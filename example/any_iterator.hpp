@@ -171,16 +171,12 @@ private:
     iterator_category, reference, difference_type
   >::type;
 
-  using Storage = te::local_storage<8>;
-
 public:
   template <typename It>
   explicit any_iterator(It it)
     : vtable_{&vtable<Concept, It>}
-    , storage_{te::type_info_for<It>}
+    , storage_{std::move(it)}
   {
-    new (storage()) It(std::move(it));
-
     using IteratorTraits = std::iterator_traits<It>;
     using Source_value_type = typename IteratorTraits::value_type;
     using Source_reference = typename IteratorTraits::reference;
@@ -206,19 +202,13 @@ public:
 
   any_iterator(any_iterator const& other)
     : vtable_{other.vtable_}
-    , storage_{virtual_("type_info"_s)()}
-  {
-    virtual_("copy-construct"_s)(storage(), other.storage());
-  }
+    , storage_{other.storage_, *vtable_}
+  { }
 
-  // TODO: Here, we could avoid allocating and just move the pointer inside
-  // the storage.
   any_iterator(any_iterator&& other)
     : vtable_{std::move(other.vtable_)}
-    , storage_{virtual_("type_info"_s)()}
-  {
-    virtual_("move-construct"_s)(storage(), other.storage());
-  }
+    , storage_{std::move(other.storage_), *vtable_}
+  { }
 
   any_iterator& operator=(any_iterator const& other) {
     any_iterator(other).swap(*this);
@@ -228,6 +218,11 @@ public:
   any_iterator& operator=(any_iterator&& other) {
     any_iterator(std::move(other)).swap(*this);
     return *this;
+  }
+
+  void swap(any_iterator& other) {
+    storage_.swap(*vtable_, other.storage_, *other.vtable_);
+    std::swap(this->vtable_, other.vtable_);
   }
 
   any_iterator& operator++() {
@@ -246,31 +241,6 @@ public:
     return virtual_("dereference"_s)(storage());
   }
 
-
-  ////////////////////////////////////////////////////////////////////////////
-  // BOILERPLATE THAT WE COULD PROBABLY SHARE SOMEWHERE
-  ////////////////////////////////////////////////////////////////////////////
-  void swap(any_iterator& other) {
-    if (this == &other)
-      return;
-
-    te::vtable<Concept> const* const other_vtable = other.vtable_;
-    te::vtable<Concept> const* const this_vtable = this->vtable_;
-
-    Storage tmp{(*other_vtable)["type_info"_s]()};
-    (*other_vtable)["move-construct"_s](tmp.get(), other.storage());
-    (*other_vtable)["destruct"_s](other.storage());
-
-    (*this_vtable)["move-construct"_s](other.storage(), this->storage());
-    (*this_vtable)["destruct"_s](this->storage());
-
-    (*other_vtable)["move-construct"_s](this->storage(), tmp.get());
-    (*other_vtable)["destruct"_s](tmp.get());
-
-    using std::swap;
-    swap(this->vtable_, other.vtable_);
-  }
-
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
     assert(a.virtual_("equal"_s) == b.virtual_("equal"_s));
     return a.virtual_("equal"_s)(a.storage(), b.storage());
@@ -281,12 +251,12 @@ public:
   }
 
   ~any_iterator() {
-    virtual_("destruct"_s)(storage());
+    storage_.destruct(*vtable_);
   }
 
 private:
   te::vtable<Concept> const* vtable_;
-  Storage storage_;
+  te::local_storage<8> storage_;
 
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {
