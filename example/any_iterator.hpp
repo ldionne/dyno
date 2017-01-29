@@ -171,6 +171,8 @@ private:
     iterator_category, reference, difference_type
   >::type;
 
+  using Storage = te::local_storage<8>;
+
 public:
   template <typename It>
   explicit any_iterator(It it)
@@ -248,16 +250,25 @@ public:
   ////////////////////////////////////////////////////////////////////////////
   // BOILERPLATE THAT WE COULD PROBABLY SHARE SOMEWHERE
   ////////////////////////////////////////////////////////////////////////////
-
-  // TODO: That is NOT a proper implementation of swap!
   void swap(any_iterator& other) {
-    any_iterator tmp(std::move(other));
+    if (this == &other)
+      return;
 
-    other.~any_iterator();
-    new (&other) any_iterator(std::move(*this));
+    te::vtable<Concept> const* const other_vtable = other.vtable_;
+    te::vtable<Concept> const* const this_vtable = this->vtable_;
 
-    this->~any_iterator();
-    new (this) any_iterator(std::move(tmp));
+    Storage tmp{(*other_vtable)["type_info"_s]};
+    (*other_vtable)["move-construct"_s](tmp.get(), other.storage());
+    (*other_vtable)["destruct"_s](other.storage());
+
+    (*this_vtable)["move-construct"_s](other.storage(), this->storage());
+    (*this_vtable)["destruct"_s](this->storage());
+
+    (*other_vtable)["move-construct"_s](this->storage(), tmp.get());
+    (*other_vtable)["destruct"_s](tmp.get());
+
+    using std::swap;
+    swap(this->vtable_, other_vtable);
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
@@ -275,7 +286,7 @@ public:
 
 private:
   te::vtable<Concept> const* vtable_;
-  te::local_storage<8> storage_;
+  Storage storage_;
 
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {
