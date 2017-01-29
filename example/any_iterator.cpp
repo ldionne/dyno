@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
+#include "../test/testing.hpp"
+
 #include "any_iterator.hpp"
 
 #include <array>
@@ -16,7 +18,7 @@ int main() {
   // Iteration
   ////////////////////////////////////////////////////////////////////////////
   {
-    using Iterator = any_iterator<int, std::random_access_iterator_tag>;
+    using Iterator = any_iterator<int, std::forward_iterator_tag>;
     std::vector<int> input{1, 2, 3, 4};
     std::vector<int> result;
 
@@ -24,7 +26,22 @@ int main() {
     for (; first != last; ++first) {
       result.push_back(*first);
     }
-    assert(result == input);
+    TE_CHECK(result == input);
+  }
+
+  {
+    using Iterator = any_iterator<int, std::bidirectional_iterator_tag>;
+    std::array<int, 4> input{{1, 2, 3, 4}};
+    std::array<int, 4> result;
+    std::reverse_iterator<Iterator> first{Iterator{input.end()}},
+                                    last{Iterator{input.begin()}};
+    Iterator out{result.begin()};
+
+    for (; first != last; ++first, ++out) {
+      *out = *first;
+    }
+    std::array<int, 4> expected{{4, 3, 2, 1}};
+    TE_CHECK(result == expected);
   }
 
   {
@@ -36,7 +53,7 @@ int main() {
     for (; first != last; ++first, ++out) {
       *out = *first;
     }
-    assert(result == input);
+    TE_CHECK(result == input);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -47,8 +64,8 @@ int main() {
     std::vector<int> input{1, 2, 3, 4};
     Iterator first{input.begin()}, last{input.end()};
     Iterator cfirst(first), clast(last);
-    assert(first == cfirst);
-    assert(last == clast);
+    TE_CHECK(first == cfirst);
+    TE_CHECK(last == clast);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -64,7 +81,7 @@ int main() {
     for (; cfirst != clast; ++cfirst) {
       result.push_back(*cfirst);
     }
-    assert(result == input);
+    TE_CHECK(result == input);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -74,9 +91,9 @@ int main() {
     using Iterator = any_iterator<int, std::random_access_iterator_tag>;
     std::vector<int> input{1, 2, 3, 4};
     Iterator first{input.begin()}, mid{input.begin() + 2};
-    assert(*first == 1);
+    TE_CHECK(*first == 1);
     first = mid;
-    assert(*first == 3);
+    TE_CHECK(*first == 3);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -86,9 +103,9 @@ int main() {
     using Iterator = any_iterator<int, std::random_access_iterator_tag>;
     std::vector<int> input{1, 2, 3, 4};
     Iterator first{input.begin()}, mid{input.begin() + 2};
-    assert(*first == 1);
+    TE_CHECK(*first == 1);
     first = std::move(mid);
-    assert(*first == 3);
+    TE_CHECK(*first == 3);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -100,9 +117,9 @@ int main() {
     Iterator first{input.begin()}, last{input.end()};
     using std::swap;
     swap(first, last);
-    assert(*last == 1);
+    TE_CHECK(*last == 1);
     ++last;
-    assert(*last == 2);
-    assert(first == Iterator{input.end()});
+    TE_CHECK(*last == 2);
+    TE_CHECK(first == Iterator{input.end()});
   }
 }
