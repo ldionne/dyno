@@ -84,7 +84,7 @@ namespace with_te {
   )) { };
 
   template <typename T>
-  te::vtable<Drawable> const vtable{te::make_concept_map<Drawable, T>(
+  te::local_vtable<Drawable> const vtable{te::make_concept_map<Drawable, T>(
     "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
   )};
 
@@ -102,7 +102,7 @@ namespace with_te {
 
   private:
     std::shared_ptr<void const> self_;
-    te::vtable<Drawable> const* vtable_;
+    te::local_vtable<Drawable> const* vtable_;
   };
 } // end namespace with_te
 

@@ -120,7 +120,7 @@ namespace { namespace te_split_ptr {
   )) { };
 
   template <typename T>
-  static te::vtable<Concept> const vtable{te::make_concept_map<Concept, T>(
+  static te::local_vtable<Concept> const vtable{te::make_concept_map<Concept, T>(
     "f1"_s = [](T& self) { ++self; },
     "f2"_s = [](T& self) { --self; },
     "f3"_s = [](T& self) { ++self; }
@@ -134,7 +134,7 @@ namespace { namespace te_split_ptr {
     any& f3() { (*vptr_)["f3"_s](self_); return *this; }
 
   private:
-    te::vtable<Concept> const* vptr_;
+    te::local_vtable<Concept> const* vptr_;
     void* self_;
   };
 }} // end namespace te_split_ptr

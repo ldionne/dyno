@@ -33,11 +33,11 @@ namespace ERROR {
 // the types of the functions in the concept map are known statically, and
 // e.g. lambdas will be stored as-is (not as function pointers). To retrieve
 // a function with an erased representation instead, use the `erased` method.
-template <typename Concept, typename ...Mappings>
+template <typename Concept, typename T, typename ...Mappings>
 struct concept_map_t;
 
-template <typename Concept, typename ...Name, typename ...Function>
-struct concept_map_t<Concept, boost::hana::pair<Name, Function>...> {
+template <typename Concept, typename T, typename ...Name, typename ...Function>
+struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
   constexpr explicit concept_map_t(boost::hana::pair<Name, Function> ...mappings)
     : map_{mappings...}
   { }
@@ -53,6 +53,9 @@ struct concept_map_t<Concept, boost::hana::pair<Name, Function>...> {
     using Signature = typename decltype(Concept{}.get_signature(name))::type;
     return detail::erase_function<Signature>(function);
   }
+
+  using concept_type = Concept;
+  using model_type = T;
 
 public: // TODO: Make this private
   boost::hana::map<boost::hana::pair<Name, Function>...> map_;
@@ -73,7 +76,7 @@ private:
       "the right function from the concept map. You can find the contents of "
       "the concept map and the function you were trying to access in the "
       "compiler error message, probably in the following format: "
-      "`concept_map_t<CONCEPT, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
+      "`concept_map_t<CONCEPT, MODEL, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
   }
 };
 
@@ -164,7 +167,7 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
     return detail::merge(mappings, te::concept_map<C, T>.map_);
   });
   return boost::hana::unpack(merged, [](auto ...m) {
-    return te::concept_map_t<Concept, decltype(m)...>{m...};
+    return te::concept_map_t<Concept, T, decltype(m)...>{m...};
   });
 }
 

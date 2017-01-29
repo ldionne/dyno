@@ -202,7 +202,7 @@ namespace { namespace te_style {
   )) { };
 
   template <typename T>
-  static te::vtable<Iterator<typename T::reference>> const vtable{
+  static te::local_vtable<Iterator<typename T::reference>> const vtable{
     te::make_concept_map<Iterator<typename T::reference>, T>(
       "increment"_s = [](T& self) { ++self; },
       "dereference"_s = [](T& self) -> decltype(auto) { return *self; },
@@ -235,7 +235,7 @@ namespace { namespace te_style {
     }
 
   private:
-    te::vtable<Iterator<reference>> const* vptr_;
+    te::local_vtable<Iterator<reference>> const* vptr_;
     std::shared_ptr<void> self_;
   };
 }} // end namespace te_style

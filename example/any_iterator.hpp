@@ -120,9 +120,6 @@ auto const te::default_concept_map<RandomAccessIterator<reference_t<T>, differen
   }
 );
 
-template <typename Concept, typename T>
-te::vtable<Concept> const vtable{te::concept_map<Concept, T>};
-
 namespace detail {
   template <typename Category, typename Reference, typename Difference>
   struct iterator_category_to_concept;
@@ -174,7 +171,7 @@ private:
 public:
   template <typename It>
   explicit any_iterator(It it)
-    : vtable_{&vtable<Concept, It>}
+    : vtable_{te::concept_map<Concept, It>}
     , storage_{std::move(it)}
   {
     using IteratorTraits = std::iterator_traits<It>;
@@ -202,12 +199,12 @@ public:
 
   any_iterator(any_iterator const& other)
     : vtable_{other.vtable_}
-    , storage_{other.storage_, *vtable_}
+    , storage_{other.storage_, vtable_}
   { }
 
   any_iterator(any_iterator&& other)
     : vtable_{std::move(other.vtable_)}
-    , storage_{std::move(other.storage_), *vtable_}
+    , storage_{std::move(other.storage_), vtable_}
   { }
 
   any_iterator& operator=(any_iterator const& other) {
@@ -221,9 +218,12 @@ public:
   }
 
   void swap(any_iterator& other) {
-    storage_.swap(*vtable_, other.storage_, *other.vtable_);
-    std::swap(this->vtable_, other.vtable_);
+    storage_.swap(vtable_, other.storage_, other.vtable_);
+    using std::swap;
+    swap(this->vtable_, other.vtable_);
   }
+
+  friend void swap(any_iterator& a, any_iterator& b) { a.swap(b); }
 
   any_iterator& operator++() {
     virtual_("increment"_s)(storage());
@@ -251,16 +251,16 @@ public:
   }
 
   ~any_iterator() {
-    storage_.destruct(*vtable_);
+    storage_.destruct(vtable_);
   }
 
 private:
-  te::vtable<Concept> const* vtable_;
+  te::remote_vtable<te::local_vtable<Concept>> vtable_;
   te::local_storage<8> storage_;
 
   template <typename Method>
   constexpr decltype(auto) virtual_(Method m) const {
-    return (*vtable_)[m];
+    return vtable_[m];
   }
 
   auto storage() { return storage_.get(); }
