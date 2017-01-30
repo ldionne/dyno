@@ -9,6 +9,7 @@
 #include <te/concept.hpp>
 #include <te/concept_map.hpp>
 #include <te/dsl.hpp>
+#include <te/poly.hpp>
 #include <te/storage.hpp>
 #include <te/vtable.hpp>
 

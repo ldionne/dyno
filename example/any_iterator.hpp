@@ -154,11 +154,14 @@ private:
     iterator_category, reference, difference_type
   >::type;
 
+  using Storage = te::local_storage<8>;
+  using VTable = te::remote_vtable<te::local_vtable<Concept>>;
+  te::poly<Concept, Storage, VTable> poly_;
+
 public:
   template <typename It>
   explicit any_iterator(It it)
-    : vtable_{te::concept_map<Concept, It>}
-    , storage_{std::move(it)}
+    : poly_{std::move(it)}
   {
     using IteratorTraits = std::iterator_traits<It>;
     using Source_value_type = typename IteratorTraits::value_type;
@@ -183,74 +186,43 @@ public:
       "'any_iterator'");
   }
 
-  any_iterator(any_iterator const& other)
-    : vtable_{other.vtable_}
-    , storage_{other.storage_, vtable_}
-  { }
-
-  any_iterator(any_iterator&& other)
-    : vtable_{std::move(other.vtable_)}
-    , storage_{std::move(other.storage_), vtable_}
-  { }
-
-  any_iterator& operator=(any_iterator const& other) {
-    any_iterator(other).swap(*this);
-    return *this;
-  }
-
-  any_iterator& operator=(any_iterator&& other) {
-    any_iterator(std::move(other)).swap(*this);
-    return *this;
-  }
+  any_iterator(any_iterator const& other) = default;
+  any_iterator(any_iterator&& other) = default;
+  any_iterator& operator=(any_iterator const& other) = default;
+  any_iterator& operator=(any_iterator&& other) = default;
+  ~any_iterator() = default;
 
   void swap(any_iterator& other) {
-    storage_.swap(vtable_, other.storage_, other.vtable_);
     using std::swap;
-    swap(this->vtable_, other.vtable_);
+    swap(this->poly_, other.poly_);
   }
 
   friend void swap(any_iterator& a, any_iterator& b) { a.swap(b); }
 
   any_iterator& operator++() {
-    virtual_("increment"_s)(storage());
+    poly_.virtual_("increment"_s)(poly_.get());
     return *this;
   }
 
   template <typename ...Empty, typename = std::enable_if_t<
     std::is_base_of<std::bidirectional_iterator_tag, Empty..., iterator_category>{}
   >> any_iterator& operator--() {
-    virtual_("decrement"_s)(storage());
+    poly_.virtual_("decrement"_s)(poly_.get());
     return *this;
   }
 
   reference operator*() {
-    return virtual_("dereference"_s)(storage());
+    return poly_.virtual_("dereference"_s)(poly_.get());
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    assert(a.virtual_("equal"_s) == b.virtual_("equal"_s));
-    return a.virtual_("equal"_s)(a.storage(), b.storage());
+    assert(a.poly_.virtual_("equal"_s) == b.poly_.virtual_("equal"_s));
+    return a.poly_.virtual_("equal"_s)(a.poly_.get(), b.poly_.get());
   }
 
   friend bool operator!=(any_iterator const& a, any_iterator const& b) {
     return !(a == b);
   }
-
-  ~any_iterator() {
-    storage_.destruct(vtable_);
-  }
-
-private:
-  te::remote_vtable<te::local_vtable<Concept>> vtable_;
-  te::local_storage<8> storage_;
-
-  template <typename Method>
-  constexpr decltype(auto) virtual_(Method m) const {
-    return vtable_[m];
-  }
-
-  auto storage() { return storage_.get(); }
-  auto storage() const { return storage_.get(); }
 };
 
 #endif // ANY_ITERATOR_HPP
