@@ -19,7 +19,7 @@ struct Storable : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const te::default_concept_map<Storable, T> = te::make_concept_map<Storable, T>(
+auto const te::default_concept_map<Storable, T> = te::make_default_concept_map<Storable, T>(
   "type_info"_s = []() { return te::type_info_for<T>; }
 );
 
@@ -81,36 +81,22 @@ using difference_t = typename std::iterator_traits<Iterator>::difference_type;
 // specific iterator type.
 template <typename T>
 auto const te::default_concept_map<Iterator<reference_t<T>>, T>
-  = te::make_concept_map<Iterator<reference_t<T>>, T>(
+  = te::make_default_concept_map<Iterator<reference_t<T>>, T>(
   "increment"_s = [](T& self) { ++self; },
   "dereference"_s = [](T& self) -> reference_t<T> { return *self; }
 );
 
 template <typename T>
-auto const te::default_concept_map<InputIterator<reference_t<T>>, T,
-  when<std::input_iterator_tag, T>
-> = te::make_concept_map<InputIterator<reference_t<T>>, T>(
-  // All is already defined in EqualityComparable and Iterator
-);
-
-template <typename T>
-auto const te::default_concept_map<ForwardIterator<reference_t<T>>, T,
-  when<std::forward_iterator_tag, T>
-> = te::make_concept_map<ForwardIterator<reference_t<T>>, T>(
-  // All is already defined in InputIterator and DefaultConstructible
-);
-
-template <typename T>
 auto const te::default_concept_map<BidirectionalIterator<reference_t<T>>, T,
   when<std::bidirectional_iterator_tag, T>
-> = te::make_concept_map<BidirectionalIterator<reference_t<T>>, T>(
+> = te::make_default_concept_map<BidirectionalIterator<reference_t<T>>, T>(
   "decrement"_s = [](T& self) -> void { --self; }
 );
 
 template <typename T>
 auto const te::default_concept_map<RandomAccessIterator<reference_t<T>, difference_t<T>>, T,
   when<std::random_access_iterator_tag, T>
-> = te::make_concept_map<RandomAccessIterator<reference_t<T>, difference_t<T>>, T>(
+> = te::make_default_concept_map<RandomAccessIterator<reference_t<T>, difference_t<T>>, T>(
   "advance"_s = [](T& self, difference_t<T> diff) -> void {
     std::advance(self, diff);
   },

@@ -19,6 +19,8 @@ struct B : decltype(te::requires(
   "g"_s = te::function<int (te::T&)>
 )) { };
 
+struct C : decltype(te::requires(B{})) { };
+
 struct Foo { };
 
 template <>
@@ -33,6 +35,9 @@ auto const te::concept_map<B, Foo> = te::make_concept_map<B, Foo>(
 
 int main() {
   Foo foo;
+
+  TE_CHECK(te::concept_map<C, Foo>["f"_s](foo) == 222);
+  TE_CHECK(te::concept_map<C, Foo>["g"_s](foo) == 333);
 
   TE_CHECK(te::concept_map<B, Foo>["f"_s](foo) == 222);
   TE_CHECK(te::concept_map<B, Foo>["g"_s](foo) == 333);

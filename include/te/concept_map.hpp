@@ -10,19 +10,16 @@
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
 #include <boost/hana/contains.hpp>
+#include <boost/hana/is_subset.hpp>
 #include <boost/hana/fold_left.hpp>
 #include <boost/hana/insert.hpp>
+#include <boost/hana/keys.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/unpack.hpp>
 
 
 namespace te {
-
-namespace ERROR {
-  template <typename ...>
-  struct no_concept_map_defined_for;
-}
 
 // A concept map is a statically-known mapping from functions implemented by
 // a type `T` to functions defined by a concept. A concept map is what's being
@@ -80,6 +77,12 @@ private:
   }
 };
 
+template <typename Concept, typename T, typename ...Name, typename ...Function>
+constexpr auto make_default_concept_map(boost::hana::pair<Name, Function> ...);
+
+template <typename Concept, typename T, typename ...Name, typename ...Function>
+constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...);
+
 // Customization point for concept writers to provide default models of
 // their concepts.
 //
@@ -87,8 +90,12 @@ private:
 // will be used when no custom concept map is specified. The third parameter
 // can be used to define a default concept map for a family of type, by using
 // `std::enable_if`.
+//
+// Note that unlike `te::concept_map`, which should be populated
+// using `te::make_concept_map`, this must be populated using
+// `te::make_default_concept_map`.
 template <typename Concept, typename T, typename = void>
-auto const default_concept_map = ERROR::no_concept_map_defined_for<Concept, T>{};
+auto const default_concept_map = te::make_default_concept_map<Concept, T>();
 
 // Customization point for users to define their models of concepts.
 //
@@ -108,11 +115,11 @@ auto const default_concept_map = ERROR::no_concept_map_defined_for<Concept, T>{}
 //
 // template <>
 // auto const te::concept_map<my::Drawable, Foo> = te::make_concept_map<my::Drawable, Foo>(
-//   ...
+//   "draw"_s = [](std::ostream& os, Foo const& foo) { ... }
 // );
 // ```
 template <typename Concept, typename T, typename = void>
-auto const concept_map = te::default_concept_map<Concept, T>;
+auto const concept_map = te::make_concept_map<Concept, T>();
 
 namespace detail {
   // TODO: This should be `boost::hana::union_` for maps, I think.
@@ -158,8 +165,51 @@ namespace detail {
 // all of the implementations better be the same! This is easy to enforce by
 // never defining a function in a concept map where the concept does not
 // require that function.
+//
+// Despite the above, which relates to functions defined in different concepts
+// that have a refinement relation, if a function is provided both in the
+// default concept map and in a customized concept map for the same concept,
+// the function in the customized map is preferred.
+//
+// Also, after looking at the whole refinement tree, including the default
+// concept maps, it is an error if any function required by the concept can't
+// be resolved.
 template <typename Concept, typename T, typename ...Name, typename ...Function>
 constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
+  auto mappings_ = detail::merge(boost::hana::make_map(mappings...),
+                                 te::default_concept_map<Concept, T>.map_);
+  auto refined = Concept::refined_concepts();
+  auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
+    using C = typename decltype(c)::type;
+    return detail::merge(mappings, te::concept_map<C, T>.map_);
+  });
+  constexpr bool all_functions_satisfied = decltype(boost::hana::is_subset(
+    boost::hana::keys(Concept::all_clauses()),
+    boost::hana::keys(merged)
+  )){};
+  static_assert(all_functions_satisfied,
+    "te::make_concept_map: Incomplete definition of the concept map. Despite "
+    "looking at the default concept map for this concept and the concept maps "
+    "for all the concepts this concept refines, I can't find definitions for "
+    "all the functions that the concept requires. Please make sure you did not "
+    "forget to define a function in your concept map, and otherwise make sure "
+    "the proper default concept maps are kicking in.");
+  return boost::hana::unpack(merged, [](auto ...m) {
+    return te::concept_map_t<Concept, T, decltype(m)...>{m...};
+  });
+}
+
+// Equivalent to `te::make_concept_map`, but for populating default concept maps.
+//
+// TODO:
+// This is a not-so-great solution for the following problem: when populating
+// a default concept map, we want to be able to populate it only partially,
+// while leaving the rest of the map to be populated by an explicit customization.
+// We can't use `te::make_concept_map` for this, because it makes sure that
+// the created concept map is sufficient to fulfill the concept, which would
+// not be the case for a default concept map.
+template <typename Concept, typename T, typename ...Name, typename ...Function>
+constexpr auto make_default_concept_map(boost::hana::pair<Name, Function> ...mappings) {
   auto mappings_ = boost::hana::make_map(mappings...);
   auto refined = Concept::refined_concepts();
   auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {

@@ -17,7 +17,7 @@ struct DefaultConstructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<DefaultConstructible, T> = te::make_concept_map<DefaultConstructible, T>(
+auto const default_concept_map<DefaultConstructible, T> = te::make_default_concept_map<DefaultConstructible, T>(
   "default-construct"_s = [](void* p) {
     new (p) T();
   }
@@ -29,7 +29,7 @@ struct MoveConstructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<MoveConstructible, T> = te::make_concept_map<MoveConstructible, T>(
+auto const default_concept_map<MoveConstructible, T> = te::make_default_concept_map<MoveConstructible, T>(
   "move-construct"_s = [](void* p, T&& other) {
     new (p) T(std::move(other));
   }
@@ -42,7 +42,7 @@ struct CopyConstructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<CopyConstructible, T> = te::make_concept_map<CopyConstructible, T>(
+auto const default_concept_map<CopyConstructible, T> = te::make_default_concept_map<CopyConstructible, T>(
   "copy-construct"_s = [](void* p, T const& other) {
     new (p) T(other);
   }
@@ -53,25 +53,16 @@ struct MoveAssignable : decltype(te::requires(
   // No virtual function required to support this so far
 )) { };
 
-template <typename T>
-auto const default_concept_map<MoveAssignable, T> = te::make_concept_map<MoveAssignable, T>();
-
 
 struct CopyAssignable : decltype(te::requires(
   te::MoveAssignable{}
   // No additional virtual functions required to support this so far
 )) { };
 
-template <typename T>
-auto const default_concept_map<CopyAssignable, T> = te::make_concept_map<CopyAssignable, T>();
-
 
 struct Swappable : decltype(te::requires(
   // No virtual functions required to support this so far
 )) { };
-
-template <typename T>
-auto const default_concept_map<Swappable, T> = te::make_concept_map<Swappable, T>();
 
 
 struct EqualityComparable : decltype(te::requires(
@@ -79,7 +70,7 @@ struct EqualityComparable : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<EqualityComparable, T> = te::make_concept_map<EqualityComparable, T>(
+auto const default_concept_map<EqualityComparable, T> = te::make_default_concept_map<EqualityComparable, T>(
   "equal"_s = [](T const& a, T const& b) -> bool { return a == b; }
 );
 
@@ -89,7 +80,7 @@ struct Destructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<Destructible, T> = te::make_concept_map<Destructible, T>(
+auto const default_concept_map<Destructible, T> = te::make_default_concept_map<Destructible, T>(
   "destruct"_s = [](T& self) { self.~T(); }
 );
 
