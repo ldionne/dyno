@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 #include <te/concept.hpp>
-#include <te/dsl.hpp>
 
 #include <boost/hana/core/to.hpp>
 #include <boost/hana/equal.hpp>

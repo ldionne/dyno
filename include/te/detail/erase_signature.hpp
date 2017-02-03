@@ -5,7 +5,7 @@
 #ifndef TE_DETAIL_ERASE_SIGNATURE_HPP
 #define TE_DETAIL_ERASE_SIGNATURE_HPP
 
-#include <te/dsl.hpp>
+#include <te/detail/dsl.hpp>
 
 #include <type_traits>
 

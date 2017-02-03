@@ -5,6 +5,7 @@
 #ifndef TE_CONCEPT_HPP
 #define TE_CONCEPT_HPP
 
+#include <te/detail/dsl.hpp>
 #include <te/detail/erase_signature.hpp>
 
 #include <boost/hana/at_key.hpp>

@@ -5,7 +5,7 @@
 #ifndef TE_STORAGE_HPP
 #define TE_STORAGE_HPP
 
-#include <te/dsl.hpp>
+#include <te/detail/dsl.hpp>
 
 #include <cassert>
 #include <cstddef>

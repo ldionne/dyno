@@ -5,6 +5,7 @@
 #ifndef TE_CONCEPT_MAP_HPP
 #define TE_CONCEPT_MAP_HPP
 
+#include <te/detail/dsl.hpp>
 #include <te/detail/erase_function.hpp>
 
 #include <boost/hana/at_key.hpp>

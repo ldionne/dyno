@@ -4,8 +4,8 @@
 
 #include "../testing.hpp"
 
+#include <te/concept.hpp>
 #include <te/detail/erase_function.hpp>
-#include <te/dsl.hpp>
 
 
 int main() {

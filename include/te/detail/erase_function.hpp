@@ -5,8 +5,8 @@
 #ifndef TE_DETAIL_ERASE_FUNCTION_HPP
 #define TE_DETAIL_ERASE_FUNCTION_HPP
 
+#include <te/detail/dsl.hpp>
 #include <te/detail/erase_signature.hpp>
-#include <te/dsl.hpp>
 
 #include <boost/callable_traits/function_type.hpp>
 

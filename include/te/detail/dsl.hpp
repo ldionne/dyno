@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DSL_HPP
-#define TE_DSL_HPP
+#ifndef TE_DETAIL_DSL_HPP
+#define TE_DETAIL_DSL_HPP
 
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/pair.hpp>
@@ -47,4 +47,4 @@ inline namespace literals {
 
 } // end namespace te
 
-#endif // TE_DSL_HPP
+#endif // TE_DETAIL_DSL_HPP
