@@ -45,19 +45,12 @@ namespace te {
 //    This must be a model of the `VTable` concept.
 //
 // TODO:
-// Some ideas for storage policies:
-//  - te::remote<>
-//    Always store the object remotely
-//
-//  - te::local<16>
-//    Store objects of up to 16 bytes locally, and fail when trying to store
-//    something larger.
-//
-//  - te::sbo<32>
-//    Store objects of up to 32 bytes locally, and store larger objects remotely.
+// - How to combine the storage of the object with that of the vtable?
+//   For example, how would we allow storing the vtable inside the rest
+//   of the storage?
 template <
   typename Concept,
-  typename Storage = te::heap_storage,
+  typename Storage = te::remote_storage,
   typename VTable = te::remote_vtable<te::local_vtable<Concept>>
 >
 struct poly {

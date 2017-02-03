@@ -108,7 +108,7 @@ constexpr static_type_info<T> type_info_for{};
 //       - We could also use the low bits of the pointer to the vtable for
 //         `uses_heap_`.
 template <std::size_t Size, std::size_t Align = static_cast<std::size_t>(-1)>
-class small_buffer {
+class sbo_storage {
   static constexpr std::size_t SBSize = Size < sizeof(void*) ? sizeof(void*) : Size;
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<SBSize>) : Align;
   using SBStorage = std::aligned_storage_t<SBSize, SBAlign>;
@@ -126,14 +126,14 @@ class small_buffer {
   bool uses_heap_;
 
 public:
-  small_buffer() = delete;
-  small_buffer(small_buffer const&) = delete;
-  small_buffer(small_buffer&&) = delete;
-  small_buffer& operator=(small_buffer&&) = delete;
-  small_buffer& operator=(small_buffer const&) = delete;
+  sbo_storage() = delete;
+  sbo_storage(sbo_storage const&) = delete;
+  sbo_storage(sbo_storage&&) = delete;
+  sbo_storage& operator=(sbo_storage&&) = delete;
+  sbo_storage& operator=(sbo_storage const&) = delete;
 
   template <typename T, typename RawT = std::decay_t<T>>
-  explicit small_buffer(T&& t) {
+  explicit sbo_storage(T&& t) {
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
@@ -150,14 +150,14 @@ public:
   }
 
   template <typename VTable>
-  small_buffer(small_buffer const& other, VTable const& vtable)
-    : small_buffer{vtable["type_info"_s]()}
+  sbo_storage(sbo_storage const& other, VTable const& vtable)
+    : sbo_storage{vtable["type_info"_s]()}
   {
     vtable["copy-construct"_s](this->get(), other.get());
   }
 
   template <typename VTable>
-  small_buffer(small_buffer&& other, VTable const& vtable)
+  sbo_storage(sbo_storage&& other, VTable const& vtable)
     : uses_heap_{other.uses_heap()}
   {
     if (uses_heap()) {
@@ -169,7 +169,7 @@ public:
   }
 
   template <typename MyVTable, typename OtherVTable>
-  void swap(MyVTable const& this_vtable, small_buffer& other, OtherVTable const& other_vtable) {
+  void swap(MyVTable const& this_vtable, sbo_storage& other, OtherVTable const& other_vtable) {
     if (this == &other)
       return;
 
@@ -247,18 +247,18 @@ private:
   bool uses_heap() const { return uses_heap_; }
 };
 
-// Class implementing storage on the heap. Just like the `small_buffer`, it
+// Class implementing storage on the heap. Just like the `sbo_storage`, it
 // only handles allocation and deallocation; construction and destruction
 // must be handled externally.
-struct heap_storage {
-  heap_storage() = delete;
-  heap_storage(heap_storage const&) = delete;
-  heap_storage(heap_storage&&) = delete;
-  heap_storage& operator=(heap_storage&&) = delete;
-  heap_storage& operator=(heap_storage const&) = delete;
+struct remote_storage {
+  remote_storage() = delete;
+  remote_storage(remote_storage const&) = delete;
+  remote_storage(remote_storage&&) = delete;
+  remote_storage& operator=(remote_storage&&) = delete;
+  remote_storage& operator=(remote_storage const&) = delete;
 
   template <typename T, typename RawT = std::decay_t<T>>
-  explicit heap_storage(T&& t)
+  explicit remote_storage(T&& t)
     : ptr_{std::malloc(sizeof(RawT))}
   {
     // TODO: That's not a really nice way to handle this
@@ -268,7 +268,7 @@ struct heap_storage {
   }
 
   template <typename VTable>
-  heap_storage(heap_storage const& other, VTable const& vtable)
+  remote_storage(remote_storage const& other, VTable const& vtable)
     : ptr_{std::malloc(vtable["type_info"_s]().size)}
   {
     // TODO: That's not a really nice way to handle this
@@ -278,14 +278,14 @@ struct heap_storage {
   }
 
   template <typename VTable>
-  heap_storage(heap_storage&& other, VTable const&)
+  remote_storage(remote_storage&& other, VTable const&)
     : ptr_{other.ptr_}
   {
     other.ptr_ = nullptr;
   }
 
   template <typename MyVTable, typename OtherVTable>
-  void swap(MyVTable const&, heap_storage& other, OtherVTable const&) {
+  void swap(MyVTable const&, remote_storage& other, OtherVTable const&) {
     std::swap(this->ptr_, other.ptr_);
   }
 
@@ -321,7 +321,7 @@ private:
 // object.
 template <std::size_t Size, std::size_t Align = static_cast<std::size_t>(-1)>
 class local_storage {
-  // TODO: This is actually copied from the small_buffer implementation, and
+  // TODO: This is actually copied from the sbo_storage implementation, and
   // it would be nice to share some of this.
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<Size>) : Align;
   using SBStorage = std::aligned_storage_t<Size, SBAlign>;
