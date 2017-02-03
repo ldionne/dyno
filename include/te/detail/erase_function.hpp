@@ -8,8 +8,6 @@
 #include <te/detail/erase_signature.hpp>
 #include <te/dsl.hpp>
 
-#include <boost/hana/type.hpp>
-
 #include <boost/callable_traits/function_type.hpp>
 
 #include <type_traits>
@@ -20,45 +18,42 @@ namespace te { namespace detail {
 
 // Cast an argument from a generic representation to the actual type expected
 // by a statically typed equivalent.
-//
-// In what's below, `Ac` stands for `Actual`, i.e. the actual static type
-// being requested by the function as defined in the concept map.
-template <typename Ac>
-constexpr Ac const& special_cast_impl(boost::hana::basic_type<te::T const&>,
-                                      boost::hana::basic_type<Ac const&>,
-                                      void const* arg)
-{ return *static_cast<Ac const*>(arg); }
-template <typename Ac>
-constexpr Ac& special_cast_impl(boost::hana::basic_type<te::T &>,
-                                boost::hana::basic_type<Ac &>,
-                                void* arg)
-{ return *static_cast<Ac*>(arg); }
-template <typename Ac>
-constexpr Ac&& special_cast_impl(boost::hana::basic_type<te::T &&>,
-                                 boost::hana::basic_type<Ac &&>,
-                                 void* arg)
-{ return std::move(*static_cast<Ac*>(arg)); }
-template <typename Ac>
-constexpr Ac* special_cast_impl(boost::hana::basic_type<te::T *>,
-                                boost::hana::basic_type<Ac *>,
-                                void* arg)
-{ return static_cast<Ac*>(arg); }
-template <typename Ac>
-constexpr Ac const* special_cast_impl(boost::hana::basic_type<te::T const*>,
-                                      boost::hana::basic_type<Ac const*>,
-                                      void const* arg)
-{ return static_cast<Ac const*>(arg); }
-template <typename Req, typename Ac, typename Arg>
-constexpr Req special_cast_impl(boost::hana::basic_type<Req>,
-                                boost::hana::basic_type<Ac>,
-                                Arg&& arg)
-{ return std::forward<Arg>(arg); }
-template <typename Pl, typename Ac, typename Arg>
-constexpr decltype(auto) special_cast(Arg&& arg) {
-  return detail::special_cast_impl(boost::hana::basic_type<Pl>{},
-                                   boost::hana::basic_type<Ac>{},
-                                   std::forward<Arg>(arg));
-}
+template <typename Erased, typename Actual>
+struct unerase {
+  template <typename Arg>
+  static constexpr Erased apply(Arg&& arg)
+  { return std::forward<Arg>(arg); }
+};
+
+template <typename Actual>
+struct unerase<te::T const&, Actual const&> {
+  static constexpr Actual const& apply(void const* arg)
+  { return *static_cast<Actual const*>(arg); }
+};
+
+template <typename Actual>
+struct unerase<te::T&, Actual&> {
+  static constexpr Actual& apply(void* arg)
+  { return *static_cast<Actual*>(arg); }
+};
+
+template <typename Actual>
+struct unerase<te::T&&, Actual&&> {
+  static constexpr Actual&& apply(void* arg)
+  { return std::move(*static_cast<Actual*>(arg)); }
+};
+
+template <typename Actual>
+struct unerase<te::T*, Actual*> {
+  static constexpr Actual* apply(void* arg)
+  { return static_cast<Actual*>(arg); }
+};
+
+template <typename Actual>
+struct unerase<te::T const*, Actual const*> {
+  static constexpr Actual* apply(void const* arg)
+  { return static_cast<Actual const*>(arg); }
+};
 
 template <typename F, typename PlaceholderSig, typename ActualSig>
 struct thunk;
@@ -71,9 +66,9 @@ struct thunk<F, R_pl(Args_pl...), R_ac(Args_ac...)> {
   static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
     -> typename detail::erase_placeholder<R_pl>::type
   {
-    return detail::special_cast<R_pl, R_ac>(
+    return detail::unerase<R_pl, R_ac>::apply(
       (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
-        detail::special_cast<Args_pl, Args_ac>(args)...
+        detail::unerase<Args_pl, Args_ac>::apply(args)...
       )
     );
   }
@@ -88,7 +83,7 @@ struct thunk<F, void(Args_pl...), R_ac(Args_ac...)> {
     -> void
   {
     return (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
-      detail::special_cast<Args_pl, Args_ac>(args)...
+      detail::unerase<Args_pl, Args_ac>::apply(args)...
     );
   }
 };
