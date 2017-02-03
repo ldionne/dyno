@@ -7,6 +7,7 @@
 #   DEPENDENCY_hana
 #   DEPENDENCY_callable_traits
 #   DEPENDENCY_google_benchmark
+#   DEPENDENCY_libawful
 #
 # Since C++ lacks a standardized or even agreed-upon dependency management
 # system, this makes it easy to use this library with any system by simply
@@ -44,6 +45,22 @@ add_library(callable_traits INTERFACE)
 target_include_directories(callable_traits INTERFACE ${SOURCE_DIR}/include)
 add_dependencies(callable_traits install-CallableTraits)
 set(DEPENDENCY_callable_traits callable_traits)
+
+ExternalProject_Add(install-libawful EXCLUDE_FROM_ALL 1
+    URL https://github.com/ldionne/libawful/archive/master.zip
+    TIMEOUT 120
+    PREFIX "${CMAKE_BINARY_DIR}/dependencies/libawful"
+    CONFIGURE_COMMAND "" # Disable configure step
+    BUILD_COMMAND ""     # Disable build step
+    INSTALL_COMMAND ""   # Disable install step
+    TEST_COMMAND ""      # Disable test step
+    UPDATE_COMMAND ""    # Disable source work-tree update
+)
+ExternalProject_Get_Property(install-libawful SOURCE_DIR)
+add_library(libawful INTERFACE)
+target_include_directories(libawful INTERFACE ${SOURCE_DIR}/include)
+add_dependencies(libawful install-libawful)
+set(DEPENDENCY_libawful libawful)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_define_targets()

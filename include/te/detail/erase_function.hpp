@@ -21,7 +21,7 @@ namespace te { namespace detail {
 template <typename Erased, typename Actual>
 struct unerase {
   template <typename Arg>
-  static constexpr Erased apply(Arg&& arg)
+  static constexpr decltype(auto) apply(Arg&& arg)
   { return std::forward<Arg>(arg); }
 };
 
@@ -68,7 +68,9 @@ struct thunk<F, R_pl(Args_pl...), R_ac(Args_ac...)> {
   {
     return detail::unerase<R_pl, R_ac>::apply(
       (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
-        detail::unerase<Args_pl, Args_ac>::apply(args)...
+        detail::unerase<Args_pl, Args_ac>::apply(
+          std::forward<typename detail::erase_placeholder<Args_pl>::type>(args)
+        )...
       )
     );
   }
@@ -83,7 +85,9 @@ struct thunk<F, void(Args_pl...), R_ac(Args_ac...)> {
     -> void
   {
     return (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
-      detail::unerase<Args_pl, Args_ac>::apply(args)...
+      detail::unerase<Args_pl, Args_ac>::apply(
+        std::forward<typename detail::erase_placeholder<Args_pl>::type>(args)
+      )...
     );
   }
 };
@@ -102,7 +106,6 @@ struct thunk<F, void(Args_pl...), R_ac(Args_ac...)> {
 // casts) and forwards them to another function.
 //
 // TODO:
-//  - Thunks should implement perfect forwarding.
 //  - Allow models to differ slightly from the required concept, i.e. if
 //    a concept requires a `const&` it should probably be valid to implement
 //    it by taking by value.

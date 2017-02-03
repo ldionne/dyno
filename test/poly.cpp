@@ -6,15 +6,10 @@
 #include <te/concept.hpp>
 #include <te/poly.hpp>
 
+#include <awful.hpp>
+
 #include <utility>
 
-
-struct NoCopy {
-  NoCopy() = default;
-  NoCopy(NoCopy const&) = delete;
-  NoCopy(NoCopy&&) = default;
-  ~NoCopy() = default;
-};
 
 int main() {
   // Make sure the copy constructor and friends don't get instantiated
@@ -22,7 +17,7 @@ int main() {
   {
     using C = decltype(te::requires(te::MoveConstructible{}, te::Destructible{}));
 
-    te::poly<C> a{NoCopy{}};
+    te::poly<C> a{awful::noncopyable{}};
     te::poly<C> b{std::move(a)};
   }
 }

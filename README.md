@@ -3,8 +3,9 @@
 ## Disclaimer: At this point, this is just a toy project and is useless for any purpose except curiosity.
 
 ## Dependencies
-The library depends on [Boost.Hana][], [CallableTraits][]. The benchmarks also
-depend on [Google Benchmark][], but you don't need it to use the library.
+The library depends on [Boost.Hana][], [CallableTraits][]. The unit tests also
+depend on [libawful][] and the benchmarks on [Google Benchmark][], but you don't
+need them to use the library.
 
 
 ## Building the library
@@ -28,3 +29,4 @@ cmake --build build --target benchmarks # Build and run the benchmarks (requires
 [Boost.Hana]: https://github.com/boostorg/hana
 [CallableTraits]: https://github.com/badair/callable_traits
 [Google Benchmark]: https://github.com/google/benchmark
+[libawful]: https://github.com/ldionne/libawful

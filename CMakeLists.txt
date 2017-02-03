@@ -21,7 +21,7 @@ target_link_libraries(te INTERFACE ${DEPENDENCY_hana} ${DEPENDENCY_callable_trai
 
 # All unit tests and examples are given those properties.
 function(te_set_test_properties target)
-  target_link_libraries(${target} PRIVATE te)
+  target_link_libraries(${target} PRIVATE te ${DEPENDENCY_libawful})
   set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
 endfunction()
 
