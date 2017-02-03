@@ -3,7 +3,7 @@
 ## Disclaimer: At this point, this is just a toy project and is useless for any purpose except curiosity.
 
 ## Dependencies
-The library depends on [Boost.Hana][], [CallableTraits][]. The unit tests also
+The library depends on [Boost.Hana][] and [CallableTraits][]. The unit tests
 depend on [libawful][] and the benchmarks on [Google Benchmark][], but you don't
 need them to use the library.
 
