@@ -14,8 +14,6 @@ namespace te {
 namespace experimental {
 
 namespace detail {
-  // TODO: Make sure we perfectly-forward rvalue reference args in vtable_impl::apply.
-
   template <typename ...Functions>
   struct vtable_base;
 
@@ -78,7 +76,7 @@ struct vtable_impl<GetConceptMap
 > {
   <%= (0...n).map {|i|
     "R#{i} apply(Name#{i} name, Args#{i} ...args) const override final" +
-    "{ return GetConceptMap{}().erased(name)(args...); }"
+    "{ return GetConceptMap{}().erased(name)(std::forward<Args#{i}>(args)...); }"
   }.join("\n  ") %>
 };
 <% end %>
@@ -123,7 +121,7 @@ namespace detail {
   > final : vtable_base<
     std::pair<Name0, R0 (*)(Args0...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
   };
 
   template <
@@ -148,8 +146,8 @@ namespace detail {
     std::pair<Name0, R0 (*)(Args0...)>,
     std::pair<Name1, R1 (*)(Args1...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
   };
 
   template <
@@ -180,9 +178,9 @@ namespace detail {
     std::pair<Name1, R1 (*)(Args1...)>,
     std::pair<Name2, R2 (*)(Args2...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
   };
 
   template <
@@ -219,10 +217,10 @@ namespace detail {
     std::pair<Name2, R2 (*)(Args2...)>,
     std::pair<Name3, R3 (*)(Args3...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
+    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args3>(args)...); }
   };
 
   template <
@@ -265,11 +263,11 @@ namespace detail {
     std::pair<Name3, R3 (*)(Args3...)>,
     std::pair<Name4, R4 (*)(Args4...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
+    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args3>(args)...); }
+    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args4>(args)...); }
   };
 
   template <
@@ -318,12 +316,12 @@ namespace detail {
     std::pair<Name4, R4 (*)(Args4...)>,
     std::pair<Name5, R5 (*)(Args5...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
+    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args3>(args)...); }
+    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args4>(args)...); }
+    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args5>(args)...); }
   };
 
   template <
@@ -378,13 +376,13 @@ namespace detail {
     std::pair<Name5, R5 (*)(Args5...)>,
     std::pair<Name6, R6 (*)(Args6...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
+    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args3>(args)...); }
+    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args4>(args)...); }
+    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args5>(args)...); }
+    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args6>(args)...); }
   };
 
   template <
@@ -445,14 +443,14 @@ namespace detail {
     std::pair<Name6, R6 (*)(Args6...)>,
     std::pair<Name7, R7 (*)(Args7...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R7 apply(Name7 name, Args7 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
+    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args3>(args)...); }
+    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args4>(args)...); }
+    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args5>(args)...); }
+    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args6>(args)...); }
+    R7 apply(Name7 name, Args7 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args7>(args)...); }
   };
 
   template <
@@ -519,15 +517,15 @@ namespace detail {
     std::pair<Name7, R7 (*)(Args7...)>,
     std::pair<Name8, R8 (*)(Args8...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R7 apply(Name7 name, Args7 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R8 apply(Name8 name, Args8 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
+    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args3>(args)...); }
+    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args4>(args)...); }
+    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args5>(args)...); }
+    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args6>(args)...); }
+    R7 apply(Name7 name, Args7 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args7>(args)...); }
+    R8 apply(Name8 name, Args8 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args8>(args)...); }
   };
 
   template <
@@ -600,16 +598,16 @@ namespace detail {
     std::pair<Name8, R8 (*)(Args8...)>,
     std::pair<Name9, R9 (*)(Args9...)>
   > {
-    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R7 apply(Name7 name, Args7 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R8 apply(Name8 name, Args8 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
-    R9 apply(Name9 name, Args9 ...args) const override final{ return GetConceptMap{}().erased(name)(args...); }
+    R0 apply(Name0 name, Args0 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args0>(args)...); }
+    R1 apply(Name1 name, Args1 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args1>(args)...); }
+    R2 apply(Name2 name, Args2 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args2>(args)...); }
+    R3 apply(Name3 name, Args3 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args3>(args)...); }
+    R4 apply(Name4 name, Args4 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args4>(args)...); }
+    R5 apply(Name5 name, Args5 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args5>(args)...); }
+    R6 apply(Name6 name, Args6 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args6>(args)...); }
+    R7 apply(Name7 name, Args7 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args7>(args)...); }
+    R8 apply(Name8 name, Args8 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args8>(args)...); }
+    R9 apply(Name9 name, Args9 ...args) const override final{ return GetConceptMap{}().erased(name)(std::forward<Args9>(args)...); }
   };
   ////////////////////////////////////////////////////////////////////////////
   // END GENERATED CODE
