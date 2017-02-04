@@ -6,11 +6,11 @@
 #define TE_DETAIL_ERASE_FUNCTION_HPP
 
 #include <te/detail/dsl.hpp>
+#include <te/detail/empty_object.hpp>
 #include <te/detail/erase_signature.hpp>
 
 #include <boost/callable_traits/function_type.hpp>
 
-#include <type_traits>
 #include <utility>
 
 
@@ -60,14 +60,11 @@ struct thunk;
 
 template <typename F, typename R_pl, typename ...Args_pl, typename R_ac, typename ...Args_ac>
 struct thunk<F, R_pl(Args_pl...), R_ac(Args_ac...)> {
-  static_assert(std::is_empty<F>{},
-    "This trick won't work if `F` is not an empty function object.");
-
   static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
     -> typename detail::erase_placeholder<R_pl>::type
   {
     return detail::unerase<R_pl, R_ac>::apply(
-      (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
+      detail::empty_object<F>::get()(
         detail::unerase<Args_pl, Args_ac>::apply(
           std::forward<typename detail::erase_placeholder<Args_pl>::type>(args)
         )...
@@ -78,13 +75,10 @@ struct thunk<F, R_pl(Args_pl...), R_ac(Args_ac...)> {
 
 template <typename F, typename ...Args_pl, typename R_ac, typename ...Args_ac>
 struct thunk<F, void(Args_pl...), R_ac(Args_ac...)> {
-  static_assert(std::is_empty<F>{},
-    "This trick won't work if `F` is not an empty function object.");
-
   static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
     -> void
   {
-    return (*static_cast<F*>(nullptr))( // <-------------- UB ALERT
+    return detail::empty_object<F>::get()(
       detail::unerase<Args_pl, Args_ac>::apply(
         std::forward<typename detail::erase_placeholder<Args_pl>::type>(args)
       )...
