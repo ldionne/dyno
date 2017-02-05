@@ -29,14 +29,7 @@ struct type_info {
 };
 
 template <typename T>
-struct static_type_info {
-  static constexpr std::size_t size = sizeof(T);
-  static constexpr std::size_t alignment = alignof(T);
-  constexpr operator type_info() const { return {size, alignment}; }
-};
-
-template <typename T>
-constexpr static_type_info<T> type_info_for{};
+constexpr type_info type_info_for{sizeof(T), alignof(T)};
 
 // concept PolymorphicStorage
 //
