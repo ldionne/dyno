@@ -6,6 +6,7 @@
 #define TE_CONCEPT_MAP_HPP
 
 #include <te/detail/dsl.hpp>
+#include <te/detail/empty_object.hpp>
 #include <te/detail/erase_function.hpp>
 
 #include <boost/hana/at_key.hpp>
@@ -19,8 +20,29 @@
 #include <boost/hana/pair.hpp>
 #include <boost/hana/unpack.hpp>
 
+#include <boost/callable_traits/function_type.hpp>
+
+#include <type_traits>
+#include <utility>
+
 
 namespace te {
+
+namespace detail {
+  // We wrap all lambdas and function objects passed to the library using this
+  // hack, so that we can pretend stateless lambdas are default constructible
+  // in the rest of the library.
+  template <typename F, typename Signature = boost::callable_traits::function_type_t<F>>
+  struct default_constructible_lambda;
+
+  template <typename F, typename R, typename ...Args>
+  struct default_constructible_lambda<F, R(Args...)> {
+    constexpr R operator()(Args ...args) const {
+      auto lambda = detail::empty_object<F>::get();
+      return lambda(std::forward<Args>(args)...);
+    }
+  };
+} // end namespace detail
 
 // A concept map is a statically-known mapping from functions implemented by
 // a type `T` to functions defined by a concept. A concept map is what's being
@@ -36,8 +58,17 @@ struct concept_map_t;
 
 template <typename Concept, typename T, typename ...Name, typename ...Function>
 struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
+  constexpr concept_map_t() = default;
+
+  template <typename ...Empty, typename =
+    std::enable_if_t<(sizeof...(Empty) + sizeof...(Name)) != 0>>
   constexpr explicit concept_map_t(boost::hana::pair<Name, Function> ...mappings)
-    : map_{mappings...}
+    : map_{
+      boost::hana::make_pair(
+        boost::hana::first(mappings),
+        detail::default_constructible_lambda<Function>{}
+      )...
+    }
   { }
 
   template <typename Name_>
@@ -52,11 +83,10 @@ struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
     return detail::erase_function<Signature>(function);
   }
 
-  using concept_type = Concept;
-  using model_type = T;
-
 public: // TODO: Make this private
-  boost::hana::map<boost::hana::pair<Name, Function>...> map_;
+  boost::hana::map<
+    boost::hana::pair<Name, detail::default_constructible_lambda<Function>>...
+  > map_;
 
 private:
   template <typename Name_>

@@ -110,8 +110,8 @@ template <typename Concept>
 using local_vtable = te::unpack_vtable_layout<Concept, detail::local_vtable>;
 
 namespace detail {
-  template <typename VTable, typename Concept, typename T>
-  static VTable const static_vtable{te::concept_map<Concept, T>};
+  template <typename VTable, typename ConceptMap>
+  static VTable const static_vtable{ConceptMap{}};
 }
 
 // Class implementing a vtable whose storage is held remotely. This is
@@ -120,9 +120,7 @@ template <typename VTable>
 struct remote_vtable {
   template <typename ConceptMap>
   constexpr explicit remote_vtable(ConceptMap)
-    : vptr_{&detail::static_vtable<
-        VTable, typename ConceptMap::concept_type, typename ConceptMap::model_type
-      >}
+    : vptr_{&detail::static_vtable<VTable, ConceptMap>}
   { }
 
   template <typename Name>
