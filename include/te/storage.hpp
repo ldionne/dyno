@@ -403,12 +403,12 @@ public:
 
   template <typename T = void>
   T* get() {
-    return static_cast<T*>(&buffer_);
+    return static_cast<T*>(static_cast<void*>(&buffer_));
   }
 
   template <typename T = void>
   T const* get() const {
-    return static_cast<T const*>(&buffer_);
+    return static_cast<T const*>(static_cast<void const*>(&buffer_));
   }
 };
 
