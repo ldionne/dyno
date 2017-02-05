@@ -119,22 +119,25 @@ namespace { namespace te_split_ptr {
     "f3"_s = te::function<void (te::T&)>
   )) { };
 
-  template <typename T>
-  static te::local_vtable<Concept> const vtable{te::make_concept_map<Concept, T>(
-    "f1"_s = [](T& self) { ++self; },
-    "f2"_s = [](T& self) { --self; },
-    "f3"_s = [](T& self) { ++self; }
-  )};
-
   struct any {
     template <typename T>
-    explicit any(T t) : vptr_{&vtable<T>}, self_{new T(t)} { }
-    any& f1() { (*vptr_)["f1"_s](self_); return *this; }
-    any& f2() { (*vptr_)["f2"_s](self_); return *this; }
-    any& f3() { (*vptr_)["f3"_s](self_); return *this; }
+    explicit any(T t)
+      : vtable_{
+        te::make_concept_map<Concept, T>(
+          "f1"_s = [](T& self) { ++self; },
+          "f2"_s = [](T& self) { --self; },
+          "f3"_s = [](T& self) { ++self; }
+        )
+      }
+      , self_{new T(t)}
+    { }
+
+    any& f1() { vtable_["f1"_s](self_); return *this; }
+    any& f2() { vtable_["f2"_s](self_); return *this; }
+    any& f3() { vtable_["f3"_s](self_); return *this; }
 
   private:
-    te::local_vtable<Concept> const* vptr_;
+    te::remote_vtable<te::local_vtable<Concept>> vtable_;
     void* self_;
   };
 }} // end namespace te_split_ptr

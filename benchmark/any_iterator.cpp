@@ -201,15 +201,6 @@ namespace { namespace te_style {
     "equal"_s = te::function<bool (te::T const&, te::T const&)>
   )) { };
 
-  template <typename T>
-  static te::local_vtable<Iterator<typename T::reference>> const vtable{
-    te::make_concept_map<Iterator<typename T::reference>, T>(
-      "increment"_s = [](T& self) { ++self; },
-      "dereference"_s = [](T& self) -> decltype(auto) { return *self; },
-      "equal"_s = [](T const& a, T const& b) -> bool { return a == b; }
-    )
-  };
-
   template <typename Value, typename Reference = Value&>
   struct any_iterator {
     using value_type = Value;
@@ -217,25 +208,31 @@ namespace { namespace te_style {
 
     template <typename It>
     explicit any_iterator(It it)
-      : vptr_{&vtable<It>}
+      : vtable_{
+        te::make_concept_map<Iterator<Reference>, It>(
+          "increment"_s = [](It& self) { ++self; },
+          "dereference"_s = [](It& self) -> decltype(auto) { return *self; },
+          "equal"_s = [](It const& a, It const& b) -> bool { return a == b; }
+        )
+      }
       , self_{std::make_shared<It>(std::move(it))}
     { }
 
     any_iterator& operator++() {
-      (*vptr_)["increment"_s](self_.get());
+      vtable_["increment"_s](self_.get());
       return *this;
     }
 
     reference operator*() {
-      return (*vptr_)["dereference"_s](self_.get());
+      return vtable_["dereference"_s](self_.get());
     }
 
     friend bool operator==(any_iterator const& a, any_iterator const& b) {
-      return (*a.vptr_)["equal"_s](a.self_.get(), b.self_.get());
+      return a.vtable_["equal"_s](a.self_.get(), b.self_.get());
     }
 
   private:
-    te::local_vtable<Iterator<reference>> const* vptr_;
+    te::remote_vtable<te::local_vtable<Iterator<reference>>> vtable_;
     std::shared_ptr<void> self_;
   };
 }} // end namespace te_style
@@ -261,8 +258,8 @@ static void BM_any_iterator(benchmark::State& state) {
 
 static constexpr int N = 100;
 BENCHMARK_TEMPLATE(BM_any_iterator, std::vector<int>::iterator)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_iterator, te_style::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, classic::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_split_ptr::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_classic::any_iterator<int>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_iterator, te_style::any_iterator<int>)->Arg(N);
 BENCHMARK_MAIN();

@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 #include <te.hpp>
-#include <te/experimental/vtable.hpp>
 
 #include <cassert>
 #include <iostream>
@@ -83,63 +82,27 @@ namespace with_te {
     "draw"_s = te::function<void (te::T const&, std::ostream&)>
   )) { };
 
-  template <typename T>
-  te::local_vtable<Drawable> const vtable{te::make_concept_map<Drawable, T>(
-    "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
-  )};
-
   class object_t {
   public:
     template <typename T>
     object_t(T x)
-      : self_{std::make_shared<T>(std::move(x))}
-      , vtable_{&vtable<T>}
+      : vtable_{
+        te::make_concept_map<Drawable, T>(
+          "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
+        )
+      }
+      , self_{std::make_shared<T>(std::move(x))}
     { }
 
     friend void draw(object_t const& x, std::ostream& out) {
-      (*x.vtable_)["draw"_s](x.self_.get(), out);
+      x.vtable_["draw"_s](x.self_.get(), out);
     }
 
   private:
+    te::remote_vtable<te::local_vtable<Drawable>> vtable_;
     std::shared_ptr<void const> self_;
-    te::local_vtable<Drawable> const* vtable_;
   };
 } // end namespace with_te
-
-namespace with_te_experimental {
-  using namespace te::literals;
-
-  struct Drawable : decltype(te::requires(
-    "draw"_s = te::function<void (te::T const&, std::ostream&)>
-  )) { };
-
-  template <typename T>
-  auto const Drawable_concept_map = te::make_concept_map<Drawable, T>(
-    "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
-  );
-
-  template <typename T>
-  struct make_Drawable_concept_map {
-    auto operator()() const { return Drawable_concept_map<T>; }
-  };
-
-  class object_t {
-  public:
-    template <typename T>
-    object_t(T x)
-      : self_{std::make_shared<T>(std::move(x))}
-      , vptr_{make_Drawable_concept_map<T>{}}
-    { }
-
-    friend void draw(object_t const& x, std::ostream& out) {
-      x.vptr_["draw"_s](x.self_.get(), out);
-    }
-
-  private:
-    std::shared_ptr<void const> self_;
-    te::experimental::vtable<Drawable> vptr_;
-  };
-} // end namespace with_te_experimental
 
 namespace with_sean {
   //
@@ -178,5 +141,4 @@ namespace with_sean {
 int main() {
   run_main<with_sean::object_t>();
   run_main<with_te::object_t>();
-  run_main<with_te_experimental::object_t>();
 }
