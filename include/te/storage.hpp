@@ -40,6 +40,10 @@ constexpr static_type_info<T> type_info_for{};
 
 // concept PolymorphicStorage
 //
+// The PolymorphicStorage concept represents storage that can be used to store
+// an object of an arbitrary type. In a sense, it is like a special-purpose
+// allocator that could only ever allocate a single object.
+//
 // The nice thing about these PolymorphicStorage classes is that they have a
 // single type and their ABI does not change even when the type of what they
 // hold changes. However, they provide this functionality at the cost of
@@ -76,9 +80,10 @@ constexpr static_type_info<T> type_info_for{};
 // template <typename VTable> void destruct(VTable const&);
 //  Semantics: Destruct the object held inside the polymorphic storage, assuming
 //             that object can be manipulated using the provided vtable. This
-//             must also free any resource associated to the storage. This is
-//             effectively a destructor, but destructors can't be passed
-//             arguments so this needs to be called explicitly.
+//             must also free any resource required for storing the object.
+//             However, this is not the same as destructing the polymorphic
+//             storage itself (the wrapper), for which the destructor must
+//             still be called.
 //
 //             WARNING: Since this is not using the usual destructor mechanism,
 //             it is of utmost importance that users of these storage classes
@@ -95,7 +100,9 @@ constexpr static_type_info<T> type_info_for{};
 // template <typename T = void> T const* get() const;
 //  Semantics: Return a pointer to the object inside the polymorphic storage.
 //
-
+// static constexpr bool can_store(te::type_info);
+//  Semantics: Return whether the polymorphic storage can store an object with
+//             the specified type information.
 
 // Class implementing the small buffer optimization (SBO).
 //
@@ -113,11 +120,6 @@ class sbo_storage {
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<SBSize>) : Align;
   using SBStorage = std::aligned_storage_t<SBSize, SBAlign>;
 
-  template <typename TypeInfo>
-  static constexpr bool can_use_sbo(TypeInfo info) {
-    return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
-  }
-
   union {
     void* ptr_;
     SBStorage sb_;
@@ -132,12 +134,16 @@ public:
   sbo_storage& operator=(sbo_storage&&) = delete;
   sbo_storage& operator=(sbo_storage const&) = delete;
 
+  static constexpr bool can_store(te::type_info info) {
+    return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
+  }
+
   template <typename T, typename RawT = std::decay_t<T>>
   explicit sbo_storage(T&& t) {
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
-    if (can_use_sbo(te::type_info_for<RawT>)) {
+    if (can_store(te::type_info_for<RawT>)) {
       uses_heap_ = false;
       new (&sb_) RawT(std::forward<T>(t));
     } else {
@@ -150,10 +156,18 @@ public:
   }
 
   template <typename VTable>
-  sbo_storage(sbo_storage const& other, VTable const& vtable)
-    : sbo_storage{vtable["type_info"_s]()}
-  {
-    vtable["copy-construct"_s](this->get(), other.get());
+  sbo_storage(sbo_storage const& other, VTable const& vtable) {
+    if (other.uses_heap()) {
+      auto info = vtable["type_info"_s]();
+      uses_heap_ = true;
+      ptr_ = std::malloc(info.size);
+      // TODO: That's not a really nice way to handle this
+      assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
+      vtable["copy-construct"_s](ptr_, other.get());
+    } else {
+      uses_heap_ = false;
+      vtable["copy-construct"_s](&sb_, other.get());
+    }
   }
 
   template <typename VTable>
@@ -309,6 +323,10 @@ struct remote_storage {
     return static_cast<T const*>(ptr_);
   }
 
+  static constexpr bool can_store(te::type_info info) {
+    return true;
+  }
+
 private:
   void* ptr_;
 };
@@ -321,16 +339,8 @@ private:
 // object.
 template <std::size_t Size, std::size_t Align = static_cast<std::size_t>(-1)>
 class local_storage {
-  // TODO: This is actually copied from the sbo_storage implementation, and
-  // it would be nice to share some of this.
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<Size>) : Align;
   using SBStorage = std::aligned_storage_t<Size, SBAlign>;
-
-  template <typename TypeInfo>
-  static constexpr bool can_use_sbo(TypeInfo info) {
-    return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
-  }
-
   SBStorage buffer_;
 
 public:
@@ -340,9 +350,16 @@ public:
   local_storage& operator=(local_storage&&) = delete;
   local_storage& operator=(local_storage const&) = delete;
 
+  static constexpr bool can_store(te::type_info info) {
+    return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
+  }
+
   template <typename T, typename RawT = std::decay_t<T>>
   explicit local_storage(T&& t) {
-    static_assert(can_use_sbo(te::type_info_for<RawT>),
+    // TODO: We could also construct the object at an aligned address within
+    // the buffer, which would require computing the right address everytime
+    // we access the buffer as a T, but would allow more Ts to fit inside it.
+    static_assert(can_store(te::type_info_for<RawT>),
       "te::local_storage: Trying to construct from an object that won't fit "
       "in the local storage.");
 
@@ -351,7 +368,7 @@ public:
 
   template <typename VTable>
   local_storage(local_storage const& other, VTable const& vtable) {
-    assert(can_use_sbo(vtable["type_info"_s]()) &&
+    assert(can_store(vtable["type_info"_s]()) &&
       "te::local_storage: Trying to copy-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
@@ -360,7 +377,7 @@ public:
 
   template <typename VTable>
   local_storage(local_storage&& other, VTable const& vtable) {
-    assert(can_use_sbo(vtable["type_info"_s]()) &&
+    assert(can_store(vtable["type_info"_s]()) &&
       "te::local_storage: Trying to move-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
@@ -446,8 +463,148 @@ struct non_owning_storage {
     return static_cast<T const*>(ptr_);
   }
 
+  static constexpr bool can_store(te::type_info info) {
+    return true;
+  }
+
 private:
   void* ptr_;
+};
+
+// Class implementing polymorphic storage with a primary storage and a
+// fallback one.
+//
+// When the primary storage can be used to store a type, it is used. When it
+// can't, however, the secondary storage is used instead. This can be used
+// to implement a small buffer optimization, by using `te::local_storage` as
+// the primary storage, and `te::remote_storage` as the secondary.
+//
+// TODO:
+// - Consider implementing this by storing a pointer to the active object.
+// - Alternatively, if we had a way to access the vtable here, we could
+//   retrieve the size of the type from it and know whether we are in the
+//   primary or the secondary storage like that.
+// - If we were to store the vtable inside storage classes, we could also
+//   encode which storage is active using the low bits of the pointer.
+// - Technically, this could be used to implement `sbo_storage`. However,
+//   benchmarks show that `sbo_storage` is significantly more efficient.
+//   We should try to optimize `fallback_storage` so that it can replace sbo.
+template <typename First, typename Second>
+class fallback_storage {
+  union { First first_; Second second_; };
+  bool in_first_;
+
+  bool in_first() const { return in_first_; }
+
+public:
+  fallback_storage() = delete;
+  fallback_storage(fallback_storage const&) = delete;
+  fallback_storage(fallback_storage&&) = delete;
+  fallback_storage& operator=(fallback_storage&&) = delete;
+  fallback_storage& operator=(fallback_storage const&) = delete;
+
+  template <typename T, typename RawT = std::decay_t<T>,
+            typename = std::enable_if_t<First::can_store(te::type_info_for<RawT>)>>
+  explicit fallback_storage(T&& t) : in_first_{true}
+  { new (&first_) First{std::forward<T>(t)}; }
+
+  template <typename T, typename RawT = std::decay_t<T>, typename = void,
+            typename = std::enable_if_t<!First::can_store(te::type_info_for<RawT>)>>
+  explicit fallback_storage(T&& t) : in_first_{false} {
+    static_assert(can_store(te::type_info_for<RawT>),
+      "te::fallback_storage<First, Second>: Trying to construct from a type "
+      "that can neither be stored in the primary nor in the secondary storage.");
+
+    new (&second_) Second{std::forward<T>(t)};
+  }
+
+  template <typename VTable>
+  fallback_storage(fallback_storage const& other, VTable const& vtable)
+    : in_first_{other.in_first_}
+  {
+    if (in_first())
+      new (&first_) First{other.first_, vtable};
+    else
+      new (&second_) Second{other.second_, vtable};
+  }
+
+  template <typename VTable>
+  fallback_storage(fallback_storage&& other, VTable const& vtable)
+    : in_first_{other.in_first_}
+  {
+    if (in_first())
+      new (&first_) First{std::move(other.first_), vtable};
+    else
+      new (&second_) Second{std::move(other.second_), vtable};
+  }
+
+  // TODO: With a destructive move, we could avoid all the calls to `destruct` below.
+  template <typename MyVTable, typename OtherVTable>
+  void swap(MyVTable const& this_vtable, fallback_storage& other, OtherVTable const& other_vtable) {
+    if (this->in_first()) {
+      if (other.in_first()) {
+        this->first_.swap(this_vtable, other.first_, other_vtable);
+      } else {
+        // Move `this->first` into a temporary, destructively.
+        First tmp{std::move(this->first_), this_vtable};
+        this->first_.destruct(this_vtable);
+        this->first_.~First();
+
+        // Move `other.second` into `this->second`, destructively.
+        new (&this->second_) Second{std::move(other.second_), other_vtable};
+        this->in_first_ = false;
+        other.second_.destruct(other_vtable);
+        other.second_.~Second();
+
+        // Move `tmp` into `other.first`.
+        new (&other.first_) First{std::move(tmp), this_vtable};
+        other.in_first_ = true;
+      }
+    } else {
+      if (other.in_first()) {
+        // Move `this->second` into a temporary, destructively.
+        Second tmp{std::move(this->second_), this_vtable};
+        this->second_.destruct(this_vtable);
+        this->second_.~Second();
+
+        // Move `other.first` into `this->first`, destructively.
+        new (&this->first_) First{std::move(other.first_), other_vtable};
+        this->in_first_ = true;
+        other.first_.destruct(other_vtable);
+        other.first_.~First();
+
+        // Move `tmp` into `other.second`.
+        new (&other.second_) Second{std::move(tmp), this_vtable};
+        other.in_first_ = false;
+      } else {
+        this->second_.swap(this_vtable, other.second_, other_vtable);
+      }
+    }
+  }
+
+  template <typename VTable>
+  void destruct(VTable const& vtable) {
+    if (in_first())
+      first_.destruct(vtable);
+    else
+      second_.destruct(vtable);
+  }
+
+  template <typename T = void>
+  T* get() {
+    return static_cast<T*>(in_first() ? first_.template get<T>()
+                                      : second_.template get<T>());
+  }
+
+  template <typename T = void>
+  T const* get() const {
+    return static_cast<T const*>(in_first() ? first_.template get<T>()
+                                            : second_.template get<T>());
+  }
+
+  static constexpr bool can_store(te::type_info info) {
+    return First::can_store(info) || Second::can_store(info);
+  }
 };
 
 } // end namespace te
