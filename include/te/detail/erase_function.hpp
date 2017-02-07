@@ -55,6 +55,45 @@ struct unerase<te::T const*, Actual const*> {
   { return static_cast<Actual const*>(arg); }
 };
 
+// Cast an argument from an actual type to a generic representation.
+template <typename Erased, typename Actual>
+struct erase {
+  template <typename Arg>
+  static constexpr decltype(auto) apply(Arg&& arg)
+  { return std::forward<Arg>(arg); }
+};
+
+template <typename Actual>
+struct erase<te::T const&, Actual const&> {
+  static constexpr void const* apply(Actual const& arg)
+  { return &arg; }
+};
+
+template <typename Actual>
+struct erase<te::T&, Actual&> {
+  static constexpr void* apply(Actual& arg)
+  { return &arg; }
+};
+
+template <typename Actual>
+struct erase<te::T&&, Actual&&> {
+  static constexpr void* apply(Actual&& arg)
+  { return &arg; }
+};
+
+template <typename Actual>
+struct erase<te::T*, Actual*> {
+  static constexpr void* apply(Actual* arg)
+  { return arg; }
+};
+
+template <typename Actual>
+struct erase<te::T const*, Actual const*> {
+  static constexpr void const* apply(Actual const* arg)
+  { return arg; }
+};
+
+
 template <typename F, typename PlaceholderSig, typename ActualSig>
 struct thunk;
 
@@ -63,7 +102,7 @@ struct thunk<F, R_pl(Args_pl...), R_ac(Args_ac...)> {
   static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
     -> typename detail::erase_placeholder<R_pl>::type
   {
-    return detail::unerase<R_pl, R_ac>::apply(
+    return detail::erase<R_pl, R_ac>::apply(
       detail::empty_object<F>::get()(
         detail::unerase<Args_pl, Args_ac>::apply(
           std::forward<typename detail::erase_placeholder<Args_pl>::type>(args)

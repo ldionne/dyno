@@ -45,4 +45,15 @@ int main() {
     TE_CHECK(result == 4);
     TE_CHECK(i == 4);
   }
+
+  // erase_function should work when returning a placeholder
+  {
+    int i = 3;
+    auto inc = te::detail::erase_function<te::T& (te::T&)>([](int& x) -> int& { return ++x; });
+    void* result = inc(static_cast<void*>(&i));
+    int& casted = *static_cast<int*>(result);
+    TE_CHECK(&casted == &i);
+    TE_CHECK(casted == 4);
+    TE_CHECK(i == 4);
+  }
 }
