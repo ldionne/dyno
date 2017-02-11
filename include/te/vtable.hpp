@@ -6,7 +6,7 @@
 #define TE_VTABLE_HPP
 
 #include <te/concept.hpp>
-#include <te/concept_map.hpp>
+#include <te/detail/erase_function.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -53,15 +53,20 @@ namespace te {
 //             error).
 
 namespace detail {
-  template <typename ...Mappings>
+  template <typename Concept, typename ...Mappings>
   struct local_vtable;
 
-  template <typename ...Name, typename ...Fptr>
-  struct local_vtable<std::pair<Name, Fptr>...> {
+  template <typename Concept, typename ...Name, typename ...Fptr>
+  struct local_vtable<Concept, std::pair<Name, Fptr>...> {
     template <typename ConceptMap>
     constexpr explicit local_vtable(ConceptMap map)
       : vtbl_{boost::hana::make_map(
-        boost::hana::make_pair(Name{}, map.erased(Name{}))...
+        boost::hana::make_pair(
+          Name{},
+          detail::erase_function<
+            typename decltype(Concept{}.get_signature(Name{}))::type
+          >(map[Name{}])
+        )...
       )}
     { }
 
@@ -102,12 +107,20 @@ namespace detail {
 
     boost::hana::map<boost::hana::pair<Name, Fptr>...> vtbl_;
   };
+
+  template <typename Concept>
+  struct make_local_vtable {
+    template <typename ...Mappings>
+    using apply = detail::local_vtable<Concept, Mappings...>;
+  };
 } // end namespace detail
 
 // Class implementing a local vtable, i.e. a vtable whose storage is held
 // right where the `local_vtable` is instantiated.
 template <typename Concept>
-using local_vtable = te::unpack_vtable_layout<Concept, detail::local_vtable>;
+using local_vtable = te::unpack_vtable_layout<
+  Concept, detail::make_local_vtable<Concept>::template apply
+>;
 
 namespace detail {
   template <typename VTable, typename ConceptMap>

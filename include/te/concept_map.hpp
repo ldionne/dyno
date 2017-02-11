@@ -7,7 +7,6 @@
 
 #include <te/detail/dsl.hpp>
 #include <te/detail/empty_object.hpp>
-#include <te/detail/erase_function.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -46,18 +45,17 @@ namespace detail {
 
 // A concept map is a statically-known mapping from functions implemented by
 // a type `T` to functions defined by a concept. A concept map is what's being
-// used to fill the vtable of the concept it represents. An instance of this
-// type is never created as-is; `te::make_concept_map` should always be used.
+// used to fill the vtable extracted from a concept definition. An instance of
+// this type is never created as-is; `te::make_concept_map` must always be used.
 //
 // Note that everything in the concept map is known statically. Specifically,
 // the types of the functions in the concept map are known statically, and
-// e.g. lambdas will be stored as-is (not as function pointers). To retrieve
-// a function with an erased representation instead, use the `erased` method.
-template <typename Concept, typename T, typename ...Mappings>
+// e.g. lambdas will be stored as-is (not as function pointers).
+template <typename T, typename ...Mappings>
 struct concept_map_t;
 
-template <typename Concept, typename T, typename ...Name, typename ...Function>
-struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
+template <typename T, typename ...Name, typename ...Function>
+struct concept_map_t<T, boost::hana::pair<Name, Function>...> {
   constexpr concept_map_t() = default;
 
   template <typename ...Empty, typename =
@@ -74,13 +72,6 @@ struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
   template <typename Name_>
   constexpr auto operator[](Name_ name) const {
     return get_function(name, boost::hana::contains(map_, name));
-  }
-
-  template <typename Name_>
-  constexpr auto erased(Name_ name) const {
-    auto function = (*this)[name];
-    using Signature = typename decltype(Concept{}.get_signature(name))::type;
-    return detail::erase_function<Signature>(function);
   }
 
 public: // TODO: Make this private
@@ -104,7 +95,7 @@ private:
       "the right function from the concept map. You can find the contents of "
       "the concept map and the function you were trying to access in the "
       "compiler error message, probably in the following format: "
-      "`concept_map_t<CONCEPT, MODEL, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
+      "`concept_map_t<MODEL, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
   }
 };
 
@@ -226,7 +217,7 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
     "forget to define a function in your concept map, and otherwise make sure "
     "the proper default concept maps are kicking in.");
   return boost::hana::unpack(merged, [](auto ...m) {
-    return te::concept_map_t<Concept, T, decltype(m)...>{m...};
+    return te::concept_map_t<T, decltype(m)...>{m...};
   });
 }
 
@@ -248,7 +239,7 @@ constexpr auto make_default_concept_map(boost::hana::pair<Name, Function> ...map
     return detail::merge(mappings, te::concept_map<C, T>.map_);
   });
   return boost::hana::unpack(merged, [](auto ...m) {
-    return te::concept_map_t<Concept, T, decltype(m)...>{m...};
+    return te::concept_map_t<T, decltype(m)...>{m...};
   });
 }
 

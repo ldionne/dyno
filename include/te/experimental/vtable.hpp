@@ -6,6 +6,7 @@
 #define TE_EXPERIMENTAL_VTABLE_HPP
 
 #include <te/concept.hpp>
+#include <te/detail/erase_function.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -18,13 +19,13 @@ namespace detail {
   template <typename ...Functions>
   struct vtable_base;
 
-  template <typename ConceptMap, typename ...Functions>
+  template <typename Concept, typename ConceptMap, typename ...Functions>
   struct vtable_impl;
 
-  template <typename ConceptMap>
+  template <typename Concept, typename ConceptMap>
   struct make_vtable_impl {
     template <typename ...Functions>
-    using apply = vtable_impl<ConceptMap, Functions...>;
+    using apply = vtable_impl<Concept, ConceptMap, Functions...>;
   };
 } // end namespace detail
 
@@ -33,7 +34,7 @@ struct vtable {
   template <typename ConceptMap>
   constexpr explicit vtable(ConceptMap) {
     using Derived = te::unpack_vtable_layout<
-      Concept, detail::make_vtable_impl<ConceptMap>::template apply
+      Concept, detail::make_vtable_impl<Concept, ConceptMap>::template apply
     >;
     new (&base_) Derived{};
   }
@@ -67,17 +68,17 @@ template <
   <%= (0...n).map {|i| "virtual R#{i} apply(Name#{i}, Args#{i}...) const = 0;" }.join("\n  ") %>
 };
 
-template <typename ConceptMap
+template <typename Concept, typename ConceptMap
   <%= (0...n).map {|i| ", typename Name#{i}, typename R#{i}, typename ...Args#{i}" }.join("\n  ") %>
 >
-struct vtable_impl<ConceptMap
+struct vtable_impl<Concept, ConceptMap
   <%= (0...n).map {|i| ", std::pair<Name#{i}, R#{i} (*)(Args#{i}...)>" }.join("\n  ") %>
 > final : vtable_base<
   <%= (0...n).map {|i| "std::pair<Name#{i}, R#{i} (*)(Args#{i}...)>" }.join(",\n  ") %>
 > {
   <%= (0...n).map {|i|
     "R#{i} apply(Name#{i} name, Args#{i} ...args) const override final" +
-    "{ return ConceptMap{}.erased(name)(std::forward<Args#{i}>(args)...); }"
+    "{ return te::detail::erase_function<typename decltype(Concept{}.get_signature(name))::type>(ConceptMap{}[name])(std::forward<Args#{i}>(args)...); }"
   }.join("\n  ") %>
 };
 <% end %>
