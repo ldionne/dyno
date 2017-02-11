@@ -5,9 +5,8 @@
 #ifndef TE_DETAIL_ERASE_FUNCTION_HPP
 #define TE_DETAIL_ERASE_FUNCTION_HPP
 
-#include <te/detail/dsl.hpp>
 #include <te/detail/empty_object.hpp>
-#include <te/detail/erase_signature.hpp>
+#include <te/detail/eraser_traits.hpp>
 
 #include <boost/callable_traits/function_type.hpp>
 
@@ -16,126 +15,48 @@
 
 namespace te { namespace detail {
 
-// Cast an argument from a generic representation to the actual type expected
-// by a statically typed equivalent.
-template <typename Erased, typename Actual>
-struct unerase {
-  template <typename Arg>
-  static constexpr decltype(auto) apply(Arg&& arg)
-  { return std::forward<Arg>(arg); }
-};
-
-template <typename Actual>
-struct unerase<te::T const&, Actual const&> {
-  static constexpr Actual const& apply(void const* arg)
-  { return *static_cast<Actual const*>(arg); }
-};
-
-template <typename Actual>
-struct unerase<te::T&, Actual&> {
-  static constexpr Actual& apply(void* arg)
-  { return *static_cast<Actual*>(arg); }
-};
-
-template <typename Actual>
-struct unerase<te::T&&, Actual&&> {
-  static constexpr Actual&& apply(void* arg)
-  { return std::move(*static_cast<Actual*>(arg)); }
-};
-
-template <typename Actual>
-struct unerase<te::T*, Actual*> {
-  static constexpr Actual* apply(void* arg)
-  { return static_cast<Actual*>(arg); }
-};
-
-template <typename Actual>
-struct unerase<te::T const*, Actual const*> {
-  static constexpr Actual* apply(void const* arg)
-  { return static_cast<Actual const*>(arg); }
-};
-
-// Cast an argument from an actual type to a generic representation.
-template <typename Erased, typename Actual>
-struct erase {
-  template <typename Arg>
-  static constexpr decltype(auto) apply(Arg&& arg)
-  { return std::forward<Arg>(arg); }
-};
-
-template <typename Actual>
-struct erase<te::T const&, Actual const&> {
-  static constexpr void const* apply(Actual const& arg)
-  { return &arg; }
-};
-
-template <typename Actual>
-struct erase<te::T&, Actual&> {
-  static constexpr void* apply(Actual& arg)
-  { return &arg; }
-};
-
-template <typename Actual>
-struct erase<te::T&&, Actual&&> {
-  static constexpr void* apply(Actual&& arg)
-  { return &arg; }
-};
-
-template <typename Actual>
-struct erase<te::T*, Actual*> {
-  static constexpr void* apply(Actual* arg)
-  { return arg; }
-};
-
-template <typename Actual>
-struct erase<te::T const*, Actual const*> {
-  static constexpr void const* apply(Actual const* arg)
-  { return arg; }
-};
-
-
-template <typename F, typename PlaceholderSig, typename ActualSig>
+template <typename Eraser, typename F, typename PlaceholderSig, typename ActualSig>
 struct thunk;
 
-template <typename F, typename R_pl, typename ...Args_pl, typename R_ac, typename ...Args_ac>
-struct thunk<F, R_pl(Args_pl...), R_ac(Args_ac...)> {
-  static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
-    -> typename detail::erase_placeholder<R_pl>::type
+template <typename Eraser, typename F, typename R_pl, typename ...Args_pl,
+                                       typename R_ac, typename ...Args_ac>
+struct thunk<Eraser, F, R_pl(Args_pl...), R_ac(Args_ac...)> {
+  using Traits = detail::eraser_traits<Eraser>;
+  static constexpr auto
+  apply(typename Traits::template erase_placeholder<Args_pl>::type ...args)
+    -> typename Traits::template erase_placeholder<R_pl>::type
   {
-    return detail::erase<R_pl, R_ac>::apply(
+    return Traits::template erase<R_pl>(
       detail::empty_object<F>::get()(
-        detail::unerase<Args_pl, Args_ac>::apply(
-          std::forward<typename detail::erase_placeholder<Args_pl>::type>(args)
+        Traits::template unerase<Args_pl, Args_ac>(
+          std::forward<typename Traits::template erase_placeholder<Args_pl>::type>(args)
         )...
       )
     );
   }
 };
 
-template <typename F, typename ...Args_pl, typename R_ac, typename ...Args_ac>
-struct thunk<F, void(Args_pl...), R_ac(Args_ac...)> {
-  static constexpr auto apply(typename detail::erase_placeholder<Args_pl>::type ...args)
+template <typename Eraser, typename F,    /* void */  typename ...Args_pl,
+                                       typename R_ac, typename ...Args_ac>
+struct thunk<Eraser, F, void(Args_pl...), R_ac(Args_ac...)> {
+  using Traits = detail::eraser_traits<Eraser>;
+  static constexpr auto
+  apply(typename Traits::template erase_placeholder<Args_pl>::type ...args)
     -> void
   {
-    return detail::empty_object<F>::get()(
-      detail::unerase<Args_pl, Args_ac>::apply(
-        std::forward<typename detail::erase_placeholder<Args_pl>::type>(args)
+    detail::empty_object<F>::get()(
+      Traits::template unerase<Args_pl, Args_ac>(
+        std::forward<typename Traits::template erase_placeholder<Args_pl>::type>(args)
       )...
     );
   }
 };
 
 // Transform an actual (stateless) function object with statically typed
-// parameters into a type-erased function object suitable for storage in
-// a vtable.
-//
-// In a sense, this is the runtime equivalent of `detail::erase_signature`,
-// which only produces the type of the erased function. In other words,
-// `erase_function` takes a function and transforms it into a pointer to
-// a function whose signature is determined by `erase_signature`.
+// parameters into a type-erased function suitable for storage in a vtable.
 //
 // The pointer returned by `erase_function` is what's called a thunk; it
-// makes a few adjustments to the arguments (in our case 0-overhead static
+// makes a few adjustments to the arguments (usually 0-overhead static
 // casts) and forwards them to another function.
 //
 // TODO:
@@ -144,9 +65,11 @@ struct thunk<F, void(Args_pl...), R_ac(Args_ac...)> {
 //    it by taking by value.
 //  - Would it be possible to erase a callable that's not a stateless function
 //    object? Would that necessarily require additional storage?
-template <typename Signature, typename F>
-constexpr typename detail::erase_signature<Signature>::type* erase_function(F const&) {
-  using Thunk = detail::thunk<F, Signature, boost::callable_traits::function_type_t<F>>;
+//  - Should we be returning a lambda that erases its arguments?
+template <typename Signature, typename Eraser = void, typename F>
+constexpr auto erase_function(F const&) {
+  using ActualSignature = boost::callable_traits::function_type_t<F>;
+  using Thunk = detail::thunk<Eraser, F, Signature, ActualSignature>;
   return &Thunk::apply;
 }
 
