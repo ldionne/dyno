@@ -5,6 +5,7 @@
 #ifndef TE_POLY_HPP
 #define TE_POLY_HPP
 
+#include <te/builtin.hpp>
 #include <te/concept_map.hpp>
 #include <te/storage.hpp>
 #include <te/vtable.hpp>
@@ -48,15 +49,25 @@ namespace te {
 // - How to combine the storage of the object with that of the vtable?
 //   For example, how would we allow storing the vtable inside the rest
 //   of the storage?
+// - Is it actually OK to require Destructible all the time?
 template <
   typename Concept,
   typename Storage = te::remote_storage,
-  typename VTable = te::remote_vtable<te::local_vtable<Concept>>
+  typename VTable = te::remote_vtable<te::local_vtable<
+    decltype(te::requires(Concept{}, te::Destructible{}))
+  >>
 >
 struct poly {
-template <typename T, typename RawT = std::decay_t<T>>
+private:
+  using ActualConcept = decltype(te::requires(
+    Concept{},
+    te::Destructible{}
+  ));
+
+public:
+  template <typename T, typename RawT = std::decay_t<T>>
   explicit poly(T&& t)
-    : vtable_{te::concept_map<Concept, RawT>}
+    : vtable_{te::concept_map<ActualConcept, RawT>}
     , storage_{std::forward<T>(t)}
   { }
 
