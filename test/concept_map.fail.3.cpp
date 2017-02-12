@@ -12,7 +12,7 @@ struct Fooable : decltype(te::requires(
   "bar"_s = te::function<void (te::T&)>
 )) { };
 
-// A concept map for `Fooable` is provided, but it's not sufficient.
+// MESSAGE[Incomplete definition of the concept map]
 template <>
 static auto const te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
   "foo"_s = [](int&) { }

@@ -6,6 +6,7 @@
 #include <te/detail/erase_signature.hpp>
 
 
+// MESSAGE[te::T may not be passed by value; it is only a placeholder]
 using T = te::detail::erase_signature<void (te::T)>::type;
 
 int main() { }

@@ -19,6 +19,6 @@ auto te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
 int main() {
   auto const& map = te::concept_map<Fooable, int>;
 
-  // "bar" is not defined in the concept map
+  // MESSAGE[Request for the implementation of a function that was not provided in the concept map]
   auto bar = map["bar"_s];
 }

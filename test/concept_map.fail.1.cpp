@@ -12,6 +12,6 @@ struct Fooable : decltype(te::requires(
 )) { };
 
 int main() {
-  // No concept map was defined for `int`, and no default concept map is provided.
+  // MESSAGE[Incomplete definition of the concept map]
   auto const& map = te::concept_map<Fooable, int>;
 }

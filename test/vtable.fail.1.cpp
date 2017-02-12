@@ -18,8 +18,8 @@ auto te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
 );
 
 int main() {
-  te::vtable<Fooable> vtable{te::concept_map<Fooable, int>};
+  te::local_vtable<Fooable> vtable{te::concept_map<Fooable, int>};
 
-  // "bar" is not defined in the vtable
+  // MESSAGE[Request for a virtual function that is not in the vtable]
   auto bar = vtable["bar"_s];
 }
