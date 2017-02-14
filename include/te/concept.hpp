@@ -74,7 +74,7 @@ struct concept : detail::concept_base {
   static constexpr auto all_clauses() {
     auto all = boost::hana::make_tuple(detail::expand_clauses(Clauses{})...);
     auto flat = boost::hana::flatten(all);
-    return boost::hana::to_map(flat); // TODO: Oh my, this is going to be slow
+    return boost::hana::to_map(flat);
   }
 };
 

@@ -188,27 +188,31 @@ namespace detail {
 // be resolved.
 template <typename Concept, typename T, typename ...Name, typename ...Function>
 constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
-  auto mappings_ = detail::merge(boost::hana::make_map(mappings...),
-                                 te::default_concept_map<Concept, T>.as_hana_map());
-  auto refined = Concept::refined_concepts();
-  auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
-    using C = typename decltype(c)::type;
-    return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
-  });
-  constexpr bool all_functions_satisfied = decltype(boost::hana::is_subset(
-    boost::hana::keys(Concept::all_clauses()),
-    boost::hana::keys(merged)
-  )){};
-  static_assert(all_functions_satisfied,
-    "te::make_concept_map: Incomplete definition of the concept map. Despite "
-    "looking at the default concept map for this concept and the concept maps "
-    "for all the concepts this concept refines, I can't find definitions for "
-    "all the functions that the concept requires. Please make sure you did not "
-    "forget to define a function in your concept map, and otherwise make sure "
-    "the proper default concept maps are kicking in.");
-  return boost::hana::unpack(merged, [](auto ...m) {
-    return te::concept_map_t<T, decltype(m)...>{};
-  });
+  // This `decltype(make()){}` pattern saves a lot of time that would be spent optimizing.
+  auto const make = [&]() {
+    auto mappings_ = detail::merge(boost::hana::make_map(mappings...),
+                                   te::default_concept_map<Concept, T>.as_hana_map());
+    auto refined = Concept::refined_concepts();
+    auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
+      using C = typename decltype(c)::type;
+      return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
+    });
+    constexpr bool all_functions_satisfied = decltype(boost::hana::is_subset(
+      boost::hana::keys(Concept::all_clauses()),
+      boost::hana::keys(merged)
+    )){};
+    static_assert(all_functions_satisfied,
+      "te::make_concept_map: Incomplete definition of the concept map. Despite "
+      "looking at the default concept map for this concept and the concept maps "
+      "for all the concepts this concept refines, I can't find definitions for "
+      "all the functions that the concept requires. Please make sure you did not "
+      "forget to define a function in your concept map, and otherwise make sure "
+      "the proper default concept maps are kicking in.");
+    return boost::hana::unpack(merged, [](auto ...m) {
+      return te::concept_map_t<T, decltype(m)...>{};
+    });
+  };
+  return decltype(make()){};
 }
 
 // Equivalent to `te::make_concept_map`, but for populating default concept maps.
@@ -222,15 +226,19 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
 // not be the case for a default concept map.
 template <typename Concept, typename T, typename ...Name, typename ...Function>
 constexpr auto make_default_concept_map(boost::hana::pair<Name, Function> ...mappings) {
-  auto mappings_ = boost::hana::make_map(mappings...);
-  auto refined = Concept::refined_concepts();
-  auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
-    using C = typename decltype(c)::type;
-    return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
-  });
-  return boost::hana::unpack(merged, [](auto ...m) {
-    return te::concept_map_t<T, decltype(m)...>{};
-  });
+  // This `decltype(make()){}` pattern saves a lot of time that would be spent optimizing.
+  auto const make = [&]() {
+    auto mappings_ = boost::hana::make_map(mappings...);
+    auto refined = Concept::refined_concepts();
+    auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
+      using C = typename decltype(c)::type;
+      return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
+    });
+    return boost::hana::unpack(merged, [](auto ...m) {
+      return te::concept_map_t<T, decltype(m)...>{};
+    });
+  };
+  return decltype(make()){};
 }
 
 } // end namespace te
