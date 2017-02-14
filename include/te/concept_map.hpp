@@ -58,31 +58,21 @@ template <typename T, typename ...Name, typename ...Function>
 struct concept_map_t<T, boost::hana::pair<Name, Function>...> {
   constexpr concept_map_t() = default;
 
-  template <typename ...Empty, typename =
-    std::enable_if_t<(sizeof...(Empty) + sizeof...(Name)) != 0>>
-  constexpr explicit concept_map_t(boost::hana::pair<Name, Function> ...mappings)
-    : map_{
-      boost::hana::make_pair(
-        boost::hana::first(mappings),
-        detail::default_constructible_lambda<Function>{}
-      )...
-    }
-  { }
-
   template <typename Name_>
   constexpr auto operator[](Name_ name) const {
-    return get_function(name, boost::hana::contains(map_, name));
+    return get_function(name, boost::hana::contains(as_hana_map(), name));
   }
 
-public: // TODO: Make this private
-  boost::hana::map<
-    boost::hana::pair<Name, detail::default_constructible_lambda<Function>>...
-  > map_;
+  static constexpr auto as_hana_map() {
+    return boost::hana::map<
+      boost::hana::pair<Name, detail::default_constructible_lambda<Function>>...
+    >{};
+  }
 
 private:
   template <typename Name_>
   constexpr auto get_function(Name_ name, boost::hana::true_) const {
-    return boost::hana::at_key(map_, name);
+    return boost::hana::at_key(as_hana_map(), name);
   }
 
   template <typename Name_>
@@ -199,11 +189,11 @@ namespace detail {
 template <typename Concept, typename T, typename ...Name, typename ...Function>
 constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
   auto mappings_ = detail::merge(boost::hana::make_map(mappings...),
-                                 te::default_concept_map<Concept, T>.map_);
+                                 te::default_concept_map<Concept, T>.as_hana_map());
   auto refined = Concept::refined_concepts();
   auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
     using C = typename decltype(c)::type;
-    return detail::merge(mappings, te::concept_map<C, T>.map_);
+    return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
   });
   constexpr bool all_functions_satisfied = decltype(boost::hana::is_subset(
     boost::hana::keys(Concept::all_clauses()),
@@ -217,7 +207,7 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
     "forget to define a function in your concept map, and otherwise make sure "
     "the proper default concept maps are kicking in.");
   return boost::hana::unpack(merged, [](auto ...m) {
-    return te::concept_map_t<T, decltype(m)...>{m...};
+    return te::concept_map_t<T, decltype(m)...>{};
   });
 }
 
@@ -236,10 +226,10 @@ constexpr auto make_default_concept_map(boost::hana::pair<Name, Function> ...map
   auto refined = Concept::refined_concepts();
   auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
     using C = typename decltype(c)::type;
-    return detail::merge(mappings, te::concept_map<C, T>.map_);
+    return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
   });
   return boost::hana::unpack(merged, [](auto ...m) {
-    return te::concept_map_t<T, decltype(m)...>{m...};
+    return te::concept_map_t<T, decltype(m)...>{};
   });
 }
 
