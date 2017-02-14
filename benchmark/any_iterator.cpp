@@ -6,6 +6,10 @@
 
 #include <benchmark/benchmark.h>
 
+#include <boost/mpl/vector.hpp>
+#include <boost/type_erasure/any.hpp>
+#include <boost/type_erasure/iterator.hpp>
+#include <boost/type_erasure/same_type.hpp>
 #include <iterator>
 #include <memory>
 #include <utility>
@@ -117,6 +121,19 @@ namespace { namespace handrolled_split_ptr {
     std::shared_ptr<void> self_;
   };
 }} // end namespace handrolled_split_ptr
+
+namespace { namespace boost_type_erasure {
+  template <typename Value, typename Reference = Value&>
+  using any_iterator = boost::type_erasure::any<
+    boost::mpl::vector<
+        boost::type_erasure::forward_iterator<>,
+        boost::type_erasure::same_type<
+          boost::type_erasure::forward_iterator<>::value_type,
+          Value
+        >
+      >
+    >;
+}} // end namespace boost_type_erasure
 
 namespace { namespace handrolled_classic {
   template <typename Reference>
@@ -261,5 +278,6 @@ BENCHMARK_TEMPLATE(BM_any_iterator, std::vector<int>::iterator)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, classic::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_split_ptr::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_classic::any_iterator<int>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_iterator, boost_type_erasure::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, te_style::any_iterator<int>)->Arg(N);
 BENCHMARK_MAIN();
