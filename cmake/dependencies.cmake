@@ -2,52 +2,63 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-# This file must define the following variables, each of which should expand
-# to a target name that can be linked against:
-#   DEPENDENCY_hana
-#   DEPENDENCY_callable_traits
-#   DEPENDENCY_google_benchmark
-#   DEPENDENCY_libawful
-#   DEPENDENCY_boost_type_erasure
+# This file must define the following targets, each of which can be linked
+# against to get the right includes and/or link libraries:
+#
+#   dependency.BoostTypeErasure
+#   dependency.CallableTraits
+#   dependency.GoogleBenchmark
+#   dependency.Hana
+#   dependency.libawful
+#
+# It also defines the following target, which can be used to install all the
+# dependencies:
+#
+#   dependencies
 #
 # Since C++ lacks a standardized or even agreed-upon dependency management
 # system, this makes it easy to use this library with any system by simply
 # providing the dependencies here.
 
 include(ExternalProject)
-ExternalProject_Add(install-Hana EXCLUDE_FROM_ALL 1
+add_custom_target(dependencies COMMENT "Fetch and build all the dependencies")
+
+# Boost.Hana
+ExternalProject_Add(install.Hana EXCLUDE_FROM_ALL 1
   URL https://github.com/boostorg/hana/archive/develop.zip
   TIMEOUT 120
-  PREFIX "${CMAKE_BINARY_DIR}/dependencies/hana"
+  PREFIX "${CMAKE_BINARY_DIR}/dependencies/Hana"
   CONFIGURE_COMMAND "" # Disable configure step
   BUILD_COMMAND ""     # Disable build step
   INSTALL_COMMAND ""   # Disable install step
   TEST_COMMAND ""      # Disable test step
   UPDATE_COMMAND ""    # Disable source work-tree update
 )
-ExternalProject_Get_Property(install-Hana SOURCE_DIR)
-add_library(hana INTERFACE)
-target_include_directories(hana INTERFACE ${SOURCE_DIR}/include)
-add_dependencies(hana install-Hana)
-set(DEPENDENCY_hana hana)
+add_dependencies(dependencies install.Hana)
+ExternalProject_Get_Property(install.Hana SOURCE_DIR)
+add_library(dependency.Hana INTERFACE)
+target_include_directories(dependency.Hana INTERFACE ${SOURCE_DIR}/include)
 
-ExternalProject_Add(install-CallableTraits EXCLUDE_FROM_ALL 1
+
+# [Boost.]CallableTraits
+ExternalProject_Add(install.CallableTraits EXCLUDE_FROM_ALL 1
   URL https://github.com/badair/callable_traits/archive/master.zip
   TIMEOUT 120
-  PREFIX "${CMAKE_BINARY_DIR}/dependencies/callable_traits"
+  PREFIX "${CMAKE_BINARY_DIR}/dependencies/CallableTraits"
   CONFIGURE_COMMAND "" # Disable configure step
   BUILD_COMMAND ""     # Disable build step
   INSTALL_COMMAND ""   # Disable install step
   TEST_COMMAND ""      # Disable test step
   UPDATE_COMMAND ""    # Disable source work-tree update
 )
-ExternalProject_Get_Property(install-CallableTraits SOURCE_DIR)
-add_library(callable_traits INTERFACE)
-target_include_directories(callable_traits INTERFACE ${SOURCE_DIR}/include)
-add_dependencies(callable_traits install-CallableTraits)
-set(DEPENDENCY_callable_traits callable_traits)
+add_dependencies(dependencies install.CallableTraits)
+ExternalProject_Get_Property(install.CallableTraits SOURCE_DIR)
+add_library(dependency.CallableTraits INTERFACE)
+target_include_directories(dependency.CallableTraits INTERFACE ${SOURCE_DIR}/include)
 
-ExternalProject_Add(install-libawful EXCLUDE_FROM_ALL 1
+
+# libawful
+ExternalProject_Add(install.libawful EXCLUDE_FROM_ALL 1
   URL https://github.com/ldionne/libawful/archive/master.zip
   TIMEOUT 120
   PREFIX "${CMAKE_BINARY_DIR}/dependencies/libawful"
@@ -57,17 +68,34 @@ ExternalProject_Add(install-libawful EXCLUDE_FROM_ALL 1
   TEST_COMMAND ""      # Disable test step
   UPDATE_COMMAND ""    # Disable source work-tree update
 )
-ExternalProject_Get_Property(install-libawful SOURCE_DIR)
-add_library(libawful INTERFACE)
-target_include_directories(libawful INTERFACE ${SOURCE_DIR}/include)
-add_dependencies(libawful install-libawful)
-set(DEPENDENCY_libawful libawful)
+add_dependencies(dependencies install.libawful)
+ExternalProject_Get_Property(install.libawful SOURCE_DIR)
+add_library(dependency.libawful INTERFACE)
+target_include_directories(dependency.libawful INTERFACE ${SOURCE_DIR}/include)
 
+
+# Google Benchmark
+ExternalProject_Add(install.GoogleBenchmark EXCLUDE_FROM_ALL 1
+  URL https://github.com/google/benchmark/archive/master.zip
+  TIMEOUT 120
+  PREFIX "${CMAKE_BINARY_DIR}/dependencies/GoogleBenchmark"
+  CMAKE_ARGS "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+             "-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>"
+             "-DCMAKE_BUILD_TYPE=Release" # Always build in release mode
+  UPDATE_COMMAND "" # Disable source work-tree update
+)
+add_dependencies(dependencies install.GoogleBenchmark)
+ExternalProject_Get_Property(install.GoogleBenchmark INSTALL_DIR)
+add_library(_libbenchmark STATIC IMPORTED)
+set_target_properties(_libbenchmark PROPERTIES IMPORTED_LOCATION ${INSTALL_DIR}/lib/libbenchmark.a)
+add_library(dependency.GoogleBenchmark INTERFACE)
+target_include_directories(dependency.GoogleBenchmark INTERFACE ${INSTALL_DIR}/include)
+target_link_libraries(dependency.GoogleBenchmark INTERFACE _libbenchmark)
+
+
+# Boost.TypeErasure
 find_package(Boost COMPONENTS type_erasure)
 if (Boost_FOUND)
-  set(DEPENDENCY_boost_type_erasure Boost::type_erasure)
+  add_library(dependency.BoostTypeErasure INTERFACE)
+  target_link_libraries(dependency.BoostTypeErasure INTERFACE Boost::type_erasure)
 endif()
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_define_targets()
-set(DEPENDENCY_google_benchmark CONAN_PKG::google-benchmark)

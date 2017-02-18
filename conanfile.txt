@@ -1,5 +1,0 @@
-[requires]
-google-benchmark/1.1.0@cpace6/stable
-
-[generators]
-cmake

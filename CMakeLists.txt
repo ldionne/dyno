@@ -16,12 +16,12 @@ include(dependencies)
 add_library(te INTERFACE)
 target_include_directories(te INTERFACE include)
 target_compile_options(te INTERFACE -Wno-gnu-string-literal-operator-template)
-target_link_libraries(te INTERFACE ${DEPENDENCY_hana} ${DEPENDENCY_callable_traits})
+target_link_libraries(te INTERFACE dependency.Hana dependency.CallableTraits)
 
 
 # All unit tests and examples are given those properties.
 function(te_set_test_properties target)
-  target_link_libraries(${target} PRIVATE te ${DEPENDENCY_libawful})
+  target_link_libraries(${target} PRIVATE te dependency.libawful)
   set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
 endfunction()
 
