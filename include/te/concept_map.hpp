@@ -5,9 +5,9 @@
 #ifndef TE_CONCEPT_MAP_HPP
 #define TE_CONCEPT_MAP_HPP
 
+#include <te/detail/bind_signature.hpp>
 #include <te/detail/dsl.hpp>
 #include <te/detail/empty_object.hpp>
-#include <te/detail/transform_signature.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -48,30 +48,6 @@ namespace detail {
       lambda(std::forward<Args>(args)...);
     }
   };
-
-  template <typename Old, typename New>
-  struct replace {
-    template <typename T, typename = void>
-    struct apply { using type = T; };
-
-    template <typename Void>
-    struct apply<Old, Void> { using type = New; };
-    template <typename Void>
-    struct apply<Old&, Void> { using type = New&; };
-    template <typename Void>
-    struct apply<Old&&, Void> { using type = New&&; };
-    template <typename Void>
-    struct apply<Old*, Void> { using type = New*; };
-
-    template <typename Void>
-    struct apply<Old const, Void> { using type = New const; };
-    template <typename Void>
-    struct apply<Old const&, Void> { using type = New const&; };
-    template <typename Void>
-    struct apply<Old const&&, Void> { using type = New const&&; };
-    template <typename Void>
-    struct apply<Old const*, Void> { using type = New const*; };
-  };
 } // end namespace detail
 
 // A concept map is a statically-known mapping from functions implemented by
@@ -100,9 +76,8 @@ struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
         Name,
         detail::default_constructible_lambda<
           Function,
-          typename detail::transform_signature<
-            typename decltype(Concept{}.get_signature(Name{}))::type,
-            detail::replace<te::T, T>::template apply
+          typename detail::bind_signature<
+            typename decltype(Concept{}.get_signature(Name{}))::type, T
           >::type
         >
       >...
