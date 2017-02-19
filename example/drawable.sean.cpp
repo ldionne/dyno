@@ -2,16 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te.hpp>
-
 #include <cassert>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-using namespace te::literals;
 
+
+//
+// Example taken from Sean Parent's talk "Inheritance Is The Base Class of Evil"
+// at GoingNative 2013. See https://goo.gl/svMkvk for video.
+//
 
 template <typename Object>
 using document_t = std::vector<Object>;
@@ -53,31 +55,31 @@ void draw(document_t<Object> const& self, std::ostream& out) {
   out << "</document>" << std::endl;
 }
 
-
-
-struct Drawable : decltype(te::requires(
-  "draw"_s = te::function<void (te::T const&, std::ostream&)>
-)) { };
-
 class object_t {
 public:
   template <typename T>
   object_t(T x)
-    : vtable_{
-      te::make_concept_map<Drawable, T>(
-        "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
-      )
-    }
-    , self_{std::make_shared<T>(std::move(x))}
+    : self_{std::make_shared<model<T>>(std::move(x))}
   { }
 
-  friend void draw(object_t const& x, std::ostream& out) {
-    x.vtable_["draw"_s](x.self_.get(), out);
-  }
+  friend void draw(object_t const& x, std::ostream& out)
+  { x.self_->draw_(out); }
 
 private:
-  te::remote_vtable<te::local_vtable<Drawable>> vtable_;
-  std::shared_ptr<void const> self_;
+  struct concept_t {
+    virtual ~concept_t() = default;
+    virtual void draw_(std::ostream&) const = 0;
+  };
+
+  template <typename T>
+  struct model : concept_t {
+    explicit model(T x) : data_(std::move(x)) { }
+    void draw_(std::ostream& out) const override final
+    { draw(data_, out); }
+    T data_;
+  };
+
+  std::shared_ptr<concept_t const> self_;
 };
 
 
