@@ -7,6 +7,7 @@
 
 #include <te/detail/dsl.hpp>
 #include <te/detail/empty_object.hpp>
+#include <te/detail/transform_signature.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -19,8 +20,6 @@
 #include <boost/hana/pair.hpp>
 #include <boost/hana/unpack.hpp>
 
-#include <boost/callable_traits/function_type.hpp>
-
 #include <type_traits>
 #include <utility>
 
@@ -31,7 +30,7 @@ namespace detail {
   // We wrap all lambdas and function objects passed to the library using this
   // hack, so that we can pretend stateless lambdas are default constructible
   // in the rest of the library.
-  template <typename F, typename Signature = boost::callable_traits::function_type_t<F>>
+  template <typename F, typename Signature>
   struct default_constructible_lambda;
 
   template <typename F, typename R, typename ...Args>
@@ -40,6 +39,38 @@ namespace detail {
       auto lambda = detail::empty_object<F>::get();
       return lambda(std::forward<Args>(args)...);
     }
+  };
+
+  template <typename F, typename ...Args>
+  struct default_constructible_lambda<F, void(Args...)> {
+    constexpr void operator()(Args ...args) const {
+      auto lambda = detail::empty_object<F>::get();
+      lambda(std::forward<Args>(args)...);
+    }
+  };
+
+  template <typename Old, typename New>
+  struct replace {
+    template <typename T, typename = void>
+    struct apply { using type = T; };
+
+    template <typename Void>
+    struct apply<Old, Void> { using type = New; };
+    template <typename Void>
+    struct apply<Old&, Void> { using type = New&; };
+    template <typename Void>
+    struct apply<Old&&, Void> { using type = New&&; };
+    template <typename Void>
+    struct apply<Old*, Void> { using type = New*; };
+
+    template <typename Void>
+    struct apply<Old const, Void> { using type = New const; };
+    template <typename Void>
+    struct apply<Old const&, Void> { using type = New const&; };
+    template <typename Void>
+    struct apply<Old const&&, Void> { using type = New const&&; };
+    template <typename Void>
+    struct apply<Old const*, Void> { using type = New const*; };
   };
 } // end namespace detail
 
@@ -51,11 +82,11 @@ namespace detail {
 // Note that everything in the concept map is known statically. Specifically,
 // the types of the functions in the concept map are known statically, and
 // e.g. lambdas will be stored as-is (not as function pointers).
-template <typename T, typename ...Mappings>
+template <typename Concept, typename T, typename ...Mappings>
 struct concept_map_t;
 
-template <typename T, typename ...Name, typename ...Function>
-struct concept_map_t<T, boost::hana::pair<Name, Function>...> {
+template <typename Concept, typename T, typename ...Name, typename ...Function>
+struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
   constexpr concept_map_t() = default;
 
   template <typename Name_>
@@ -65,7 +96,16 @@ struct concept_map_t<T, boost::hana::pair<Name, Function>...> {
 
   static constexpr auto as_hana_map() {
     return boost::hana::map<
-      boost::hana::pair<Name, detail::default_constructible_lambda<Function>>...
+      boost::hana::pair<
+        Name,
+        detail::default_constructible_lambda<
+          Function,
+          typename detail::transform_signature<
+            typename decltype(Concept{}.get_signature(Name{}))::type,
+            detail::replace<te::T, T>::template apply
+          >::type
+        >
+      >...
     >{};
   }
 
@@ -85,7 +125,7 @@ private:
       "the right function from the concept map. You can find the contents of "
       "the concept map and the function you were trying to access in the "
       "compiler error message, probably in the following format: "
-      "`concept_map_t<MODEL, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
+      "`concept_map_t<CONCEPT, MODEL, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
   }
 };
 
@@ -209,7 +249,7 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
       "forget to define a function in your concept map, and otherwise make sure "
       "the proper default concept maps are kicking in.");
     return boost::hana::unpack(merged, [](auto ...m) {
-      return te::concept_map_t<T, decltype(m)...>{};
+      return te::concept_map_t<Concept, T, decltype(m)...>{};
     });
   };
   return decltype(make()){};
@@ -235,7 +275,7 @@ constexpr auto make_default_concept_map(boost::hana::pair<Name, Function> ...map
       return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
     });
     return boost::hana::unpack(merged, [](auto ...m) {
-      return te::concept_map_t<T, decltype(m)...>{};
+      return te::concept_map_t<Concept, T, decltype(m)...>{};
     });
   };
   return decltype(make()){};

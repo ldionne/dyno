@@ -6,8 +6,7 @@
 #define TE_DETAIL_ERASE_SIGNATURE_HPP
 
 #include <te/detail/eraser_traits.hpp>
-
-#include <type_traits>
+#include <te/detail/transform_signature.hpp>
 
 
 namespace te { namespace detail {
@@ -27,21 +26,9 @@ namespace te { namespace detail {
 // For actually storing an object of this type, one needs to add a pointer
 // qualifier to it.
 template <typename Signature, typename Eraser = void>
-struct erase_signature;
-
-template <typename R, typename ...Args, typename Eraser>
-struct erase_signature<R (Args...), Eraser> {
-  using Traits = detail::eraser_traits<Eraser>;
-  using Result = typename Traits::template erase_placeholder<R>::type;
-  using type = Result (typename Traits::template erase_placeholder<Args>::type...);
-};
-
-template <typename R, typename ...Args, typename Eraser>
-struct erase_signature<R (Args..., ...), Eraser> {
-  using Traits = detail::eraser_traits<Eraser>;
-  using Result = typename Traits::template erase_placeholder<R>::type;
-  using type = Result (typename Traits::template erase_placeholder<Args>::type..., ...);
-};
+using erase_signature = detail::transform_signature<
+  Signature, detail::eraser_traits<Eraser>::template erase_placeholder
+>;
 
 }} // end namespace te::detail
 

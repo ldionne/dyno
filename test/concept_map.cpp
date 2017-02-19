@@ -10,7 +10,7 @@ using namespace te::literals;
 
 
 struct A : decltype(te::requires(
-  "f"_s = te::function<void (te::T&)>
+  "f"_s = te::function<int (te::T&)>
 )) { };
 
 struct B : decltype(te::requires(
