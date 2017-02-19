@@ -7,9 +7,20 @@
 
 #include <te/concept.hpp>
 #include <te/concept_map.hpp>
+#include <te/storage.hpp>
 
 
 namespace te {
+
+struct Storable : decltype(te::requires(
+  "type_info"_s = te::function<te::type_info()>
+)) { };
+
+template <typename T>
+auto const default_concept_map<Storable, T> = te::make_default_concept_map<Storable, T>(
+  "type_info"_s = []() { return te::type_info_for<T>; }
+);
+
 
 struct DefaultConstructible : decltype(te::requires(
   "default-construct"_s = te::function<void (void*)>
@@ -74,7 +85,13 @@ auto const default_concept_map<EqualityComparable, T> = te::make_default_concept
 );
 
 
+// TODO:
+// This concept is required by the polymorphic storage, and there's no reason
+// why it would be a dependency of `Destructible`. The only reason why it's
+// like that is to avoid examples and benchmarks having to duplicate the
+// definition of `Storable` until a solution is found.
 struct Destructible : decltype(te::requires(
+  te::Storable{},
   "destruct"_s = te::function<void (te::T&)>
 )) { };
 

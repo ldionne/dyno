@@ -14,23 +14,12 @@
 using namespace te::literals;
 
 
-struct Storable : decltype(te::requires(
-  "type_info"_s = te::function<te::type_info()>
-)) { };
-
-template <typename T>
-auto const te::default_concept_map<Storable, T> = te::make_default_concept_map<Storable, T>(
-  "type_info"_s = []() { return te::type_info_for<T>; }
-);
-
 // This is the definition of an Iterator concept using a "generic" language.
 // Instead of defining specific methods that must be defined, it defines its
 // interface in terms of compile-time strings, assuming these may be fulfilled
 // in possibly many different ways.
 template <typename Reference>
 struct Iterator : decltype(te::requires(
-  Storable{}, // TODO: This is an implementation detail of our any_iterator,
-              //       and it shouldn't leak into the concept definition
   te::CopyConstructible{},
   te::CopyAssignable{},
   te::Destructible{},

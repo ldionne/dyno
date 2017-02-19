@@ -10,17 +10,7 @@
 using namespace te::literals;
 
 
-struct Storable : decltype(te::requires(
-  "type_info"_s = te::function<te::type_info()>
-)) { };
-
-template <typename T>
-auto const te::default_concept_map<Storable, T> = te::make_default_concept_map<Storable, T>(
-  "type_info"_s = []() { return te::type_info_for<T>; }
-);
-
 struct Concept : decltype(te::requires(
-  Storable{},
   te::CopyConstructible{},
   te::Swappable{},
   te::Destructible{}
