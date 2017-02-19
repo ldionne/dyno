@@ -240,7 +240,7 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
     constexpr bool all_functions_satisfied = decltype(boost::hana::is_subset(
       boost::hana::keys(Concept::all_clauses()),
       boost::hana::keys(merged)
-    )){};
+    ))::value;
     static_assert(all_functions_satisfied,
       "te::make_concept_map: Incomplete definition of the concept map. Despite "
       "looking at the default concept map for this concept and the concept maps "

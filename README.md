@@ -1,4 +1,4 @@
-# Type Erased: Runtime polymorphism done right
+# Type Erased: Runtime polymorphism done right <a target="_blank" href="https://travis-ci.org/ldionne/te">![Travis status][badge.Travis]</a>
 
 ## DISCLAIMER
 At this point, this library is experimental and it is a pure curiosity.
@@ -476,6 +476,7 @@ f(std::vector<int>{1, 2, 3}) // prints "1 2 3 "
 
 
 <!-- Links -->
+[badge.Travis]: https://travis-ci.org/ldionne/te.svg?branch=master
 [Boost.Hana]: https://github.com/boostorg/hana
 [C++0x Concept Maps]: https://isocpp.org/wiki/faq/cpp0x-concepts-history#cpp0x-concept-maps
 [CallableTraits]: https://github.com/badair/callable_traits

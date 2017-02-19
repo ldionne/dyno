@@ -193,8 +193,8 @@ public:
     return *this;
   }
 
-  template <typename ...Empty, typename = std::enable_if_t<
-    std::is_base_of<std::bidirectional_iterator_tag, Empty..., iterator_category>{}
+  template <bool True = true, typename = std::enable_if_t<True &&
+    std::is_base_of<std::bidirectional_iterator_tag, iterator_category>{}
   >> any_iterator& operator--() {
     poly_.virtual_("decrement"_s)(poly_.get());
     return *this;
