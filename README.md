@@ -1,4 +1,5 @@
-# Type Erased: Runtime polymorphism done right <a target="_blank" href="https://travis-ci.org/ldionne/te">![Travis status][badge.Travis]</a>
+# Type Erased: Runtime polymorphism done right
+<a target="_blank" href="https://travis-ci.org/ldionne/te">![Travis status][badge.Travis]</a>
 
 ## DISCLAIMER
 At this point, this library is experimental and it is a pure curiosity.
