@@ -94,8 +94,8 @@ target_link_libraries(dependency.GoogleBenchmark INTERFACE _libbenchmark)
 
 
 # Boost.TypeErasure
-find_package(Boost COMPONENTS type_erasure)
+find_package(Boost)
 if (Boost_FOUND)
   add_library(dependency.BoostTypeErasure INTERFACE)
-  target_link_libraries(dependency.BoostTypeErasure INTERFACE Boost::type_erasure)
+  target_include_directories(dependency.BoostTypeErasure INTERFACE ${Boost_INCLUDE_DIRS})
 endif()

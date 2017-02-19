@@ -15,7 +15,6 @@ branches:
 addons:
   apt:
     packages:
-      - ninja-build
       - clang-3.7
       - clang-3.8
       # - g++-6
@@ -69,9 +68,14 @@ install:
       export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DEPS_DIR}/llvm/install/lib"
     fi
 
+  # Install Boost headers
+  - BOOST_URL="https://sourceforge.net/projects/boost/files/boost/1.63.0/boost_1_63_0.tar.bz2/download"
+  - mkdir boost && travis_retry wget --no-check-certificate --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C boost
+  - (cd boost && ./bootstrap.sh && ./b2 headers)
+
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
-  - (mkdir build && cd build && cmake .. -GNinja)
+  - (mkdir build && cd build && cmake .. -DBOOST_ROOT=${DEPS_DIR}/boost)
   - cmake --build build --target dependencies
 
 script:
