@@ -230,30 +230,11 @@ constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
   return decltype(make()){};
 }
 
-// Equivalent to `te::make_concept_map`, but for populating default concept maps.
-//
-// TODO:
-// This is a not-so-great solution for the following problem: when populating
-// a default concept map, we want to be able to populate it only partially,
-// while leaving the rest of the map to be populated by an explicit customization.
-// We can't use `te::make_concept_map` for this, because it makes sure that
-// the created concept map is sufficient to fulfill the concept, which would
-// not be the case for a default concept map.
+// Creates a default concept map for the given `Concept`, type `T` and
+// containing the given functions.
 template <typename Concept, typename T, typename ...Name, typename ...Function>
-constexpr auto make_default_concept_map(boost::hana::pair<Name, Function> ...mappings) {
-  // This `decltype(make()){}` pattern saves a lot of time that would be spent optimizing.
-  auto const make = [&]() {
-    auto mappings_ = boost::hana::make_map(mappings...);
-    auto refined = Concept::refined_concepts();
-    auto merged = boost::hana::fold_left(refined, mappings_, [](auto mappings, auto c) {
-      using C = typename decltype(c)::type;
-      return detail::merge(mappings, te::concept_map<C, T>.as_hana_map());
-    });
-    return boost::hana::unpack(merged, [](auto ...m) {
-      return te::concept_map_t<Concept, T, decltype(m)...>{};
-    });
-  };
-  return decltype(make()){};
+constexpr auto make_default_concept_map(boost::hana::pair<Name, Function>...) {
+  return te::concept_map_t<Concept, T, boost::hana::pair<Name, Function>...>{};
 }
 
 } // end namespace te
