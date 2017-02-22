@@ -81,6 +81,7 @@ ExternalProject_Add(install.GoogleBenchmark EXCLUDE_FROM_ALL 1
   PREFIX "${CMAKE_BINARY_DIR}/dependencies/GoogleBenchmark"
   CMAKE_ARGS "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
              "-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>"
+             "-DBENCHMARK_ENABLE_TESTING=OFF"
              "-DCMAKE_BUILD_TYPE=Release" # Always build in release mode
   UPDATE_COMMAND "" # Disable source work-tree update
 )
