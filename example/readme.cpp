@@ -17,7 +17,7 @@ struct Drawable : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto te::default_concept_map<Drawable, T> = te::make_default_concept_map<Drawable, T>(
+auto const te::default_concept_map<Drawable, T> = te::make_concept_map(
   "draw"_s = [](auto const& t, std::ostream& out) { t.draw(out); }
 );
 
@@ -36,7 +36,7 @@ private:
 struct Square { /* ... */ };
 
 template <>
-auto te::concept_map<Drawable, Square> = te::make_concept_map<Drawable, Square>(
+auto const te::concept_map<Drawable, Square> = te::make_concept_map(
   "draw"_s = [](Square const& square, std::ostream& out) {
     out << "square" << std::endl;
   }
@@ -51,9 +51,9 @@ struct Circle {
 
 
 template <typename T>
-auto te::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
+auto const te::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
   std::cout << std::declval<T>()
-)>> = te::make_concept_map<Drawable, std::vector<T>>(
+)>> = te::make_concept_map(
   "draw"_s = [](std::vector<T> const& v, std::ostream& out) {
     for (auto const& x : v)
       out << x << ' ';

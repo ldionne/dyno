@@ -15,7 +15,7 @@ struct A : decltype(te::requires(
 
 struct Foo { };
 
-auto map = te::make_concept_map<A, int>("f"_s = [](int&) { });
+auto map = te::complete_concept_map<A, Foo>(te::make_concept_map("f"_s = [](int&) { }));
 
 static_assert(std::is_default_constructible<decltype(map)>{}, "");
 

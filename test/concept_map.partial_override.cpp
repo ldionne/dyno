@@ -18,19 +18,20 @@ struct Concept : decltype(te::requires(
 )) { };
 
 template <typename T>
-static auto const te::default_concept_map<Concept, T> = te::make_default_concept_map<Concept, T>(
+static auto const te::default_concept_map<Concept, T> = te::make_concept_map(
   "f"_s = [](T&) { return 222; }
 );
 
 struct Foo { };
 template <>
-auto const te::concept_map<Concept, Foo> = te::make_concept_map<Concept, Foo>(
+auto const te::concept_map<Concept, Foo> = te::make_concept_map(
   "f"_s = [](Foo&) { return 555; },
   "g"_s = [](Foo&) { return 333; }
 );
 
 int main() {
   Foo foo;
-  TE_CHECK(te::concept_map<Concept, Foo>["f"_s](foo) == 555);
-  TE_CHECK(te::concept_map<Concept, Foo>["g"_s](foo) == 333);
+  auto complete = te::complete_concept_map<Concept, Foo>(te::concept_map<Concept, Foo>);
+  TE_CHECK(complete["f"_s](foo) == 555);
+  TE_CHECK(complete["g"_s](foo) == 333);
 }

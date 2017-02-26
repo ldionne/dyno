@@ -12,12 +12,12 @@ struct Fooable : decltype(te::requires(
 )) { };
 
 template <>
-auto te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
+auto te::concept_map<Fooable, int> = te::make_concept_map(
   "foo"_s = [](int& x) { ++x; }
 );
 
 int main() {
-  auto const& map = te::concept_map<Fooable, int>;
+  auto const& map = te::complete_concept_map<Fooable, int>(te::concept_map<Fooable, int>);
 
   // MESSAGE[Request for the implementation of a function that was not provided in the concept map]
   auto bar = map["bar"_s];

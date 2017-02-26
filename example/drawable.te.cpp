@@ -64,9 +64,9 @@ public:
   template <typename T>
   object_t(T x)
     : vtable_{
-      te::make_concept_map<Drawable, T>(
+      te::complete_concept_map<Drawable, T>(te::make_concept_map(
         "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
-      )
+      ))
     }
     , self_{std::make_shared<T>(std::move(x))}
   { }

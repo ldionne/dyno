@@ -27,7 +27,7 @@ struct Drawable : decltype(te::requires(
 
 // Provide a default implementation of that interface
 template <typename T>
-auto te::default_concept_map<Drawable, T> = te::make_default_concept_map<Drawable, T>(
+auto const te::default_concept_map<Drawable, T> = te::make_concept_map(
   "draw"_s = [](T const& self, std::ostream& out) { self.draw(out); }
 );
 
@@ -223,7 +223,7 @@ provided via what is called a _concept map_ (after [C++0x Concept Maps][]):
 struct Square { /* ... */ };
 
 template <>
-auto te::concept_map<Drawable, Square> = te::make_concept_map<Drawable, Square>(
+auto const te::concept_map<Drawable, Square> = te::make_concept_map(
   "draw"_s = [](Square const& square, std::ostream& out) {
     out << "square" << std::endl;
   }
@@ -232,7 +232,7 @@ auto te::concept_map<Drawable, Square> = te::make_concept_map<Drawable, Square>(
 
 > This construct is the specialization of a C++14 variable template named
 > `concept_map` defined in the `te::` namespace. We then initialize that
-> specialization with `te::make_concept_map<Drawable, Square>(...)`.
+> specialization with `te::make_concept_map(...)`.
 
 This _concept map_ defines how the type `Square` satisfies the `Drawable`
 concept. In a sense, it _maps_ the type `Square` to its implementation of
@@ -416,7 +416,7 @@ For this, one can use `te::default_concept_map`:
 
 ```c++
 template <typename T>
-auto te::default_concept_map<Drawable, T> = te::make_default_concept_map<Drawable, T>(
+auto const te::default_concept_map<Drawable, T> = te::make_concept_map(
   "draw"_s = [](auto const& t, std::ostream& out) { t.draw(out); }
 );
 ```
@@ -442,7 +442,7 @@ default one:
 
 ```c++
 template <>
-auto te::concept_map<Drawable, Circle> = te::make_concept_map<Drawable, Circle>(
+auto te::concept_map<Drawable, Circle> = te::make_concept_map(
   "draw"_s = [](Circle const& circle, std::ostream& out) {
     out << "triangle" << std::endl;
   }
@@ -460,9 +460,9 @@ achieved by using this (not so) secret trick:
 
 ```c++
 template <typename T>
-auto te::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
+auto const te::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
   std::cout << std::declval<T>()
-)>> = te::make_concept_map<Drawable, std::vector<T>>(
+)>> = te::make_concept_map(
   "draw"_s = [](std::vector<T> const& v, std::ostream& out) {
     for (auto const& x : v)
       out << x << ' ';

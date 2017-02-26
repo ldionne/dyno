@@ -226,11 +226,11 @@ namespace { namespace te_style {
     template <typename It>
     explicit any_iterator(It it)
       : vtable_{
-        te::make_concept_map<Iterator<Reference>, It>(
+        te::complete_concept_map<Iterator<reference>, It>(te::make_concept_map(
           "increment"_s = [](It& self) { ++self; },
           "dereference"_s = [](It& self) -> decltype(auto) { return *self; },
           "equal"_s = [](It const& a, It const& b) -> bool { return a == b; }
-        )
+        ))
       }
       , self_{std::make_shared<It>(std::move(it))}
     { }

@@ -67,7 +67,9 @@ private:
 public:
   template <typename T, typename RawT = std::decay_t<T>>
   explicit poly(T&& t)
-    : vtable_{te::concept_map<ActualConcept, RawT>}
+    : vtable_{te::complete_concept_map<ActualConcept, RawT>(
+        te::concept_map<ActualConcept, RawT>
+      )}
     , storage_{std::forward<T>(t)}
   { }
 

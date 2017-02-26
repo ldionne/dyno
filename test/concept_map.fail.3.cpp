@@ -12,10 +12,12 @@ struct Fooable : decltype(te::requires(
   "bar"_s = te::function<void (te::T&)>
 )) { };
 
-// MESSAGE[Incomplete definition of the concept map]
 template <>
-static auto const te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
+static auto const te::concept_map<Fooable, int> = te::make_concept_map(
   "foo"_s = [](int&) { }
 );
+
+// MESSAGE[Incomplete definition of your concept map]
+auto const& complete = te::complete_concept_map<Fooable, int>(te::concept_map<Fooable, int>);
 
 int main() { }

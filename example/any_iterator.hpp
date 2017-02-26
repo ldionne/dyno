@@ -69,8 +69,7 @@ using difference_t = typename std::iterator_traits<Iterator>::difference_type;
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
 template <typename T>
-auto const te::default_concept_map<Iterator<reference_t<T>>, T>
-  = te::make_default_concept_map<Iterator<reference_t<T>>, T>(
+auto const te::default_concept_map<Iterator<reference_t<T>>, T> = te::make_concept_map(
   "increment"_s = [](T& self) { ++self; },
   "dereference"_s = [](T& self) -> reference_t<T> { return *self; }
 );
@@ -78,14 +77,14 @@ auto const te::default_concept_map<Iterator<reference_t<T>>, T>
 template <typename T>
 auto const te::default_concept_map<BidirectionalIterator<reference_t<T>>, T,
   when<std::bidirectional_iterator_tag, T>
-> = te::make_default_concept_map<BidirectionalIterator<reference_t<T>>, T>(
+> = te::make_concept_map(
   "decrement"_s = [](T& self) -> void { --self; }
 );
 
 template <typename T>
 auto const te::default_concept_map<RandomAccessIterator<reference_t<T>, difference_t<T>>, T,
   when<std::random_access_iterator_tag, T>
-> = te::make_default_concept_map<RandomAccessIterator<reference_t<T>, difference_t<T>>, T>(
+> = te::make_concept_map(
   "advance"_s = [](T& self, difference_t<T> diff) -> void {
     std::advance(self, diff);
   },

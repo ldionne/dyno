@@ -16,7 +16,7 @@ struct Drawable : decltype(te::requires(
 
 // Provide a default implementation of that interface
 template <typename T>
-auto te::default_concept_map<Drawable, T> = te::make_default_concept_map<Drawable, T>(
+auto const te::default_concept_map<Drawable, T> = te::make_concept_map(
   "draw"_s = [](T const& self, std::ostream& out) { self.draw(out); }
 );
 

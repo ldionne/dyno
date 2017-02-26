@@ -13,12 +13,14 @@ struct Fooable : decltype(te::requires(
 )) { };
 
 template <>
-auto te::concept_map<Fooable, int> = te::make_concept_map<Fooable, int>(
+auto te::concept_map<Fooable, int> = te::make_concept_map(
   "foo"_s = [](int& x) { ++x; }
 );
 
 int main() {
-  te::local_vtable<Fooable> vtable{te::concept_map<Fooable, int>};
+  te::local_vtable<Fooable> vtable{
+    te::complete_concept_map<Fooable, int>(te::concept_map<Fooable, int>)
+  };
 
   // MESSAGE[Request for a virtual function that is not in the vtable]
   auto bar = vtable["bar"_s];

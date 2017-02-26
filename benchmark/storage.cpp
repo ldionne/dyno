@@ -18,7 +18,9 @@ struct Concept : decltype(te::requires(
 
 template <typename Storage>
 static void BM_swap_same_types(benchmark::State& state) {
-  te::local_vtable<Concept> vtable{te::concept_map<Concept, std::string>};
+  te::local_vtable<Concept> vtable{
+    te::complete_concept_map<Concept, std::string>(te::concept_map<Concept, std::string>)
+  };
   Storage a{std::string{"foobar"}};
   Storage b{std::string{"boombaz"}};
 
@@ -35,8 +37,12 @@ static void BM_swap_same_types(benchmark::State& state) {
 
 template <typename Storage>
 static void BM_swap_different_types(benchmark::State& state) {
-  te::local_vtable<Concept> vtable_a{te::concept_map<Concept, int>};
-  te::local_vtable<Concept> vtable_b{te::concept_map<Concept, std::string>};
+  te::local_vtable<Concept> vtable_a{
+    te::complete_concept_map<Concept, int>(te::concept_map<Concept, int>)
+  };
+  te::local_vtable<Concept> vtable_b{
+    te::complete_concept_map<Concept, std::string>(te::concept_map<Concept, std::string>)
+  };
   Storage a{123};
   Storage b{std::string{"foobar"}};
 

@@ -18,7 +18,7 @@ struct Concept : decltype(te::requires(
 // lambda to delay the instantiation of the body. This test makes sure that
 // this "workaround" works.
 template <typename T>
-static auto const te::default_concept_map<Concept, T> = te::make_default_concept_map<Concept, T>(
+static auto const te::default_concept_map<Concept, T> = te::make_concept_map(
   "f"_s = [](auto& t) { t.invalid(); return 222; },
   "g"_s = [](auto& t) { t.valid(); return 333; }
 );
@@ -29,12 +29,13 @@ struct Foo {
 };
 
 template <>
-auto const te::concept_map<Concept, Foo> = te::make_concept_map<Concept, Foo>(
+auto const te::concept_map<Concept, Foo> = te::make_concept_map(
   "f"_s = [](Foo&) { return 444; }
 );
 
 int main() {
   Foo foo;
-  TE_CHECK(te::concept_map<Concept, Foo>["f"_s](foo) == 444);
-  TE_CHECK(te::concept_map<Concept, Foo>["g"_s](foo) == 333);
+  auto complete = te::complete_concept_map<Concept, Foo>(te::concept_map<Concept, Foo>);
+  TE_CHECK(complete["f"_s](foo) == 444);
+  TE_CHECK(complete["g"_s](foo) == 333);
 }

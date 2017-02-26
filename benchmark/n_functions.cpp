@@ -147,13 +147,13 @@ namespace { namespace te_split_ptr {
     template <typename T>
     explicit any(T t)
       : vtable_{
-        te::make_concept_map<Concept, T>(
+        te::complete_concept_map<Concept, T>(te::make_concept_map(
           "f1"_s = [](T& self) { ++self; },
           "f2"_s = [](T& self) { --self; },
           "f3"_s = [](T& self) { ++self; },
           "f4"_s = [](T& self) { --self; },
           "f5"_s = [](T& self) { ++self; }
-        )
+        ))
       }
       , self_{new T(t)}
     { }

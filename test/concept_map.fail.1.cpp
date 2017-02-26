@@ -12,6 +12,6 @@ struct Fooable : decltype(te::requires(
 )) { };
 
 int main() {
-  // MESSAGE[Incomplete definition of the concept map]
-  auto const& map = te::concept_map<Fooable, int>;
+  // MESSAGE[Incomplete definition of your concept map]
+  auto const& map = te::complete_concept_map<Fooable, int>(te::concept_map<Fooable, int>);
 }

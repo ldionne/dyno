@@ -17,7 +17,7 @@ struct Storable : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<Storable, T> = te::make_default_concept_map<Storable, T>(
+auto const default_concept_map<Storable, T> = te::make_concept_map(
   "type_info"_s = []() { return te::type_info_for<T>; }
 );
 
@@ -27,7 +27,7 @@ struct DefaultConstructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<DefaultConstructible, T> = te::make_default_concept_map<DefaultConstructible, T>(
+auto const default_concept_map<DefaultConstructible, T> = te::make_concept_map(
   "default-construct"_s = [](void* p) {
     new (p) T();
   }
@@ -39,7 +39,7 @@ struct MoveConstructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<MoveConstructible, T> = te::make_default_concept_map<MoveConstructible, T>(
+auto const default_concept_map<MoveConstructible, T> = te::make_concept_map(
   "move-construct"_s = [](void* p, T&& other) {
     new (p) T(std::move(other));
   }
@@ -52,7 +52,7 @@ struct CopyConstructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<CopyConstructible, T> = te::make_default_concept_map<CopyConstructible, T>(
+auto const default_concept_map<CopyConstructible, T> = te::make_concept_map(
   "copy-construct"_s = [](void* p, T const& other) {
     new (p) T(other);
   }
@@ -80,7 +80,7 @@ struct EqualityComparable : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<EqualityComparable, T> = te::make_default_concept_map<EqualityComparable, T>(
+auto const default_concept_map<EqualityComparable, T> = te::make_concept_map(
   "equal"_s = [](T const& a, T const& b) -> bool { return a == b; }
 );
 
@@ -96,7 +96,7 @@ struct Destructible : decltype(te::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<Destructible, T> = te::make_default_concept_map<Destructible, T>(
+auto const default_concept_map<Destructible, T> = te::make_concept_map(
   "destruct"_s = [](T& self) { self.~T(); }
 );
 

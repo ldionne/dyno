@@ -23,23 +23,30 @@ struct C : decltype(te::requires(B{})) { };
 struct Foo { };
 
 template <>
-auto const te::concept_map<A, Foo> = te::make_concept_map<A, Foo>(
+auto const te::concept_map<A, Foo> = te::make_concept_map(
   "f"_s = [](Foo&) { return 222; }
 );
 
 template <>
-auto const te::concept_map<B, Foo> = te::make_concept_map<B, Foo>(
+auto const te::concept_map<B, Foo> = te::make_concept_map(
   "g"_s = [](Foo&) { return 333; }
 );
 
 int main() {
   Foo foo;
 
-  TE_CHECK(te::concept_map<C, Foo>["f"_s](foo) == 222);
-  TE_CHECK(te::concept_map<C, Foo>["g"_s](foo) == 333);
-
-  TE_CHECK(te::concept_map<B, Foo>["f"_s](foo) == 222);
-  TE_CHECK(te::concept_map<B, Foo>["g"_s](foo) == 333);
-
-  TE_CHECK(te::concept_map<A, Foo>["f"_s](foo) == 222);
+  {
+    auto complete = te::complete_concept_map<C, Foo>(te::concept_map<C, Foo>);
+    TE_CHECK(complete["f"_s](foo) == 222);
+    TE_CHECK(complete["g"_s](foo) == 333);
+  }
+  {
+    auto complete = te::complete_concept_map<B, Foo>(te::concept_map<B, Foo>);
+    TE_CHECK(complete["f"_s](foo) == 222);
+    TE_CHECK(complete["g"_s](foo) == 333);
+  }
+  {
+    auto complete = te::complete_concept_map<A, Foo>(te::concept_map<A, Foo>);
+    TE_CHECK(complete["f"_s](foo) == 222);
+  }
 }
