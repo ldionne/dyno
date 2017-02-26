@@ -29,8 +29,10 @@ namespace detail {
   };
 } // end namespace detail
 
+// TODO: This vtable is currently broken since we have removed `unpack_vtable_layout`.
 template <typename Concept>
 struct vtable {
+  #if 0
   template <typename ConceptMap>
   constexpr explicit vtable(ConceptMap) {
     using Derived = te::unpack_vtable_layout<
@@ -50,6 +52,7 @@ struct vtable {
 private:
   using Base = te::unpack_vtable_layout<Concept, detail::vtable_base>;
   std::aligned_storage<sizeof(Base)> base_;
+  #endif
 };
 
 /*

@@ -5,29 +5,28 @@
 #ifndef TE_EXPERIMENTAL_UNROLLED_VTABLE_HPP
 #define TE_EXPERIMENTAL_UNROLLED_VTABLE_HPP
 
-#include <te/concept.hpp>
 #include <te/detail/erase_function.hpp>
+#include <te/detail/erase_signature.hpp>
 
-#include <utility>
+#include <boost/hana/functional/on.hpp>
+#include <boost/hana/pair.hpp>
+#include <boost/hana/type.hpp>
+#include <boost/hana/unpack.hpp>
 
 
 namespace te { namespace experimental {
 
 namespace detail {
-  template <typename Concept, typename ...Mappings>
+  template <typename ...Mappings>
   struct unrolled_vtable_impl;
-
-  template <typename Concept>
-  struct make_unrolled_vtable_impl {
-    template <typename ...Mappings>
-    using apply = detail::unrolled_vtable_impl<Concept, Mappings...>;
-  };
-} // end namespace detail
+}
 
 template <typename Concept>
-using unrolled_vtable = te::unpack_vtable_layout<
-  Concept, detail::make_unrolled_vtable_impl<Concept>::template apply
->;
+using unrolled_vtable = typename decltype(
+  boost::hana::unpack(Concept::all_clauses(),
+    boost::hana::template_<detail::unrolled_vtable_impl> ^boost::hana::on^ boost::hana::decltype_
+  )
+)::type;
 
 /*
 What follows is a script to generate the specializations of `unrolled_vtable_impl`.
@@ -37,19 +36,19 @@ Run the script as
 
 SCRIPTBEGIN
 <% (0..10).each do |n| %>
-template <typename Concept
-  <%= (0...n).map {|i| ", typename Name#{i}, typename Fptr#{i}" }.join("\n  ") %>
-> struct unrolled_vtable_impl<Concept
-  <%= (0...n).map {|i| ", std::pair<Name#{i}, Fptr#{i}>" }.join("\n  ") %>
+template <
+  <%= (0...n).map {|i| "typename Name#{i}, typename Sig#{i}" }.join(",\n  ") %>
+> struct unrolled_vtable_impl<
+  <%= (0...n).map {|i| "boost::hana::pair<Name#{i}, boost::hana::basic_type<Sig#{i}>>" }.join(",\n  ") %>
 > {
   template <typename ConceptMap>
   constexpr explicit unrolled_vtable_impl(ConceptMap map)
-    <%= ": " unless n == 0 %><%= (0...n).map {|i| "fptr#{i}_(te::detail::erase_function<typename decltype(Concept{}.get_signature(Name#{i}{}))::type>(map[Name#{i}{}]))" }.join("\n    , ") %>
+    <%= ": " unless n == 0 %><%= (0...n).map {|i| "fptr#{i}_(te::detail::erase_function<Sig#{i}>(map[Name#{i}{}]))" }.join("\n    , ") %>
   { }
   <%= (0...n).map {|i| "constexpr auto operator[](Name#{i}) const { return fptr#{i}_; };" }.join("\n  ") %>
 
 private:
-  <%= (0...n).map {|i| "Fptr#{i} fptr#{i}_;" }.join("\n  ") %>
+  <%= (0...n).map {|i| "typename detail::erase_signature<Sig#{i}>::type* fptr#{i}_;" }.join("\n  ") %>
 };
 <% end %>
 SCRIPTEND */

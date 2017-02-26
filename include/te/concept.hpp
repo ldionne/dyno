@@ -6,7 +6,6 @@
 #define TE_CONCEPT_HPP
 
 #include <te/detail/dsl.hpp>
-#include <te/detail/erase_signature.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -16,10 +15,8 @@
 #include <boost/hana/pair.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
-#include <boost/hana/unpack.hpp>
 
 #include <type_traits>
-#include <utility>
 
 
 namespace te {
@@ -54,10 +51,10 @@ namespace detail {
 //
 // A concept is created by using `te::requires`.
 //
-// From a `concept`, one can generate a virtual function table using
-// `unpack_vtable_layout`. In the future, it would also be possible to
-// do much more, like getting a predicate that checks whether a type
-// satisfies the concept.
+// From a `concept`, one can generate a virtual function table by looking at
+// the signatures of the functions defined in the concept. In the future, it
+// would also be possible to do much more, like getting a predicate that checks
+// whether a type satisfies the concept.
 template <typename ...Clauses>
 struct concept : detail::concept_base {
   template <typename Name_>
@@ -77,28 +74,6 @@ struct concept : detail::concept_base {
     return boost::hana::to_map(flat);
   }
 };
-
-namespace detail {
-  template <template <typename ...> class VTable>
-  struct unpack_vtable_layout {
-    template <typename ...Name, typename ...Signature>
-    constexpr auto operator()(boost::hana::pair<Name, boost::hana::basic_type<Signature>> ...) const {
-      return boost::hana::type<VTable<
-        std::pair<Name, typename detail::erase_signature<Signature>::type*>...
-      >>{};
-    }
-  };
-} // end namespace detail
-
-// Provides the layout required for a vtable to hold all the functions defined
-// by the given `Concept`. The vtable layout is provided as a parameter pack of
-// `std::pair`s where the first element is the name of the function (as a compile-
-// time string), and the second element is a function pointer with the right type
-// to store in the vtable.
-template <typename Concept, template <typename ...> class VTable>
-using unpack_vtable_layout = typename decltype(
-  boost::hana::unpack(Concept::all_clauses(), detail::unpack_vtable_layout<VTable>{})
-)::type;
 
 // Creates a `concept` with the given clauses. Note that a clause may be a
 // concept itself, in which case the clauses of that concept are used, and
