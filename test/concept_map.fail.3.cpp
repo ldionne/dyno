@@ -13,7 +13,7 @@ struct Fooable : decltype(te::requires(
 )) { };
 
 template <>
-static auto const te::concept_map<Fooable, int> = te::make_concept_map(
+auto const te::concept_map<Fooable, int> = te::make_concept_map(
   "foo"_s = [](int&) { }
 );
 

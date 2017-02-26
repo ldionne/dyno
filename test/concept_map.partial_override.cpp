@@ -18,7 +18,7 @@ struct Concept : decltype(te::requires(
 )) { };
 
 template <typename T>
-static auto const te::default_concept_map<Concept, T> = te::make_concept_map(
+auto const te::default_concept_map<Concept, T> = te::make_concept_map(
   "f"_s = [](T&) { return 222; }
 );
 
