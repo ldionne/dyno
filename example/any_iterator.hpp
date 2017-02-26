@@ -54,42 +54,27 @@ struct RandomAccessIterator : decltype(te::requires(
 )) { };
 
 
-template <typename Category, typename T>
-using when = std::enable_if_t<
-  std::is_base_of<Category, typename std::iterator_traits<T>::iterator_category>{}
->;
-
-template <typename Iterator>
-using reference_t = typename std::iterator_traits<Iterator>::reference;
-
-template <typename Iterator>
-using difference_t = typename std::iterator_traits<Iterator>::difference_type;
-
 // This is some kind of concept map; it maps the "generic" iterator interface
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
-template <typename T>
-auto const te::default_concept_map<Iterator<reference_t<T>>, T> = te::make_concept_map(
+template <typename Ref, typename T>
+auto const te::default_concept_map<Iterator<Ref>, T> = te::make_concept_map(
   "increment"_s = [](T& self) { ++self; },
-  "dereference"_s = [](T& self) -> reference_t<T> { return *self; }
+  "dereference"_s = [](T& self) -> Ref { return *self; }
 );
 
-template <typename T>
-auto const te::default_concept_map<BidirectionalIterator<reference_t<T>>, T,
-  when<std::bidirectional_iterator_tag, T>
-> = te::make_concept_map(
+template <typename Ref, typename T>
+auto const te::default_concept_map<BidirectionalIterator<Ref>, T> = te::make_concept_map(
   "decrement"_s = [](T& self) -> void { --self; }
 );
 
-template <typename T>
-auto const te::default_concept_map<RandomAccessIterator<reference_t<T>, difference_t<T>>, T,
-  when<std::random_access_iterator_tag, T>
-> = te::make_concept_map(
-  "advance"_s = [](T& self, difference_t<T> diff) -> void {
+template <typename Ref, typename Diff, typename T>
+auto const te::default_concept_map<RandomAccessIterator<Ref, Diff>, T> = te::make_concept_map(
+  "advance"_s = [](T& self, Diff diff) -> void {
     std::advance(self, diff);
   },
 
-  "distance"_s = [](T const& first, T const& last) -> difference_t<T> {
+  "distance"_s = [](T const& first, T const& last) -> Diff {
     return std::distance(first, last);
   }
 );
