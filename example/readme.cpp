@@ -16,8 +16,13 @@ struct Drawable : decltype(te::requires(
   "draw"_s = te::function<void (te::T const&, std::ostream&)>
 )) { };
 
+// TODO: Workaround Clang <= 3.8 bug with variable templates and generic lambdas.
+template <typename T, typename ...Args>
+constexpr auto delayed_concept_map(Args ...args)
+{ return te::make_concept_map(args...); }
+
 template <typename T>
-auto const te::default_concept_map<Drawable, T> = te::make_concept_map(
+auto const te::default_concept_map<Drawable, T> = delayed_concept_map<T>(
   "draw"_s = [](auto const& t, std::ostream& out) { t.draw(out); }
 );
 

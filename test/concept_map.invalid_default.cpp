@@ -17,8 +17,14 @@ struct Concept : decltype(te::requires(
 // Since the definition of `f` would be invalid, we need to use a generic
 // lambda to delay the instantiation of the body. This test makes sure that
 // this "workaround" works.
+
+// TODO: Workaround Clang <= 3.8 bug with variable templates and generic lambdas.
+template <typename T, typename ...Args>
+constexpr auto delayed_concept_map(Args ...args)
+{ return te::make_concept_map(args...); }
+
 template <typename T>
-auto const te::default_concept_map<Concept, T> = te::make_concept_map(
+auto const te::default_concept_map<Concept, T> = delayed_concept_map<T>(
   "f"_s = [](auto& t) { t.invalid(); return 222; },
   "g"_s = [](auto& t) { t.valid(); return 333; }
 );

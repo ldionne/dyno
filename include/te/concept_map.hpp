@@ -171,10 +171,10 @@ namespace detail {
   // Returns whether a Hana map, when interpreted as a concept map for fulfilling
   // the given `Concept`, is missing any functions.
   template <typename Concept, typename T, typename Map>
-  constexpr bool concept_map_is_complete = decltype(boost::hana::is_subset(
+  struct concept_map_is_complete : decltype(boost::hana::is_subset(
       boost::hana::keys(Concept::all_clauses()),
       boost::hana::keys(std::declval<Map>())
-  ))::value;
+  )) { };
 } // end namespace detail
 
 namespace diagnostic {
@@ -246,7 +246,7 @@ namespace diagnostic {
 // be resolved.
 template <typename Concept, typename T, typename Map,
   typename Complete = decltype(detail::complete_concept_map_impl<Concept, T>(std::declval<Map>())),
-  bool is_complete = detail::concept_map_is_complete<Concept, T, Complete>,
+  bool is_complete = detail::concept_map_is_complete<Concept, T, Complete>::value,
   typename = std::enable_if_t<is_complete>
 >
 constexpr auto complete_concept_map(Map) {
@@ -255,7 +255,7 @@ constexpr auto complete_concept_map(Map) {
 
 template <typename Concept, typename T, typename Map,
   typename Complete = decltype(detail::complete_concept_map_impl<Concept, T>(std::declval<Map>())),
-  bool is_complete = detail::concept_map_is_complete<Concept, T, Complete>,
+  bool is_complete = detail::concept_map_is_complete<Concept, T, Complete>::value,
   typename = std::enable_if_t<!is_complete>
 >
 constexpr void complete_concept_map(Map map) {
