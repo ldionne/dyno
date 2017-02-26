@@ -13,7 +13,8 @@ using namespace te::literals;
 struct Concept : decltype(te::requires(
   te::CopyConstructible{},
   te::Swappable{},
-  te::Destructible{}
+  te::Destructible{},
+  te::Storable{}
 )) { };
 
 template <typename Storage>

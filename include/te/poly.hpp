@@ -50,7 +50,7 @@ namespace te {
 // - How to combine the storage of the object with that of the vtable?
 //   For example, how would we allow storing the vtable inside the rest
 //   of the storage?
-// - Is it actually OK to require Destructible all the time?
+// - Is it actually OK to require Destructible and Storable all the time?
 template <
   typename Concept,
   typename Storage = te::remote_storage,
@@ -60,7 +60,8 @@ struct poly {
 private:
   using ActualConcept = decltype(te::requires(
     Concept{},
-    te::Destructible{}
+    te::Destructible{},
+    te::Storable{}
   ));
   using VTable = typename VTablePolicy::template apply<ActualConcept>;
 

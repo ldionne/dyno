@@ -98,13 +98,7 @@ auto const default_concept_map<EqualityComparable, T> = te::make_concept_map(
 );
 
 
-// TODO:
-// This concept is required by the polymorphic storage, and there's no reason
-// why it would be a dependency of `Destructible`. The only reason why it's
-// like that is to avoid examples and benchmarks having to duplicate the
-// definition of `Storable` until a solution is found.
 struct Destructible : decltype(te::requires(
-  te::Storable{},
   "destruct"_s = te::function<void (te::T&)>
 )) { };
 
