@@ -5,6 +5,7 @@
 #ifndef TE_STORAGE_HPP
 #define TE_STORAGE_HPP
 
+#include <te/builtin.hpp>
 #include <te/detail/dsl.hpp>
 
 #include <cassert>
@@ -15,21 +16,6 @@
 
 
 namespace te {
-
-// Encapsulates the minimal amount of information required to allocate
-// storage for an object of a given type.
-//
-// This should never be created explicitly; always use `te::type_info_for`.
-//
-// TODO: Rename this to `storage_info` or something along those lines, which
-// is more tailored to storage only.
-struct type_info {
-  std::size_t size;
-  std::size_t alignment;
-};
-
-template <typename T>
-constexpr type_info type_info_for{sizeof(T), alignof(T)};
 
 // concept PolymorphicStorage
 //
@@ -93,7 +79,7 @@ constexpr type_info type_info_for{sizeof(T), alignof(T)};
 // template <typename T = void> T const* get() const;
 //  Semantics: Return a pointer to the object inside the polymorphic storage.
 //
-// static constexpr bool can_store(te::type_info);
+// static constexpr bool can_store(te::storage_info);
 //  Semantics: Return whether the polymorphic storage can store an object with
 //             the specified type information.
 
@@ -127,7 +113,7 @@ public:
   sbo_storage& operator=(sbo_storage&&) = delete;
   sbo_storage& operator=(sbo_storage const&) = delete;
 
-  static constexpr bool can_store(te::type_info info) {
+  static constexpr bool can_store(te::storage_info info) {
     return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
   }
 
@@ -136,7 +122,7 @@ public:
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
-    if (can_store(te::type_info_for<RawT>)) {
+    if (can_store(te::storage_info_for<RawT>)) {
       uses_heap_ = false;
       new (&sb_) RawT(std::forward<T>(t));
     } else {
@@ -151,7 +137,7 @@ public:
   template <typename VTable>
   sbo_storage(sbo_storage const& other, VTable const& vtable) {
     if (other.uses_heap()) {
-      auto info = vtable["type_info"_s]();
+      auto info = vtable["storage_info"_s]();
       uses_heap_ = true;
       ptr_ = std::malloc(info.size);
       // TODO: That's not a really nice way to handle this
@@ -276,7 +262,7 @@ struct remote_storage {
 
   template <typename VTable>
   remote_storage(remote_storage const& other, VTable const& vtable)
-    : ptr_{std::malloc(vtable["type_info"_s]().size)}
+    : ptr_{std::malloc(vtable["storage_info"_s]().size)}
   {
     // TODO: That's not a really nice way to handle this
     assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
@@ -316,7 +302,7 @@ struct remote_storage {
     return static_cast<T const*>(ptr_);
   }
 
-  static constexpr bool can_store(te::type_info info) {
+  static constexpr bool can_store(te::storage_info info) {
     return true;
   }
 
@@ -343,7 +329,7 @@ public:
   local_storage& operator=(local_storage&&) = delete;
   local_storage& operator=(local_storage const&) = delete;
 
-  static constexpr bool can_store(te::type_info info) {
+  static constexpr bool can_store(te::storage_info info) {
     return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
   }
 
@@ -352,7 +338,7 @@ public:
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit inside it.
-    static_assert(can_store(te::type_info_for<RawT>),
+    static_assert(can_store(te::storage_info_for<RawT>),
       "te::local_storage: Trying to construct from an object that won't fit "
       "in the local storage.");
 
@@ -361,7 +347,7 @@ public:
 
   template <typename VTable>
   local_storage(local_storage const& other, VTable const& vtable) {
-    assert(can_store(vtable["type_info"_s]()) &&
+    assert(can_store(vtable["storage_info"_s]()) &&
       "te::local_storage: Trying to copy-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
@@ -370,7 +356,7 @@ public:
 
   template <typename VTable>
   local_storage(local_storage&& other, VTable const& vtable) {
-    assert(can_store(vtable["type_info"_s]()) &&
+    assert(can_store(vtable["storage_info"_s]()) &&
       "te::local_storage: Trying to move-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
@@ -456,7 +442,7 @@ struct non_owning_storage {
     return static_cast<T const*>(ptr_);
   }
 
-  static constexpr bool can_store(te::type_info info) {
+  static constexpr bool can_store(te::storage_info info) {
     return true;
   }
 
@@ -497,14 +483,14 @@ public:
   fallback_storage& operator=(fallback_storage const&) = delete;
 
   template <typename T, typename RawT = std::decay_t<T>,
-            typename = std::enable_if_t<First::can_store(te::type_info_for<RawT>)>>
+            typename = std::enable_if_t<First::can_store(te::storage_info_for<RawT>)>>
   explicit fallback_storage(T&& t) : in_first_{true}
   { new (&first_) First{std::forward<T>(t)}; }
 
   template <typename T, typename RawT = std::decay_t<T>, typename = void,
-            typename = std::enable_if_t<!First::can_store(te::type_info_for<RawT>)>>
+            typename = std::enable_if_t<!First::can_store(te::storage_info_for<RawT>)>>
   explicit fallback_storage(T&& t) : in_first_{false} {
-    static_assert(can_store(te::type_info_for<RawT>),
+    static_assert(can_store(te::storage_info_for<RawT>),
       "te::fallback_storage<First, Second>: Trying to construct from a type "
       "that can neither be stored in the primary nor in the secondary storage.");
 
@@ -595,7 +581,7 @@ public:
                                             : second_.template get<T>());
   }
 
-  static constexpr bool can_store(te::type_info info) {
+  static constexpr bool can_store(te::storage_info info) {
     return First::can_store(info) || Second::can_store(info);
   }
 };

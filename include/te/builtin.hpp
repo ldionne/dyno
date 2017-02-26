@@ -7,18 +7,31 @@
 
 #include <te/concept.hpp>
 #include <te/concept_map.hpp>
-#include <te/storage.hpp>
+
+#include <cstddef>
 
 
 namespace te {
 
+// Encapsulates the minimal amount of information required to allocate
+// storage for an object of a given type.
+//
+// This should never be created explicitly; always use `te::storage_info_for`.
+struct storage_info {
+  std::size_t size;
+  std::size_t alignment;
+};
+
+template <typename T>
+constexpr auto storage_info_for = storage_info{sizeof(T), alignof(T)};
+
 struct Storable : decltype(te::requires(
-  "type_info"_s = te::function<te::type_info()>
+  "storage_info"_s = te::function<te::storage_info()>
 )) { };
 
 template <typename T>
 auto const default_concept_map<Storable, T> = te::make_concept_map(
-  "type_info"_s = []() { return te::type_info_for<T>; }
+  "storage_info"_s = []() { return te::storage_info_for<T>; }
 );
 
 
