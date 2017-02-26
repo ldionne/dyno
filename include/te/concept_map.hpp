@@ -69,31 +69,29 @@ struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
 
   template <typename Name_>
   constexpr auto operator[](Name_ name) const {
-    return get_function(name, boost::hana::contains(as_hana_map(), name));
-  }
-
-  static constexpr auto as_hana_map() {
-    return boost::hana::map<
-      boost::hana::pair<
-        Name,
-        detail::default_constructible_lambda<
-          Function,
-          typename detail::bind_signature<
-            typename decltype(Concept{}.get_signature(Name{}))::type, T
-          >::type
-        >
-      >...
-    >{};
+    return get_function(name, boost::hana::contains(as_hana_map{}, name));
   }
 
 private:
+  using as_hana_map = boost::hana::map<
+    boost::hana::pair<
+      Name,
+      detail::default_constructible_lambda<
+        Function,
+        typename detail::bind_signature<
+          typename decltype(Concept{}.get_signature(Name{}))::type, T
+        >::type
+      >
+    >...
+  >;
+
   template <typename Name_>
-  constexpr auto get_function(Name_ name, boost::hana::true_) const {
-    return boost::hana::at_key(as_hana_map(), name);
+  static constexpr auto get_function(Name_ name, boost::hana::true_) {
+    return boost::hana::at_key(as_hana_map{}, name);
   }
 
   template <typename Name_, bool function_is_in_the_map = false>
-  constexpr auto get_function(Name_ name, boost::hana::false_) const {
+  static constexpr auto get_function(Name_ name, boost::hana::false_) {
     static_assert(function_is_in_the_map,
       "te::concept_map_t::operator[]: Request for the implementation of a "
       "function that was not provided in the concept map. Make sure the "
