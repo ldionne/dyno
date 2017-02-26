@@ -18,7 +18,7 @@ auto te::concept_map<Fooable, int> = te::make_concept_map(
 );
 
 int main() {
-  te::local_vtable<Fooable> vtable{
+  te::vtable<te::local<te::everything>>::apply<Fooable> vtable{
     te::complete_concept_map<Fooable, int>(te::concept_map<Fooable, int>)
   };
 

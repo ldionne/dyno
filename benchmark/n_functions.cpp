@@ -165,7 +165,9 @@ namespace { namespace te_split_ptr {
     any& f5() { vtable_["f5"_s](self_); return *this; }
 
   private:
-    te::remote_vtable<te::local_vtable<Concept>> vtable_;
+    using VTable = typename te::vtable<te::remote<te::everything>>::
+                   template apply<Concept>;
+    VTable vtable_;
     void* self_;
   };
 }} // end namespace te_split_ptr

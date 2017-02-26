@@ -249,7 +249,9 @@ namespace { namespace te_style {
     }
 
   private:
-    te::remote_vtable<te::local_vtable<Iterator<reference>>> vtable_;
+    using VTable = typename te::vtable<te::remote<te::everything>>::
+                   template apply<Iterator<reference>>;
+    VTable vtable_;
     std::shared_ptr<void> self_;
   };
 }} // end namespace te_style

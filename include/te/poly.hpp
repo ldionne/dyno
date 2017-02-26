@@ -42,8 +42,9 @@ namespace te {
 //    be a model of the `PolymorphicStorage` concept.
 //
 //  `VTable`
-//    The type used to provide the dynamic dispatching mechanism for methods.
-//    This must be a model of the `VTable` concept.
+//    The policy specifying how to implement the dynamic dispatching mechanism
+//    for methods. This must be a specialization of `te::vtable`.
+//    See `te::vtable` for details.
 //
 // TODO:
 // - How to combine the storage of the object with that of the vtable?
@@ -53,9 +54,7 @@ namespace te {
 template <
   typename Concept,
   typename Storage = te::remote_storage,
-  typename VTable = te::remote_vtable<te::local_vtable<
-    decltype(te::requires(Concept{}, te::Destructible{}))
-  >>
+  typename VTablePolicy = te::vtable<te::remote<te::everything>>
 >
 struct poly {
 private:
@@ -63,6 +62,7 @@ private:
     Concept{},
     te::Destructible{}
   ));
+  using VTable = typename VTablePolicy::template apply<ActualConcept>;
 
 public:
   template <typename T, typename RawT = std::decay_t<T>, typename ConceptMap>

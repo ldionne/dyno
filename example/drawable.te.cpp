@@ -76,7 +76,7 @@ public:
   }
 
 private:
-  te::remote_vtable<te::local_vtable<Drawable>> vtable_;
+  te::vtable<te::remote<te::everything>>::apply<Drawable> vtable_;
   std::shared_ptr<void const> self_;
 };
 

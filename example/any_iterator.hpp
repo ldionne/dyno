@@ -128,8 +128,7 @@ private:
   >::type;
 
   using Storage = te::local_storage<8>;
-  using VTable = te::remote_vtable<te::local_vtable<Concept>>;
-  te::poly<Concept, Storage, VTable> poly_;
+  te::poly<Concept, Storage> poly_;
 
 public:
   template <typename It>
