@@ -42,11 +42,11 @@ namespace { namespace handrolled_classic {
     template <typename T>
     struct model_t : concept_t {
       explicit model_t(T t) : concept_t{&vtable<model_t>}, value_{t} { }
-      void f1() { ++value_; };
-      void f2() { --value_; };
-      void f3() { ++value_; };
-      void f4() { --value_; };
-      void f5() { ++value_; };
+      void f1() { ++value_; }
+      void f2() { --value_; }
+      void f3() { ++value_; }
+      void f4() { --value_; }
+      void f5() { ++value_; }
       T value_;
     };
 
@@ -85,11 +85,11 @@ namespace { namespace handrolled_split_ptr {
     template <typename T>
     struct model_t {
       explicit model_t(T t) : value_{t} { }
-      void f1() { ++value_; };
-      void f2() { --value_; };
-      void f3() { ++value_; };
-      void f4() { --value_; };
-      void f5() { ++value_; };
+      void f1() { ++value_; }
+      void f2() { --value_; }
+      void f3() { ++value_; }
+      void f4() { --value_; }
+      void f5() { ++value_; }
       T value_;
     };
 
