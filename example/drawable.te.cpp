@@ -6,7 +6,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -63,21 +62,19 @@ class object_t {
 public:
   template <typename T>
   object_t(T x)
-    : vtable_{
-      te::complete_concept_map<Drawable, T>(te::make_concept_map(
-        "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
-      ))
-    }
-    , self_{std::make_shared<T>(std::move(x))}
+    : poly_{std::move(x), te::make_concept_map(
+      "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
+    )}
   { }
 
   friend void draw(object_t const& x, std::ostream& out) {
-    x.vtable_["draw"_s](x.self_.get(), out);
+    x.poly_.virtual_("draw"_s)(x.poly_.get(), out);
   }
 
 private:
-  te::vtable<te::remote<te::everything>>::apply<Drawable> vtable_;
-  std::shared_ptr<void const> self_;
+  using Storage = te::shared_remote_storage;
+  using VTable = te::vtable<te::remote<te::everything>>;
+  te::poly<Drawable, Storage, VTable> poly_;
 };
 
 

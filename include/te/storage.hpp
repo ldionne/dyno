@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -308,6 +309,68 @@ struct remote_storage {
 
 private:
   void* ptr_;
+};
+
+// Class implementing shared remote storage.
+//
+// This is basically the same as using a `std::shared_ptr` to store the
+// polymorphic object.
+//
+// TODO:
+// - Using `std::shared_ptr` in the implementation is suboptimal, because it
+//   reimplements type erasure for the deleter, but we could really reuse our
+//   vtable instead.
+// - For remote storage policies, should it be possible to specify whether the
+//   pointed-to storage is const?
+struct shared_remote_storage {
+  shared_remote_storage() = delete;
+  shared_remote_storage(shared_remote_storage const&) = delete;
+  shared_remote_storage(shared_remote_storage&&) = delete;
+  shared_remote_storage& operator=(shared_remote_storage&&) = delete;
+  shared_remote_storage& operator=(shared_remote_storage const&) = delete;
+
+  template <typename T, typename RawT = std::decay_t<T>>
+  explicit shared_remote_storage(T&& t)
+    : ptr_{std::make_shared<RawT>(std::forward<T>(t))}
+  { }
+
+  template <typename VTable>
+  shared_remote_storage(shared_remote_storage const& other, VTable const&)
+    : ptr_{other.ptr_}
+  { }
+
+  template <typename VTable>
+  shared_remote_storage(shared_remote_storage&& other, VTable const&)
+    : ptr_{std::move(other.ptr_)}
+  { }
+
+  template <typename MyVTable, typename OtherVTable>
+  void swap(MyVTable const&, shared_remote_storage& other, OtherVTable const&) {
+    using std::swap;
+    swap(this->ptr_, other.ptr_);
+  }
+
+  template <typename VTable>
+  void destruct(VTable const& vtable) {
+    ptr_ = nullptr;
+  }
+
+  template <typename T = void>
+  T* get() {
+    return static_cast<T*>(ptr_.get());
+  }
+
+  template <typename T = void>
+  T const* get() const {
+    return static_cast<T const*>(ptr_.get());
+  }
+
+  static constexpr bool can_store(te::storage_info) {
+    return true;
+  }
+
+private:
+  std::shared_ptr<void> ptr_;
 };
 
 // Class implementing unconditional storage in a local buffer.

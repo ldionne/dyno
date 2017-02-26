@@ -225,34 +225,30 @@ namespace { namespace te_style {
 
     template <typename It>
     explicit any_iterator(It it)
-      : vtable_{
-        te::complete_concept_map<Iterator<reference>, It>(te::make_concept_map(
-          "increment"_s = [](It& self) { ++self; },
-          "dereference"_s = [](It& self) -> decltype(auto) { return *self; },
-          "equal"_s = [](It const& a, It const& b) -> bool { return a == b; }
-        ))
-      }
-      , self_{std::make_shared<It>(std::move(it))}
+      : poly_{std::move(it), te::make_concept_map(
+        "increment"_s = [](It& self) { ++self; },
+        "dereference"_s = [](It& self) -> decltype(auto) { return *self; },
+        "equal"_s = [](It const& a, It const& b) -> bool { return a == b; }
+      )}
     { }
 
     any_iterator& operator++() {
-      vtable_["increment"_s](self_.get());
+      poly_.virtual_("increment"_s)(poly_.get());
       return *this;
     }
 
     reference operator*() {
-      return vtable_["dereference"_s](self_.get());
+      return poly_.virtual_("dereference"_s)(poly_.get());
     }
 
     friend bool operator==(any_iterator const& a, any_iterator const& b) {
-      return a.vtable_["equal"_s](a.self_.get(), b.self_.get());
+      return a.poly_.virtual_("equal"_s)(a.poly_.get(), b.poly_.get());
     }
 
   private:
-    using VTable = typename te::vtable<te::remote<te::everything>>::
-                   template apply<Iterator<reference>>;
-    VTable vtable_;
-    std::shared_ptr<void> self_;
+    using Storage = te::shared_remote_storage;
+    using VTable = te::vtable<te::remote<te::everything>>;
+    te::poly<Iterator<reference>, Storage, VTable> poly_;
   };
 }} // end namespace te_style
 
