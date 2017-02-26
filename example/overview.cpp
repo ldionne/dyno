@@ -46,6 +46,7 @@ void f(drawable const& d) {
 
 int main() {
   std::stringstream out;
+  std::streambuf* coutbuf = std::cout.rdbuf();
   std::cout.rdbuf(out.rdbuf());
 
   f(Square{});
@@ -54,4 +55,6 @@ int main() {
 
   f(Circle{});
   TE_CHECK(out.str() == "Circle");
+
+  std::cout.rdbuf(coutbuf);
 }
