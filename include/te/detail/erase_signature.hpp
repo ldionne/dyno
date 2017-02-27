@@ -11,6 +11,12 @@
 
 namespace te { namespace detail {
 
+template <typename Eraser>
+struct apply_erase_placeholder {
+  template <typename Placeholder>
+  using apply = detail::erase_placeholder<Eraser, Placeholder>;
+};
+
 // Transforms a signature potentially containing placeholders into a signature
 // containing no placeholders, and which would be suitable for storing as a
 // function pointer.
@@ -27,7 +33,7 @@ namespace te { namespace detail {
 // qualifier to it.
 template <typename Signature, typename Eraser = void>
 using erase_signature = detail::transform_signature<
-  Signature, detail::eraser_traits<Eraser>::template erase_placeholder
+  Signature, detail::apply_erase_placeholder<Eraser>::template apply
 >;
 
 }} // end namespace te::detail

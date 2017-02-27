@@ -21,15 +21,14 @@ struct thunk;
 template <typename Eraser, typename F, typename R_pl, typename ...Args_pl,
                                        typename R_ac, typename ...Args_ac>
 struct thunk<Eraser, F, R_pl(Args_pl...), R_ac(Args_ac...)> {
-  using Traits = detail::eraser_traits<Eraser>;
   static constexpr auto
-  apply(typename Traits::template erase_placeholder<Args_pl>::type ...args)
-    -> typename Traits::template erase_placeholder<R_pl>::type
+  apply(typename detail::erase_placeholder<Eraser, Args_pl>::type ...args)
+    -> typename detail::erase_placeholder<Eraser, R_pl>::type
   {
-    return Traits::template erase<R_pl>(
+    return detail::erase<Eraser, R_pl>::apply(
       detail::empty_object<F>::get()(
-        Traits::template unerase<Args_pl, Args_ac>(
-          std::forward<typename Traits::template erase_placeholder<Args_pl>::type>(args)
+        detail::unerase<Eraser, Args_pl, Args_ac>::apply(
+          std::forward<typename detail::erase_placeholder<Eraser, Args_pl>::type>(args)
         )...
       )
     );
@@ -39,14 +38,13 @@ struct thunk<Eraser, F, R_pl(Args_pl...), R_ac(Args_ac...)> {
 template <typename Eraser, typename F,    /* void */  typename ...Args_pl,
                                        typename R_ac, typename ...Args_ac>
 struct thunk<Eraser, F, void(Args_pl...), R_ac(Args_ac...)> {
-  using Traits = detail::eraser_traits<Eraser>;
   static constexpr auto
-  apply(typename Traits::template erase_placeholder<Args_pl>::type ...args)
+  apply(typename detail::erase_placeholder<Eraser, Args_pl>::type ...args)
     -> void
   {
     detail::empty_object<F>::get()(
-      Traits::template unerase<Args_pl, Args_ac>(
-        std::forward<typename Traits::template erase_placeholder<Args_pl>::type>(args)
+      detail::unerase<Eraser, Args_pl, Args_ac>::apply(
+        std::forward<typename detail::erase_placeholder<Eraser, Args_pl>::type>(args)
       )...
     );
   }

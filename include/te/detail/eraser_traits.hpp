@@ -13,10 +13,10 @@
 
 namespace te { namespace detail {
 
-// Traits for types that can be used to erase other types. These traits should
-// provide the following:
+// Traits for types that can be used to erase other types. The following traits
+// should be provided:
 //
-//  template <typename Placeholder>
+//  template <typename Eraser, typename Placeholder>
 //  struct erase_placeholder;
 //
 //    Metafunction transforming the type of a possibly cv and ref-qualified
@@ -26,8 +26,9 @@ namespace te { namespace detail {
 //    possibly, const or ref-qualified `te::T`s, but it can be customized
 //    for custom eraser types.
 //
-//  template <typename Placeholder, typename Actual>
-//  static constexpr erase_placeholder<Placeholder>::type erase(Actual);
+//  template <typename Eraser, typename Placeholder, typename Actual>
+//  static constexpr erase_placeholder<Eraser, Placeholder>::type
+//    erase<Eraser, Placeholder>::apply(Actual);
 //
 //    Function transforming an object to the generic representation for the
 //    given placeholder for that eraser. This is used to obtain a representation
@@ -42,8 +43,10 @@ namespace te { namespace detail {
 //    cv-qualifiers don't match). This is left to the implementation of the
 //    specific eraser.
 //
-//  template <typename Placeholder, typename Actual, typename Erased>
-//  static constexpr Actual unerase(Erased);
+//  template <typename Eraser, typename Placeholder, typename Actual>
+//  static constexpr Actual
+//    unerase<Eraser, Placeholder, Actual>
+//      ::apply(erase_placeholder<Eraser, Placeholder>::type)
 //
 //    This is the inverse operation to `erase`. It takes an object that was
 //    erased and interprets it as an object of the specified `Actual` type.
@@ -51,101 +54,93 @@ namespace te { namespace detail {
 //    requested type. This function is used to transform an object with an
 //    erased representation into an object that can be passed to a function
 //    stored in a concept map.
-template <typename Eraser>
-struct eraser_traits;
 
+template <typename Eraser, typename Placeholder>
+struct erase_placeholder {
+  static_assert(!std::is_same<Placeholder, te::T>{},
+    "te::T may not be passed by value; it is only a placeholder");
+  using type = Placeholder;
+};
+
+template <typename Eraser, typename Placeholder>
+struct erase {
+  template <typename Arg>
+  static constexpr decltype(auto) apply(Arg&& arg) {
+    return std::forward<Arg>(arg);
+  }
+};
+
+template <typename Eraser, typename Placeholder, typename Actual>
+struct unerase {
+  template <typename Arg>
+  static constexpr decltype(auto) apply(Arg&& arg)
+  { return std::forward<Arg>(arg); }
+};
 
 // Specialization for the `void` Eraser, which uses `void*` to erase types.
-template <typename T>
-struct void_erase_placeholder {
-  static_assert(!std::is_same<T, te::T>{},
-    "te::T may not be passed by value; it is only a placeholder");
-  using type = T;
-};
-template <> struct void_erase_placeholder<te::T const&>  { using type = void const*; };
-template <> struct void_erase_placeholder<te::T &>       { using type = void*; };
-template <> struct void_erase_placeholder<te::T &&>      { using type = void*; };
-template <> struct void_erase_placeholder<te::T *>       { using type = void*; };
-template <> struct void_erase_placeholder<te::T const *> { using type = void const*; };
+template <> struct erase_placeholder<void, te::T const&> { using type = void const*; };
+template <> struct erase_placeholder<void, te::T&>       { using type = void*; };
+template <> struct erase_placeholder<void, te::T&&>      { using type = void*; };
+template <> struct erase_placeholder<void, te::T*>       { using type = void*; };
+template <> struct erase_placeholder<void, te::T const*> { using type = void const*; };
 
-template <typename Pl, typename Actual>
-struct void_erase_impl {
+template <>
+struct erase<void, te::T const&> {
   template <typename Arg>
-  static constexpr decltype(auto) apply(Arg&& arg)
-  { return std::forward<Arg>(arg); }
-};
-template <typename Actual>
-struct void_erase_impl<te::T const&, Actual const&> {
-  static constexpr void const* apply(Actual const& arg)
+  static constexpr void const* apply(Arg const& arg)
   { return &arg; }
 };
-template <typename Actual>
-struct void_erase_impl<te::T&, Actual&> {
-  static constexpr void* apply(Actual& arg)
+template <>
+struct erase<void, te::T&> {
+  template <typename Arg>
+  static constexpr void* apply(Arg& arg)
   { return &arg; }
 };
-template <typename Actual>
-struct void_erase_impl<te::T&&, Actual&&> {
-  static constexpr void* apply(Actual&& arg)
-  { return &arg; }
+template <>
+struct erase<void, te::T&&> {
+  template <typename Arg>
+  static constexpr void* apply(Arg&& arg) {
+    static_assert(std::is_rvalue_reference<Arg>::value, "will move from non-rvalue");
+    return &arg;
+  }
 };
-template <typename Actual>
-struct void_erase_impl<te::T*, Actual*> {
-  static constexpr void* apply(Actual* arg)
+template <>
+struct erase<void, te::T const*> {
+  template <typename Arg>
+  static constexpr void const* apply(Arg const* arg)
   { return arg; }
 };
-template <typename Actual>
-struct void_erase_impl<te::T const*, Actual const&> {
-  static constexpr void const* apply(Actual const* arg)
+template <>
+struct erase<void, te::T*> {
+  template <typename Arg>
+  static constexpr void* apply(Arg* arg)
   { return arg; }
 };
 
-template <typename Pl, typename Actual>
-struct void_unerase_impl {
-  template <typename Arg>
-  static constexpr decltype(auto) apply(Arg&& arg)
-  { return std::forward<Arg>(arg); }
-};
 template <typename Actual>
-struct void_unerase_impl<te::T&, Actual&> {
+struct unerase<void, te::T&, Actual&> {
   static constexpr Actual& apply(void* arg)
   { return *static_cast<Actual*>(arg); }
 };
 template <typename Actual>
-struct void_unerase_impl<te::T const&, Actual const&> {
+struct unerase<void, te::T const&, Actual const&> {
   static constexpr Actual const& apply(void const* arg)
   { return *static_cast<Actual const*>(arg); }
 };
 template <typename Actual>
-struct void_unerase_impl<te::T&&, Actual&&> {
+struct unerase<void, te::T&&, Actual&&> {
   static constexpr Actual&& apply(void* arg)
   { return std::move(*static_cast<Actual*>(arg)); }
 };
 template <typename Actual>
-struct void_unerase_impl<te::T*, Actual*> {
+struct unerase<void, te::T*, Actual*> {
   static constexpr Actual* apply(void* arg)
   { return static_cast<Actual*>(arg); }
 };
 template <typename Actual>
-struct void_unerase_impl<te::T const*, Actual const*> {
+struct unerase<void, te::T const*, Actual const*> {
   static constexpr Actual const* apply(void const* arg)
   { return static_cast<Actual const*>(arg); }
-};
-
-template <>
-struct eraser_traits<void> {
-  template <typename T>
-  using erase_placeholder = void_erase_placeholder<T>;
-
-  template <typename Placeholder, typename Actual>
-  static constexpr typename erase_placeholder<Placeholder>::type erase(Actual&& arg) {
-    return void_erase_impl<Placeholder, Actual>::apply(std::forward<Actual>(arg));
-  }
-
-  template <typename Placeholder, typename Actual, typename Erased>
-  static constexpr Actual unerase(Erased&& erased) {
-    return void_unerase_impl<Placeholder, Actual>::apply(std::forward<Erased>(erased));
-  }
 };
 
 }} // end namespace te::detail
