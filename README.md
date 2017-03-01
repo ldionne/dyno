@@ -88,11 +88,11 @@ struct Drawable {
 };
 
 struct Square : Drawable {
-  void draw(std::ostream& out) const override final { ... }
+  virtual void draw(std::ostream& out) const override final { ... }
 };
 
 struct Circle : Drawable {
-  void draw(std::ostream& out) const override final { ... }
+  virtual void draw(std::ostream& out) const override final { ... }
 };
 
 void f(Drawable const* drawable) {
@@ -206,7 +206,7 @@ something like this:
 
 ```c++
 struct Square : Drawable {
-  void draw(std::ostream& out) const override final {
+  virtual void draw(std::ostream& out) const override final {
     out << "square" << std::endl;
   }
 };

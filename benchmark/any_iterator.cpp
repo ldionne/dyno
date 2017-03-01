@@ -50,9 +50,9 @@ namespace { namespace classic {
     template <typename Iterator>
     struct model_t : concept_t {
       explicit model_t(Iterator it) : it_(it) { }
-      void increment() override final { ++it_; }
-      reference dereference() override final { return *it_; }
-      bool equal(concept_t const& other_) const override final {
+      virtual void increment() override final { ++it_; }
+      virtual reference dereference() override final { return *it_; }
+      virtual bool equal(concept_t const& other_) const override final {
         model_t const& other = static_cast<model_t const&>(other_);
         return it_ == other.it_;
       }

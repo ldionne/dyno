@@ -120,11 +120,11 @@ namespace { namespace classic {
     template <typename T>
     struct model_t : concept_t {
       explicit model_t(T t) : value_{t} { }
-      void f1() override final { ++value_; }
-      void f2() override final { --value_; }
-      void f3() override final { ++value_; }
-      void f4() override final { --value_; }
-      void f5() override final { ++value_; }
+      virtual void f1() override final { ++value_; }
+      virtual void f2() override final { --value_; }
+      virtual void f3() override final { ++value_; }
+      virtual void f4() override final { --value_; }
+      virtual void f5() override final { ++value_; }
       T value_;
     };
 

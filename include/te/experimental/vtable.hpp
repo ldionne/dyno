@@ -80,7 +80,7 @@ struct vtable_impl<Concept, ConceptMap
   <%= (0...n).map {|i| "std::pair<Name#{i}, R#{i} (*)(Args#{i}...)>" }.join(",\n  ") %>
 > {
   <%= (0...n).map {|i|
-    "R#{i} apply(Name#{i} name, Args#{i} ...args) const override final" +
+    "virtual R#{i} apply(Name#{i} name, Args#{i} ...args) const override final" +
     "{ return te::detail::erase_function<typename decltype(Concept{}.get_signature(name))::type>(ConceptMap{}[name])(std::forward<Args#{i}>(args)...); }"
   }.join("\n  ") %>
 };

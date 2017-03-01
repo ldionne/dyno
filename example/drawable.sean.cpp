@@ -74,7 +74,7 @@ private:
   template <typename T>
   struct model : concept_t {
     explicit model(T x) : data_(std::move(x)) { }
-    void draw_(std::ostream& out) const override final
+    virtual void draw_(std::ostream& out) const override final
     { draw(data_, out); }
     T data_;
   };
