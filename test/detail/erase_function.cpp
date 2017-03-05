@@ -56,4 +56,20 @@ int main() {
     TE_CHECK(casted == 4);
     TE_CHECK(i == 4);
   }
+
+  // erase_function should be able to erase a function that is more cv-qualified
+  {
+    {
+      int i = 3;
+      auto f = te::detail::erase_function<int (te::T&)>([](int const& x) { return x; });
+      int result = f(static_cast<void*>(&i));
+      TE_CHECK(result == 3);
+    }
+    {
+      int i = 3;
+      auto f = te::detail::erase_function<int (te::T*)>([](int const* x) { return *x; });
+      int result = f(static_cast<void*>(&i));
+      TE_CHECK(result == 3);
+    }
+  }
 }

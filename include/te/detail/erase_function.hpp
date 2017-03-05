@@ -58,9 +58,6 @@ struct thunk<Eraser, F, void(Args_pl...), R_ac(Args_ac...)> {
 // casts) and forwards them to another function.
 //
 // TODO:
-//  - Allow models to differ slightly from the required concept, i.e. if
-//    a concept requires a `const&` it should probably be valid to implement
-//    it by taking by value.
 //  - Would it be possible to erase a callable that's not a stateless function
 //    object? Would that necessarily require additional storage?
 //  - Should we be returning a lambda that erases its arguments?

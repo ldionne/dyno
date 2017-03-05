@@ -7,7 +7,7 @@
 
 
 int main() {
-  auto f = [](int& i) -> int& { return i; };
-  // Fails because `te::T&&` can't be fulfilled by `int&`.
-  auto erased = te::detail::erase_function<te::T&& (int&)>(f);
+  auto f = [](int& i) { };
+  // Fails because `te::T const&` can't be fulfilled by `int&`.
+  auto erased = te::detail::erase_function<void (te::T const&)>(f);
 }
