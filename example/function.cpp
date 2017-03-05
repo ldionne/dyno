@@ -6,6 +6,7 @@
 
 #include <te.hpp>
 
+#include <functional>
 #include <string>
 #include <utility>
 using namespace te::literals;
@@ -35,7 +36,7 @@ struct function;
 
 template <typename R, typename ...Args>
 struct function<R(Args...)> {
-  template <typename F>
+  template <typename F = R(Args...)>
   function(F&& f) : poly_{std::forward<F>(f)} { }
 
   R operator()(Args ...args) const {
@@ -46,14 +47,76 @@ private:
   te::poly<Callable<R(Args...)>> poly_;
 };
 
-int main() {
-  function<int(std::string const&)> size = [](std::string const& s) {
-    return s.size();
-  };
 
-  TE_CHECK(size("") == 0);
-  TE_CHECK(size("a") == 1);
-  TE_CHECK(size("ab") == 2);
-  TE_CHECK(size("abc") == 3);
-  TE_CHECK(size("abcdef") == 6);
+//
+// Tests
+//
+
+struct ToStringAdd {
+  ToStringAdd(int num) : num_(num) { }
+  std::string to_string_add(int i) const { return std::to_string(num_ + i); }
+  int num_;
+};
+
+struct ToString {
+  std::string operator()(int i) const { return std::to_string(i); }
+};
+
+int main() {
+  // store a free function
+  {
+    function<std::string(int)> tostring = std::to_string;
+    TE_CHECK(tostring(1) == "1");
+    TE_CHECK(tostring(2) == "2");
+    TE_CHECK(tostring(3) == "3");
+    TE_CHECK(tostring(-10) == "-10");
+  }
+
+  // store a lambda
+  {
+    function<int(std::string const&)> size = [](std::string const& s) {
+      return s.size();
+    };
+
+    TE_CHECK(size("") == 0);
+    TE_CHECK(size("a") == 1);
+    TE_CHECK(size("ab") == 2);
+    TE_CHECK(size("abc") == 3);
+    TE_CHECK(size("abcdef") == 6);
+  }
+
+  // store the result of a call to std::bind
+  {
+    function<std::string()> tostring = std::bind(static_cast<std::string(*)(int)>(std::to_string), 31337);
+    TE_CHECK(tostring() == "31337");
+  }
+
+  // store a call to a member function and object
+  {
+    ToStringAdd const adder{314159};
+    function<std::string(int)> f = std::bind(&ToStringAdd::to_string_add, adder, std::placeholders::_1);
+    TE_CHECK(f(1) == "314160");
+    TE_CHECK(f(2) == "314161");
+    TE_CHECK(f(3) == "314162");
+    TE_CHECK(f(-10) == "314149");
+  }
+
+  // store a call to a member function and object ptr
+  {
+    ToStringAdd const adder{314159};
+    function<std::string(int)> f = std::bind(&ToStringAdd::to_string_add, &adder, std::placeholders::_1);
+    TE_CHECK(f(1) == "314160");
+    TE_CHECK(f(2) == "314161");
+    TE_CHECK(f(3) == "314162");
+    TE_CHECK(f(-10) == "314149");
+  }
+
+  // store a call to a function object
+  {
+    function<std::string(int)> tostring = ToString{};
+    TE_CHECK(tostring(1) == "1");
+    TE_CHECK(tostring(2) == "2");
+    TE_CHECK(tostring(3) == "3");
+    TE_CHECK(tostring(18) == "18");
+  }
 }
