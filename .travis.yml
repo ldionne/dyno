@@ -24,6 +24,10 @@ addons:
       - llvm-toolchain-precise-3.8
       - llvm-toolchain-precise
 
+cache:
+  directories:
+    - ${TRAVIS_BUILD_DIR}/deps/boost-1.63.0 # Keep this in sync with BOOST_VERSION
+
 matrix:
   include:
     - os: linux
@@ -49,7 +53,7 @@ install:
 
   # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-  - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
 
   # Install a recent CMake
   - |
@@ -86,13 +90,18 @@ install:
     fi
 
   # Install Boost headers
-  - BOOST_URL="https://sourceforge.net/projects/boost/files/boost/1.63.0/boost_1_63_0.tar.bz2/download"
-  - mkdir boost && travis_retry wget --no-check-certificate -O - ${BOOST_URL} | tar --strip-components=1 -xj -C boost
-  - (cd boost && ./bootstrap.sh && ./b2 headers)
+  - BOOST_VERSION=1.63.0
+  - BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
+  - |
+    if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
+      BOOST_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION//\./_}.tar.gz"
+      mkdir -p ${BOOST_DIR}
+      { travis_retry wget -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
+    fi
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
-  - (mkdir build && cd build && cmake .. -DBOOST_ROOT=${DEPS_DIR}/boost)
+  - (mkdir build && cd build && cmake .. -DBOOST_ROOT=${BOOST_DIR})
   - cmake --build build --target dependencies
 
 script:
