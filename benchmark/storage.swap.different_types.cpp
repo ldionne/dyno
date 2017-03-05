@@ -18,27 +18,7 @@ struct Concept : decltype(te::requires(
 )) { };
 
 template <typename Storage>
-static void BM_swap_same_types(benchmark::State& state) {
-  using VTable = te::vtable<te::remote<te::everything>>::apply<Concept>;
-  VTable vtable{
-    te::complete_concept_map<Concept, std::string>(te::concept_map<Concept, std::string>)
-  };
-  Storage a{std::string{"foobar"}};
-  Storage b{std::string{"boombaz"}};
-
-  while (state.KeepRunning()) {
-    a.swap(vtable, b, vtable);
-    a.swap(vtable, b, vtable);
-    benchmark::DoNotOptimize(a);
-    benchmark::DoNotOptimize(b);
-  }
-
-  a.destruct(vtable);
-  b.destruct(vtable);
-}
-
-template <typename Storage>
-static void BM_swap_different_types(benchmark::State& state) {
+static void BM_swap(benchmark::State& state) {
   using VTable = te::vtable<te::remote<te::everything>>::apply<Concept>;
   VTable vtable_a{
     te::complete_concept_map<Concept, int>(te::concept_map<Concept, int>)
@@ -60,9 +40,6 @@ static void BM_swap_different_types(benchmark::State& state) {
   b.destruct(vtable_b);
 }
 
-BENCHMARK_TEMPLATE(BM_swap_same_types, te::sbo_storage<8>);
-BENCHMARK_TEMPLATE(BM_swap_same_types, te::fallback_storage<te::local_storage<8>, te::remote_storage>);
-
-BENCHMARK_TEMPLATE(BM_swap_different_types, te::sbo_storage<8>);
-BENCHMARK_TEMPLATE(BM_swap_different_types, te::fallback_storage<te::local_storage<8>, te::remote_storage>);
+BENCHMARK_TEMPLATE(BM_swap, te::sbo_storage<8>);
+BENCHMARK_TEMPLATE(BM_swap, te::fallback_storage<te::local_storage<8>, te::remote_storage>);
 BENCHMARK_MAIN();

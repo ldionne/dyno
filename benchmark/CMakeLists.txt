@@ -19,7 +19,7 @@ function(add_benchmark benchmark)
   add_dependencies(benchmarks ${target})
 endfunction()
 
-foreach(benchmark n_functions storage)
+foreach(benchmark n_functions storage.swap.different_types storage.swap.same_type)
   add_benchmark(${benchmark}.cpp)
 endforeach()
 
