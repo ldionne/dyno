@@ -15,8 +15,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 include(dependencies)
 add_library(te INTERFACE)
 target_include_directories(te INTERFACE include)
-target_compile_options(te INTERFACE -Wno-gnu-string-literal-operator-template)
 target_link_libraries(te INTERFACE dependency.Hana dependency.CallableTraits)
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-Wno-gnu-string-literal-operator-template" TE_HAS_WNO_GNU_STRING_UDL)
+# GCC pretends to have the flag, but produces a "unrecognized command line option"
+# warning when we use it.
+if (TE_HAS_WNO_GNU_STRING_UDL AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  target_compile_options(te INTERFACE -Wno-gnu-string-literal-operator-template)
+endif()
+
+# GCC needs -fpermissive to allow template specializations out of the namespace
+# where the base template was declared, even though C++ allows it.
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  target_compile_options(te INTERFACE -fpermissive)
+endif()
 
 
 # All unit tests and examples are given those properties.

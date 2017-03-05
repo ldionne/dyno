@@ -127,7 +127,7 @@ private:
   constexpr decltype(auto) virtual_impl(boost::hana::basic_type<R(T...)>, Function name) const {
     auto fptr = vtable_[name];
     return [fptr](auto&& ...args) -> decltype(auto) {
-      return fptr(unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
+      return fptr(poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
     };
   }
   template <typename T, typename Arg, std::enable_if_t<!detail::is_placeholder<T>::value, int> = 0>
