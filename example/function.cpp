@@ -39,7 +39,7 @@ struct function<R(Args...)> {
   function(F&& f) : poly_{std::forward<F>(f)} { }
 
   R operator()(Args ...args) const {
-    return poly_.virtual_("call"_s)(poly_.get(), std::forward<Args>(args)...);
+    return poly_.virtual_("call"_s)(poly_, std::forward<Args>(args)...);
   }
 
 private:

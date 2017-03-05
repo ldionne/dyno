@@ -68,7 +68,7 @@ public:
   { }
 
   friend void draw(object_t const& x, std::ostream& out) {
-    x.poly_.virtual_("draw"_s)(x.poly_.get(), out);
+    x.poly_.virtual_("draw"_s)(x.poly_, out);
   }
 
 private:

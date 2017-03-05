@@ -233,16 +233,16 @@ namespace { namespace te_style {
     { }
 
     any_iterator& operator++() {
-      poly_.virtual_("increment"_s)(poly_.get());
+      poly_.virtual_("increment"_s)(poly_);
       return *this;
     }
 
     reference operator*() {
-      return poly_.virtual_("dereference"_s)(poly_.get());
+      return poly_.virtual_("dereference"_s)(poly_);
     }
 
     friend bool operator==(any_iterator const& a, any_iterator const& b) {
-      return a.poly_.virtual_("equal"_s)(a.poly_.get(), b.poly_.get());
+      return a.poly_.virtual_("equal"_s)(a.poly_, b.poly_);
     }
 
   private:

@@ -33,7 +33,7 @@ struct drawable {
   )} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_.get(), out); }
+  { poly_.virtual_("draw"_s)(poly_, out); }
 
 private:
   te::poly<Drawable> poly_;
@@ -262,7 +262,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_.get(), out); }
+  { poly_.virtual_("draw"_s)(poly_, out); }
 
 private:
   te::poly<Drawable> poly_;
@@ -295,7 +295,7 @@ of the `draw` method:
 
 ```c++
 void draw(std::ostream& out) const
-{ poly_.virtual_("draw"_s)(poly_.get(), out); }
+{ poly_.virtual_("draw"_s)(poly_, out); }
 ```
 
 What happens here is that when `.draw` is called on our `drawable` object,
@@ -353,7 +353,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_.get(), out); }
+  { poly_.virtual_("draw"_s)(poly_, out); }
 
 private:
   te::poly<Drawable, te::sbo_storage<16>> poly_;

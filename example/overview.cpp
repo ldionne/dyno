@@ -25,7 +25,7 @@ struct drawable {
   )} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_.get(), out); }
+  { poly_.virtual_("draw"_s)(poly_, out); }
 
 private:
   te::poly<Drawable> poly_;

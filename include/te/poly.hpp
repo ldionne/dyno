@@ -7,8 +7,11 @@
 
 #include <te/builtin.hpp>
 #include <te/concept_map.hpp>
+#include <te/detail/is_placeholder.hpp>
 #include <te/storage.hpp>
 #include <te/vtable.hpp>
+
+#include <boost/hana/type.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -109,7 +112,8 @@ public:
 
   template <typename Function>
   constexpr decltype(auto) virtual_(Function name) const {
-    return vtable_[name];
+    using Signature = typename decltype(Concept{}.get_signature(name))::type;
+    return virtual_impl(boost::hana::basic_type<Signature>{}, name);
   }
 
   constexpr auto get() { return storage_.get(); }
@@ -118,6 +122,36 @@ public:
 private:
   VTable vtable_;
   Storage storage_;
+
+  template <typename R, typename ...T, typename Function>
+  constexpr decltype(auto) virtual_impl(boost::hana::basic_type<R(T...)>, Function name) const {
+    auto fptr = vtable_[name];
+    return [fptr](auto&& ...args) -> decltype(auto) {
+      return fptr(unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
+    };
+  }
+  template <typename T, typename Arg, std::enable_if_t<!detail::is_placeholder<T>::value, int> = 0>
+  static constexpr decltype(auto) unerase_poly(Arg&& arg)
+  { return static_cast<Arg&&>(arg); }
+
+  template <typename T, typename Arg, std::enable_if_t<detail::is_placeholder<T>::value, int> = 0>
+  static constexpr decltype(auto) unerase_poly(Arg&& arg) {
+    using RawArg = std::remove_cv_t<std::remove_reference_t<Arg>>;
+    constexpr bool is_poly = std::is_same<poly, RawArg>::value;
+    static_assert(is_poly,
+      "te::poly::virtual_: Passing a non-poly object as an argument to a virtual "
+      "function that specified a placeholder for that parameter.");
+    return static_cast<Arg&&>(arg).get();
+  }
+  template <typename T, typename Arg, std::enable_if_t<detail::is_placeholder<T>::value, int> = 0>
+  static constexpr decltype(auto) unerase_poly(Arg* arg) {
+    using RawArg = std::remove_cv_t<Arg>;
+    constexpr bool is_poly = std::is_same<poly, RawArg>::value;
+    static_assert(is_poly,
+      "te::poly::virtual_: Passing a non-poly object as an argument to a virtual "
+      "function that specified a placeholder for that parameter.");
+    return arg->get();
+  }
 };
 
 } // end namespace te

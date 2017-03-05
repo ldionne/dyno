@@ -30,8 +30,8 @@ int main() {
   {
     Foo foo;
     te::poly<Concept> poly{foo};
-    TE_CHECK(poly.virtual_("f"_s)(poly.get()) == 111);
-    TE_CHECK(poly.virtual_("g"_s)(poly.get()) == 888);
+    TE_CHECK(poly.virtual_("f"_s)(poly) == 111);
+    TE_CHECK(poly.virtual_("g"_s)(poly) == 888);
   }
 
   {
@@ -39,7 +39,7 @@ int main() {
     te::poly<Concept> poly{foo, te::make_concept_map(
       "f"_s = [](Foo&) { return 222; }
     )};
-    TE_CHECK(poly.virtual_("f"_s)(poly.get()) == 222);
-    TE_CHECK(poly.virtual_("g"_s)(poly.get()) == 888);
+    TE_CHECK(poly.virtual_("f"_s)(poly) == 222);
+    TE_CHECK(poly.virtual_("g"_s)(poly) == 888);
   }
 }
