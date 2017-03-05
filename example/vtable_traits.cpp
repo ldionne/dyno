@@ -102,7 +102,6 @@ public:
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    assert(a.poly_.virtual_("equal"_s) == b.poly_.virtual_("equal"_s));
     return a.poly_.virtual_("equal"_s)(a.poly_.get(), b.poly_.get());
   }
 

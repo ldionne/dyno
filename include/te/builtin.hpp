@@ -9,6 +9,7 @@
 #include <te/concept_map.hpp>
 
 #include <cstddef>
+#include <typeinfo>
 
 
 namespace te {
@@ -32,6 +33,16 @@ struct Storable : decltype(te::requires(
 template <typename T>
 auto const default_concept_map<Storable, T> = te::make_concept_map(
   "storage_info"_s = []() { return te::storage_info_for<T>; }
+);
+
+
+struct TypeId : decltype(te::requires(
+  "typeid"_s = te::function<std::type_info const&()>
+)) { };
+
+template <typename T>
+auto const default_concept_map<TypeId, T> = te::make_concept_map(
+  "typeid"_s = []() -> std::type_info const& { return typeid(T); }
 );
 
 

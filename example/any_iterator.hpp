@@ -126,9 +126,13 @@ private:
   using Concept = typename detail::iterator_category_to_concept<
     iterator_category, reference, difference_type
   >::type;
+  using ActualConcept = decltype(te::requires(
+    Concept{},
+    te::TypeId{} // For assertion in operator==
+  ));
 
   using Storage = te::local_storage<8>;
-  te::poly<Concept, Storage> poly_;
+  te::poly<ActualConcept, Storage> poly_;
 
 public:
   template <typename It>
@@ -188,7 +192,7 @@ public:
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    assert(a.poly_.virtual_("equal"_s) == b.poly_.virtual_("equal"_s));
+    assert(a.poly_.virtual_("typeid"_s)() == b.poly_.virtual_("typeid"_s)());
     return a.poly_.virtual_("equal"_s)(a.poly_.get(), b.poly_.get());
   }
 
