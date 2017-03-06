@@ -92,6 +92,9 @@ set_target_properties(_libbenchmark PROPERTIES IMPORTED_LOCATION ${INSTALL_DIR}/
 add_library(dependency.GoogleBenchmark INTERFACE)
 target_include_directories(dependency.GoogleBenchmark INTERFACE ${INSTALL_DIR}/include)
 target_link_libraries(dependency.GoogleBenchmark INTERFACE _libbenchmark)
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  target_link_libraries(dependency.GoogleBenchmark INTERFACE -lpthread -lrt)
+endif()
 
 
 # Boost.TypeErasure
