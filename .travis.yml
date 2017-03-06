@@ -11,19 +11,6 @@ sudo: false
 branches:
   except: /pr\/.*/
 
-addons:
-  apt:
-    packages:
-      - clang-3.7
-      - clang-3.8
-      - g++-6
-
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.7
-      - llvm-toolchain-precise-3.8
-      - llvm-toolchain-precise
-
 cache:
   directories:
     - ${TRAVIS_BUILD_DIR}/deps/boost-1.63.0 # Keep this in sync with BOOST_VERSION
@@ -31,13 +18,20 @@ cache:
 matrix:
   include:
     - os: linux
-      env: COMPILER=clang++-3.7
+      env: LLVM_VERSION=3.7.1
+      addons: { apt: { packages: ["clang-3.7"], sources: ["llvm-toolchain-precise-3.7", "ubuntu-toolchain-r-test"] } }
 
     - os: linux
-      env: COMPILER=clang++-3.8
+      env: LLVM_VERSION=3.8.1
+      addons: { apt: { packages: ["clang-3.8"], sources: ["llvm-toolchain-precise-3.8", "ubuntu-toolchain-r-test"] } }
+
+    - os: linux
+      env: LLVM_VERSION=3.9.0
+      addons: { apt: { packages: ["clang-3.9"], sources: ["llvm-toolchain-precise-3.9", "ubuntu-toolchain-r-test"] } }
 
     - os: linux
       env: COMPILER=g++-6
+      addons: { apt: { packages: ["g++-6"], sources: ["ubuntu-toolchain-r-test"] } }
 
     - os: osx
       env: COMPILER=clang++
@@ -48,7 +42,9 @@ matrix:
       osx_image: xcode8
 
 install:
-  - export CXX=${COMPILER} # Override CXX set by Travis
+  # Set the ${CXX} variable properly
+  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
+  - if [[ "${LLVM_VERSION}" != "" ]]; then export CXX="clang++-${LLVM_VERSION%.[0-9]}"; fi
   - ${CXX} --version
 
   # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
@@ -59,7 +55,7 @@ install:
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       CMAKE_URL="http://www.cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
-      mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      mkdir cmake && travis_retry wget --no-check-certificate -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
       export PATH=${DEPS_DIR}/cmake/bin:${PATH}
     else
       brew install cmake || brew upgrade cmake
@@ -68,10 +64,7 @@ install:
 
   # Install libc++ and libc++abi if needed
   - |
-    if [[ ${CXX} == *"clang++"* && "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      if   [[ "${CXX}" == "clang++-3.7" ]]; then LLVM_VERSION="3.7.1";
-      elif [[ "${CXX}" == "clang++-3.8" ]]; then LLVM_VERSION="3.8.0"; fi
-
+    if [[ "${LLVM_VERSION}" != "" ]]; then
       LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
       LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
       LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
