@@ -42,4 +42,10 @@ function(compile_fail target file)
   else()
     set_tests_properties(${target} PROPERTIES WILL_FAIL TRUE)
   endif()
+
+  # Whenever the input file for a `configure_file` command is changed, a CMake
+  # rebuild is triggered. We use this to make sure that we regenerate the test
+  # definitions whenever a test file is changed. Otherwise, we don't pick up
+  # changes in the failure message.
+  configure_file("${file}" "${CMAKE_BINARY_DIR}/CompileFailTest.sentinel")
 endfunction()
