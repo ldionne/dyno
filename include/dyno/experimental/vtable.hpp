@@ -2,17 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_EXPERIMENTAL_VTABLE_HPP
-#define TE_EXPERIMENTAL_VTABLE_HPP
+#ifndef DYNO_EXPERIMENTAL_VTABLE_HPP
+#define DYNO_EXPERIMENTAL_VTABLE_HPP
 
-#include <te/concept.hpp>
-#include <te/detail/erase_function.hpp>
+#include <dyno/concept.hpp>
+#include <dyno/detail/erase_function.hpp>
 
 #include <type_traits>
 #include <utility>
 
 
-namespace te {
+namespace dyno {
 namespace experimental {
 
 namespace detail {
@@ -35,7 +35,7 @@ struct vtable {
   #if 0
   template <typename ConceptMap>
   constexpr explicit vtable(ConceptMap) {
-    using Derived = te::unpack_vtable_layout<
+    using Derived = dyno::unpack_vtable_layout<
       Concept, detail::make_vtable_impl<Concept, ConceptMap>::template apply
     >;
     new (&base_) Derived{};
@@ -50,7 +50,7 @@ struct vtable {
   }
 
 private:
-  using Base = te::unpack_vtable_layout<Concept, detail::vtable_base>;
+  using Base = dyno::unpack_vtable_layout<Concept, detail::vtable_base>;
   std::aligned_storage<sizeof(Base)> base_;
   #endif
 };
@@ -81,7 +81,7 @@ struct vtable_impl<Concept, ConceptMap
 > {
   <%= (0...n).map {|i|
     "virtual R#{i} apply(Name#{i} name, Args#{i} ...args) const override final" +
-    "{ return te::detail::erase_function<typename decltype(Concept{}.get_signature(name))::type>(ConceptMap{}[name])(std::forward<Args#{i}>(args)...); }"
+    "{ return dyno::detail::erase_function<typename decltype(Concept{}.get_signature(name))::type>(ConceptMap{}[name])(std::forward<Args#{i}>(args)...); }"
   }.join("\n  ") %>
 };
 <% end %>
@@ -98,6 +98,6 @@ namespace detail {
 } // end namespace detail
 
 } // end namespace experimental
-} // end namespace te
+} // end namespace dyno
 
-#endif // TE_EXPERIMENTAL_VTABLE_HPP
+#endif // DYNO_EXPERIMENTAL_VTABLE_HPP

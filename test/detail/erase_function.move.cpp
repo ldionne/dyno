@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te/concept.hpp>
-#include <te/detail/erase_function.hpp>
+#include <dyno/concept.hpp>
+#include <dyno/detail/erase_function.hpp>
 
 #include <awful.hpp>
 #include <boost/callable_traits.hpp>
@@ -16,7 +16,7 @@ int main() {
   {
     awful::noncopyable x{};
     auto f = [](awful::noncopyable&& y) { };
-    auto erased = te::detail::erase_function<void (te::T&&)>(f);
+    auto erased = dyno::detail::erase_function<void (dyno::T&&)>(f);
     erased(static_cast<void*>(&x));
 
     static_assert(std::is_same<
@@ -30,7 +30,7 @@ int main() {
   {
     awful::noncopyable x{};
     auto f = [](awful::noncopyable&& y) { return 0; };
-    auto erased = te::detail::erase_function<int (te::T&&)>(f);
+    auto erased = dyno::detail::erase_function<int (dyno::T&&)>(f);
     erased(static_cast<void*>(&x));
 
     static_assert(std::is_same<
@@ -43,7 +43,7 @@ int main() {
   {
     awful::noncopyable x{};
     auto f = [](awful::noncopyable&& y) { };
-    auto erased = te::detail::erase_function<void (awful::noncopyable&&)>(f);
+    auto erased = dyno::detail::erase_function<void (awful::noncopyable&&)>(f);
     erased(std::move(x));
 
     static_assert(std::is_same<
@@ -56,7 +56,7 @@ int main() {
   {
     awful::noncopyable x{};
     auto f = [](awful::noncopyable&& y) { return 0; };
-    auto erased = te::detail::erase_function<int (awful::noncopyable&&)>(f);
+    auto erased = dyno::detail::erase_function<int (awful::noncopyable&&)>(f);
     erased(std::move(x));
 
     static_assert(std::is_same<

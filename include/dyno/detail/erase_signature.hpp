@@ -2,14 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_ERASE_SIGNATURE_HPP
-#define TE_DETAIL_ERASE_SIGNATURE_HPP
+#ifndef DYNO_DETAIL_ERASE_SIGNATURE_HPP
+#define DYNO_DETAIL_ERASE_SIGNATURE_HPP
 
-#include <te/detail/eraser_traits.hpp>
-#include <te/detail/transform_signature.hpp>
+#include <dyno/detail/eraser_traits.hpp>
+#include <dyno/detail/transform_signature.hpp>
 
 
-namespace te { namespace detail {
+namespace dyno { namespace detail {
 
 template <typename Eraser>
 struct apply_erase_placeholder {
@@ -21,7 +21,7 @@ struct apply_erase_placeholder {
 // containing no placeholders, and which would be suitable for storing as a
 // function pointer.
 //
-// Basically, this turns types like `te::T&` into `void*` (or what's specified
+// Basically, this turns types like `dyno::T&` into `void*` (or what's specified
 // by the given `Eraser`) at the top-level of the signature. This is used when
 // we need to generate a vtable from a concept definition. The concept defines
 // signatures with placeholders, and we need to generate a concrete function
@@ -36,6 +36,6 @@ using erase_signature = detail::transform_signature<
   Signature, detail::apply_erase_placeholder<Eraser>::template apply
 >;
 
-}} // end namespace te::detail
+}} // end namespace dyno::detail
 
-#endif // TE_DETAIL_ERASE_SIGNATURE_HPP
+#endif // DYNO_DETAIL_ERASE_SIGNATURE_HPP

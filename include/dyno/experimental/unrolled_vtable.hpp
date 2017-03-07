@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_EXPERIMENTAL_UNROLLED_VTABLE_HPP
-#define TE_EXPERIMENTAL_UNROLLED_VTABLE_HPP
+#ifndef DYNO_EXPERIMENTAL_UNROLLED_VTABLE_HPP
+#define DYNO_EXPERIMENTAL_UNROLLED_VTABLE_HPP
 
-#include <te/detail/erase_function.hpp>
-#include <te/detail/erase_signature.hpp>
+#include <dyno/detail/erase_function.hpp>
+#include <dyno/detail/erase_signature.hpp>
 
 #include <boost/hana/functional/on.hpp>
 #include <boost/hana/pair.hpp>
@@ -14,7 +14,7 @@
 #include <boost/hana/unpack.hpp>
 
 
-namespace te { namespace experimental {
+namespace dyno { namespace experimental {
 
 namespace detail {
   template <typename ...Mappings>
@@ -43,7 +43,7 @@ template <
 > {
   template <typename ConceptMap>
   constexpr explicit unrolled_vtable_impl(ConceptMap map)
-    <%= ": " unless n == 0 %><%= (0...n).map {|i| "fptr#{i}_(te::detail::erase_function<Sig#{i}>(map[Name#{i}{}]))" }.join("\n    , ") %>
+    <%= ": " unless n == 0 %><%= (0...n).map {|i| "fptr#{i}_(dyno::detail::erase_function<Sig#{i}>(map[Name#{i}{}]))" }.join("\n    , ") %>
   { }
   <%= (0...n).map {|i| "constexpr auto operator[](Name#{i}) const { return fptr#{i}_; };" }.join("\n  ") %>
 
@@ -63,6 +63,6 @@ namespace detail {
   ////////////////////////////////////////////////////////////////////////////
 } // end namespace detail
 
-}} // end namespace te::experimental
+}} // end namespace dyno::experimental
 
-#endif // TE_EXPERIMENTAL_UNROLLED_VTABLE_HPP
+#endif // DYNO_EXPERIMENTAL_UNROLLED_VTABLE_HPP

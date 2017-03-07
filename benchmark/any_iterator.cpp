@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <benchmark/benchmark.h>
 
@@ -208,14 +208,14 @@ namespace { namespace handrolled_classic {
   };
 }} // end namespace handrolled_classic
 
-namespace { namespace te_style {
-  using namespace te::literals;
+namespace { namespace dyno_style {
+  using namespace dyno::literals;
 
   template <typename Reference>
-  struct Iterator : decltype(te::requires(
-    "increment"_s = te::function<void (te::T&)>,
-    "dereference"_s = te::function<Reference (te::T&)>,
-    "equal"_s = te::function<bool (te::T const&, te::T const&)>
+  struct Iterator : decltype(dyno::requires(
+    "increment"_s = dyno::function<void (dyno::T&)>,
+    "dereference"_s = dyno::function<Reference (dyno::T&)>,
+    "equal"_s = dyno::function<bool (dyno::T const&, dyno::T const&)>
   )) { };
 
   template <typename Value, typename Reference = Value&>
@@ -225,7 +225,7 @@ namespace { namespace te_style {
 
     template <typename It>
     explicit any_iterator(It it)
-      : poly_{std::move(it), te::make_concept_map(
+      : poly_{std::move(it), dyno::make_concept_map(
         "increment"_s = [](It& self) { ++self; },
         "dereference"_s = [](It& self) -> decltype(auto) { return *self; },
         "equal"_s = [](It const& a, It const& b) -> bool { return a == b; }
@@ -246,11 +246,11 @@ namespace { namespace te_style {
     }
 
   private:
-    using Storage = te::shared_remote_storage;
-    using VTable = te::vtable<te::remote<te::everything>>;
-    te::poly<Iterator<reference>, Storage, VTable> poly_;
+    using Storage = dyno::shared_remote_storage;
+    using VTable = dyno::vtable<dyno::remote<dyno::everything>>;
+    dyno::poly<Iterator<reference>, Storage, VTable> poly_;
   };
-}} // end namespace te_style
+}} // end namespace dyno_style
 
 
 template <typename Iterator>
@@ -277,5 +277,5 @@ BENCHMARK_TEMPLATE(BM_any_iterator, classic::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_split_ptr::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_classic::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, boost_type_erasure::any_iterator<int>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_iterator, te_style::any_iterator<int>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_iterator, dyno_style::any_iterator<int>)->Arg(N);
 BENCHMARK_MAIN();

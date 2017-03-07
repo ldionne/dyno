@@ -2,14 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <cassert>
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-using namespace te::literals;
+using namespace dyno::literals;
 
 
 template <typename Object>
@@ -54,15 +54,15 @@ void draw(document_t<Object> const& self, std::ostream& out) {
 
 
 
-struct Drawable : decltype(te::requires(
-  "draw"_s = te::function<void (te::T const&, std::ostream&)>
+struct Drawable : decltype(dyno::requires(
+  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
 )) { };
 
 class object_t {
 public:
   template <typename T>
   object_t(T x)
-    : poly_{std::move(x), te::make_concept_map(
+    : poly_{std::move(x), dyno::make_concept_map(
       "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
     )}
   { }
@@ -72,9 +72,9 @@ public:
   }
 
 private:
-  using Storage = te::shared_remote_storage;
-  using VTable = te::vtable<te::remote<te::everything>>;
-  te::poly<Drawable, Storage, VTable> poly_;
+  using Storage = dyno::shared_remote_storage;
+  using VTable = dyno::vtable<dyno::remote<dyno::everything>>;
+  dyno::poly<Drawable, Storage, VTable> poly_;
 };
 
 

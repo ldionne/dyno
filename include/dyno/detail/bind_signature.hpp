@@ -2,14 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_BIND_SIGNATURE_HPP
-#define TE_DETAIL_BIND_SIGNATURE_HPP
+#ifndef DYNO_DETAIL_BIND_SIGNATURE_HPP
+#define DYNO_DETAIL_BIND_SIGNATURE_HPP
 
-#include <te/detail/dsl.hpp>
-#include <te/detail/transform_signature.hpp>
+#include <dyno/detail/dsl.hpp>
+#include <dyno/detail/transform_signature.hpp>
 
 
-namespace te { namespace detail {
+namespace dyno { namespace detail {
 
 template <typename Old, typename New, typename T>
 struct replace_impl { using type = T; };
@@ -38,10 +38,10 @@ struct replace {
   using apply = replace_impl<Old, New, T>;
 };
 
-// Takes a placeholder signature and replaces instances of `te::T` by the given
+// Takes a placeholder signature and replaces instances of `dyno::T` by the given
 // type.
 //
-// Basically, this will turn stuff like `void (te::T const&, int, te::T*)`
+// Basically, this will turn stuff like `void (dyno::T const&, int, dyno::T*)`
 // into `void (T const&, int, T*)`, where `T` is the type we are _binding_
 // the signature to.
 //
@@ -49,9 +49,9 @@ struct replace {
 // have the right signature.
 template <typename Signature, typename T>
 using bind_signature = detail::transform_signature<
-  Signature, detail::replace<te::T, T>::template apply
+  Signature, detail::replace<dyno::T, T>::template apply
 >;
 
-}} // end namespace te::detail
+}} // end namespace dyno::detail
 
-#endif // TE_DETAIL_BIND_SIGNATURE_HPP
+#endif // DYNO_DETAIL_BIND_SIGNATURE_HPP

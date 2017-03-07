@@ -2,26 +2,26 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <benchmark/benchmark.h>
 
 #include <string>
-using namespace te::literals;
+using namespace dyno::literals;
 
 
-struct Concept : decltype(te::requires(
-  te::CopyConstructible{},
-  te::Swappable{},
-  te::Destructible{},
-  te::Storable{}
+struct Concept : decltype(dyno::requires(
+  dyno::CopyConstructible{},
+  dyno::Swappable{},
+  dyno::Destructible{},
+  dyno::Storable{}
 )) { };
 
 template <typename Storage>
 static void BM_swap(benchmark::State& state) {
-  using VTable = te::vtable<te::remote<te::everything>>::apply<Concept>;
+  using VTable = dyno::vtable<dyno::remote<dyno::everything>>::apply<Concept>;
   VTable vtable{
-    te::complete_concept_map<Concept, std::string>(te::concept_map<Concept, std::string>)
+    dyno::complete_concept_map<Concept, std::string>(dyno::concept_map<Concept, std::string>)
   };
   Storage a{std::string{"foobar"}};
   Storage b{std::string{"boombaz"}};
@@ -37,6 +37,6 @@ static void BM_swap(benchmark::State& state) {
   b.destruct(vtable);
 }
 
-BENCHMARK_TEMPLATE(BM_swap, te::sbo_storage<8>);
-BENCHMARK_TEMPLATE(BM_swap, te::fallback_storage<te::local_storage<8>, te::remote_storage>);
+BENCHMARK_TEMPLATE(BM_swap, dyno::sbo_storage<8>);
+BENCHMARK_TEMPLATE(BM_swap, dyno::fallback_storage<dyno::local_storage<8>, dyno::remote_storage>);
 BENCHMARK_MAIN();

@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_DSL_HPP
-#define TE_DETAIL_DSL_HPP
+#ifndef DYNO_DETAIL_DSL_HPP
+#define DYNO_DETAIL_DSL_HPP
 
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/pair.hpp>
@@ -13,7 +13,7 @@
 #include <type_traits>
 
 
-namespace te {
+namespace dyno {
 
 // Right-hand-side of a clause in a concept that signifies a function with the
 // given signature.
@@ -45,6 +45,6 @@ inline namespace literals {
   constexpr auto operator""_s() { return detail::string<c...>{}; }
 } // end namespace literals
 
-} // end namespace te
+} // end namespace dyno
 
-#endif // TE_DETAIL_DSL_HPP
+#endif // DYNO_DETAIL_DSL_HPP

@@ -4,10 +4,10 @@
 
 #include "testing.hpp"
 
-#include <te/concept.hpp>
-#include <te/concept_map.hpp>
-#include <te/vtable.hpp>
-using namespace te::literals;
+#include <dyno/concept.hpp>
+#include <dyno/concept_map.hpp>
+#include <dyno/vtable.hpp>
+using namespace dyno::literals;
 
 
 //
@@ -15,24 +15,24 @@ using namespace te::literals;
 // that is more cv-qualified than the corresponding function in the concept.
 //
 
-struct Concept : decltype(te::requires(
-  "f"_s = te::function<int (te::T&)>,
-  "g"_s = te::function<int (te::T*)>
+struct Concept : decltype(dyno::requires(
+  "f"_s = dyno::function<int (dyno::T&)>,
+  "g"_s = dyno::function<int (dyno::T*)>
 )) { };
 
 struct Foo { };
 
 template <>
-auto const te::concept_map<Concept, Foo> = te::make_concept_map(
+auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
   "f"_s = [](Foo const&) { return 111; },
   "g"_s = [](Foo const*) { return 222; }
 );
 
 int main() {
-  auto complete = te::complete_concept_map<Concept, Foo>(te::concept_map<Concept, Foo>);
-  te::vtable<te::local<te::everything>>::apply<Concept> vtable{complete};
+  auto complete = dyno::complete_concept_map<Concept, Foo>(dyno::concept_map<Concept, Foo>);
+  dyno::vtable<dyno::local<dyno::everything>>::apply<Concept> vtable{complete};
 
   Foo foo;
-  TE_CHECK(vtable["f"_s](&foo) == 111); // erased as a void*
-  TE_CHECK(vtable["g"_s](&foo) == 222); // erased as a void*
+  DYNO_CHECK(vtable["f"_s](&foo) == 111); // erased as a void*
+  DYNO_CHECK(vtable["g"_s](&foo) == 222); // erased as a void*
 }

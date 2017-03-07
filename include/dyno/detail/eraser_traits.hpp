@@ -2,16 +2,16 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_ERASER_TRAITS_HPP
-#define TE_DETAIL_ERASER_TRAITS_HPP
+#ifndef DYNO_DETAIL_ERASER_TRAITS_HPP
+#define DYNO_DETAIL_ERASER_TRAITS_HPP
 
-#include <te/detail/dsl.hpp>
+#include <dyno/detail/dsl.hpp>
 
 #include <type_traits>
 #include <utility>
 
 
-namespace te { namespace detail {
+namespace dyno { namespace detail {
 
 // Traits for types that can be used to erase other types. The following traits
 // should be provided:
@@ -20,10 +20,10 @@ namespace te { namespace detail {
 //  struct erase_placeholder;
 //
 //    Metafunction transforming the type of a possibly cv and ref-qualified
-//    placeholder (a `te::T`) into a representation suitable for passing
+//    placeholder (a `dyno::T`) into a representation suitable for passing
 //    around as a parameter to an erased function. Basically, this turns a
-//    type like `te::T&` into a `void*`, and similarly for other types of
-//    possibly, const or ref-qualified `te::T`s, but it can be customized
+//    type like `dyno::T&` into a `void*`, and similarly for other types of
+//    possibly, const or ref-qualified `dyno::T`s, but it can be customized
 //    for custom eraser types.
 //
 //  template <typename Eraser, typename Placeholder, typename Actual>
@@ -37,9 +37,9 @@ namespace te { namespace detail {
 //    reference or a pointer to an actual type and passes it as a `void*`, with
 //    the proper cv qualifiers. Note that an eraser is not expected to support
 //    erasure of arbitrary types. For example, it is perfectly fine to give an
-//    error if one tries to erase an `int` as a `te::T&`, since that makes no
+//    error if one tries to erase an `int` as a `dyno::T&`, since that makes no
 //    sense. However, it is probably a good idea to support inexact casts that
-//    do make sense, such as erasing `int&` to `te::T const&` (even though the
+//    do make sense, such as erasing `int&` to `dyno::T const&` (even though the
 //    cv-qualifiers don't match). This is left to the implementation of the
 //    specific eraser.
 //
@@ -57,8 +57,8 @@ namespace te { namespace detail {
 
 template <typename Eraser, typename Placeholder>
 struct erase_placeholder {
-  static_assert(!std::is_same<Placeholder, te::T>{},
-    "te::T may not be passed by value; it is only a placeholder");
+  static_assert(!std::is_same<Placeholder, dyno::T>{},
+    "dyno::T may not be passed by value; it is only a placeholder");
   using type = Placeholder;
 };
 
@@ -78,26 +78,26 @@ struct unerase {
 };
 
 // Specialization for the `void` Eraser, which uses `void*` to erase types.
-template <> struct erase_placeholder<void, te::T const&> { using type = void const*; };
-template <> struct erase_placeholder<void, te::T&>       { using type = void*; };
-template <> struct erase_placeholder<void, te::T&&>      { using type = void*; };
-template <> struct erase_placeholder<void, te::T*>       { using type = void*; };
-template <> struct erase_placeholder<void, te::T const*> { using type = void const*; };
+template <> struct erase_placeholder<void, dyno::T const&> { using type = void const*; };
+template <> struct erase_placeholder<void, dyno::T&>       { using type = void*; };
+template <> struct erase_placeholder<void, dyno::T&&>      { using type = void*; };
+template <> struct erase_placeholder<void, dyno::T*>       { using type = void*; };
+template <> struct erase_placeholder<void, dyno::T const*> { using type = void const*; };
 
 template <>
-struct erase<void, te::T const&> {
+struct erase<void, dyno::T const&> {
   template <typename Arg>
   static constexpr void const* apply(Arg const& arg)
   { return &arg; }
 };
 template <>
-struct erase<void, te::T&> {
+struct erase<void, dyno::T&> {
   template <typename Arg>
   static constexpr void* apply(Arg& arg)
   { return &arg; }
 };
 template <>
-struct erase<void, te::T&&> {
+struct erase<void, dyno::T&&> {
   template <typename Arg>
   static constexpr void* apply(Arg&& arg) {
     static_assert(std::is_rvalue_reference<Arg>::value, "will move from non-rvalue");
@@ -105,44 +105,44 @@ struct erase<void, te::T&&> {
   }
 };
 template <>
-struct erase<void, te::T const*> {
+struct erase<void, dyno::T const*> {
   template <typename Arg>
   static constexpr void const* apply(Arg const* arg)
   { return arg; }
 };
 template <>
-struct erase<void, te::T*> {
+struct erase<void, dyno::T*> {
   template <typename Arg>
   static constexpr void* apply(Arg* arg)
   { return arg; }
 };
 
 template <typename Actual>
-struct unerase<void, te::T&, Actual&> {
+struct unerase<void, dyno::T&, Actual&> {
   static constexpr Actual& apply(void* arg)
   { return *static_cast<Actual*>(arg); }
 };
 template <typename Actual>
-struct unerase<void, te::T const&, Actual const&> {
+struct unerase<void, dyno::T const&, Actual const&> {
   static constexpr Actual const& apply(void const* arg)
   { return *static_cast<Actual const*>(arg); }
 };
 template <typename Actual>
-struct unerase<void, te::T&&, Actual&&> {
+struct unerase<void, dyno::T&&, Actual&&> {
   static constexpr Actual&& apply(void* arg)
   { return std::move(*static_cast<Actual*>(arg)); }
 };
 template <typename Actual>
-struct unerase<void, te::T*, Actual*> {
+struct unerase<void, dyno::T*, Actual*> {
   static constexpr Actual* apply(void* arg)
   { return static_cast<Actual*>(arg); }
 };
 template <typename Actual>
-struct unerase<void, te::T const*, Actual const*> {
+struct unerase<void, dyno::T const*, Actual const*> {
   static constexpr Actual const* apply(void const* arg)
   { return static_cast<Actual const*>(arg); }
 };
 
-}} // end namespace te::detail
+}} // end namespace dyno::detail
 
-#endif // TE_DETAIL_ERASER_TRAITS_HPP
+#endif // DYNO_DETAIL_ERASER_TRAITS_HPP

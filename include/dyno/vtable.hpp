@@ -2,12 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_VTABLE_HPP
-#define TE_VTABLE_HPP
+#ifndef DYNO_VTABLE_HPP
+#define DYNO_VTABLE_HPP
 
-#include <te/concept.hpp>
-#include <te/detail/erase_function.hpp>
-#include <te/detail/erase_signature.hpp>
+#include <dyno/concept.hpp>
+#include <dyno/detail/erase_function.hpp>
+#include <dyno/detail/erase_signature.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -26,7 +26,7 @@
 #include <utility>
 
 
-namespace te {
+namespace dyno {
 
 // concept VTable
 //
@@ -103,7 +103,7 @@ private:
   constexpr auto get_function(Name_ name, boost::hana::false_) const {
     constexpr bool always_false = sizeof(Name_) == 0;
     static_assert(always_false,
-      "te::local_vtable::operator[]: Request for a virtual function that is "
+      "dyno::local_vtable::operator[]: Request for a virtual function that is "
       "not in the vtable. Was this function specified in the concept that "
       "was used to instantiate this vtable? You can find the contents of the "
       "vtable and the function you were trying to access in the compiler "
@@ -177,7 +177,7 @@ private:
   constexpr auto get_function(Name name, boost::hana::true_, boost::hana::true_) const {
     constexpr bool always_false = sizeof(Name) == 0;
     static_assert(always_false,
-      "te::joined_vtable::operator[]: Request for a virtual function that is "
+      "dyno::joined_vtable::operator[]: Request for a virtual function that is "
       "contained in both vtables of a joined vtable. Since this is most likely "
       "a programming error, this is not allowed. You can find the contents of "
       "the vtable and the function you were trying to access in the compiler "
@@ -189,7 +189,7 @@ private:
   constexpr auto get_function(Name name, boost::hana::false_, boost::hana::false_) const {
     constexpr bool always_false = sizeof(Name) == 0;
     static_assert(always_false,
-      "te::joined_vtable::operator[]: Request for a virtual function that is "
+      "dyno::joined_vtable::operator[]: Request for a virtual function that is "
       "not present in any of the joined vtables. Make sure you meant to look "
       "this function up, and otherwise check whether the two sub-vtables look "
       "as expected. You can find the contents of the joined vtables and the "
@@ -230,7 +230,7 @@ struct except {
     auto ignored = boost::hana::make_set(Functions{}...);
     auto kept = boost::hana::difference(all, ignored);
     auto as_only = boost::hana::unpack(kept, [](auto ...f) {
-      return te::only<decltype(f)...>{};
+      return dyno::only<decltype(f)...>{};
     });
     return as_only;
   }
@@ -256,14 +256,14 @@ struct everything {
 template <typename Selector>
 struct local {
   template <typename Concept>
-  using apply = typename Selector::template apply<Concept, te::local_vtable>;
+  using apply = typename Selector::template apply<Concept, dyno::local_vtable>;
 };
 
 template <typename Selector>
 struct remote {
   template <typename Concept>
-  using apply = te::remote_vtable<
-    typename Selector::template apply<Concept, te::local_vtable>
+  using apply = dyno::remote_vtable<
+    typename Selector::template apply<Concept, dyno::local_vtable>
   >;
 };
 
@@ -278,13 +278,13 @@ struct remote {
 // by the `Selector` are the ones to which the policy applies. Policies
 // provided by the library are:
 //
-//  te::remote<Selector>
+//  dyno::remote<Selector>
 //    All functions selected by `Selector` will be stored in a remote vtable.
 //    The vtable object is just a pointer to an actual vtable, and each access
 //    to the vtable requires one indirection. In vanilla C++, this is the usual
 //    vtable implementation.
 //
-//  te::local<Selector>
+//  dyno::local<Selector>
 //    All functions selected by `Selector` will be stored in a local vtable.
 //    The vtable object will actually contain function pointers for all the
 //    selected functions. When accessing a virtual function, no additional
@@ -296,20 +296,20 @@ struct remote {
 // Selectors are used to pick which policy applies to which functions when
 // defining a `vtable`. For example, one might want to define a vtable where
 // all the functions except one (say `"f"`) are stored remotely, with `"f"`
-// being stored locally. This can be achieved by using the `te::remote` policy
-// with a selector that picks all functions except `"f"`, and the `te::local`
+// being stored locally. This can be achieved by using the `dyno::remote` policy
+// with a selector that picks all functions except `"f"`, and the `dyno::local`
 // policy with a selector that picks only the function `"f"`. Selectors
 // provided by the library are:
 //
-//  te::only<functions...>
+//  dyno::only<functions...>
 //    Picks only the specified functions from a concept. `functions` must be
-//    compile-time strings, such as `te::only<decltype("foo"_s), decltype("bar"_s)>`.
+//    compile-time strings, such as `dyno::only<decltype("foo"_s), decltype("bar"_s)>`.
 //
-//  te::except<functions...>
+//  dyno::except<functions...>
 //    Picks all but the specified functions from a concept. `functions` must
-//    be compile-time strings, such as `te::except<decltype("foo"_s), decltype("bar"_s)>`.
+//    be compile-time strings, such as `dyno::except<decltype("foo"_s), decltype("bar"_s)>`.
 //
-//  te::everything
+//  dyno::everything
 //    Picks all the functions from a concept.
 template <typename ...Policies>
 struct vtable;
@@ -323,7 +323,7 @@ struct vtable<Policy1> {
 template <typename Policy1, typename Policy2>
 struct vtable<Policy1, Policy2> {
   template <typename Concept>
-  using apply = te::joined_vtable<
+  using apply = dyno::joined_vtable<
     typename Policy1::template apply<Concept>,
     typename Policy2::template apply<Concept>
   >;
@@ -332,12 +332,12 @@ struct vtable<Policy1, Policy2> {
 template <typename Policy1, typename Policy2, typename ...Policies>
 struct vtable<Policy1, Policy2, Policies...> {
   template <typename Concept>
-  using apply = te::joined_vtable<
+  using apply = dyno::joined_vtable<
     typename Policy1::template apply<Concept>,
     typename vtable<Policy2, Policies...>::template apply<Concept>
   >;
 };
 
-} // end namespace te
+} // end namespace dyno
 
-#endif // TE_VTABLE_HPP
+#endif // DYNO_VTABLE_HPP

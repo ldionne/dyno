@@ -4,12 +4,12 @@
 
 #include "../test/testing.hpp"
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <functional>
 #include <string>
 #include <utility>
-using namespace te::literals;
+using namespace dyno::literals;
 
 
 //
@@ -20,12 +20,12 @@ template <typename Signature>
 struct Callable;
 
 template <typename R, typename ...Args>
-struct Callable<R(Args...)> : decltype(te::requires(
-  "call"_s = te::function<R (te::T const&, Args...)>
+struct Callable<R(Args...)> : decltype(dyno::requires(
+  "call"_s = dyno::function<R (dyno::T const&, Args...)>
 )) { };
 
 template <typename R, typename ...Args, typename F>
-auto const te::default_concept_map<Callable<R(Args...)>, F> = te::make_concept_map(
+auto const dyno::default_concept_map<Callable<R(Args...)>, F> = dyno::make_concept_map(
   "call"_s = [](F const& f, Args ...args) -> R {
     return f(std::forward<Args>(args)...);
   }
@@ -44,7 +44,7 @@ struct function<R(Args...)> {
   }
 
 private:
-  te::poly<Callable<R(Args...)>> poly_;
+  dyno::poly<Callable<R(Args...)>> poly_;
 };
 
 
@@ -66,10 +66,10 @@ int main() {
   // store a free function
   {
     function<std::string(int)> tostring = std::to_string;
-    TE_CHECK(tostring(1) == "1");
-    TE_CHECK(tostring(2) == "2");
-    TE_CHECK(tostring(3) == "3");
-    TE_CHECK(tostring(-10) == "-10");
+    DYNO_CHECK(tostring(1) == "1");
+    DYNO_CHECK(tostring(2) == "2");
+    DYNO_CHECK(tostring(3) == "3");
+    DYNO_CHECK(tostring(-10) == "-10");
   }
 
   // store a lambda
@@ -78,45 +78,45 @@ int main() {
       return s.size();
     };
 
-    TE_CHECK(size("") == 0);
-    TE_CHECK(size("a") == 1);
-    TE_CHECK(size("ab") == 2);
-    TE_CHECK(size("abc") == 3);
-    TE_CHECK(size("abcdef") == 6);
+    DYNO_CHECK(size("") == 0);
+    DYNO_CHECK(size("a") == 1);
+    DYNO_CHECK(size("ab") == 2);
+    DYNO_CHECK(size("abc") == 3);
+    DYNO_CHECK(size("abcdef") == 6);
   }
 
   // store the result of a call to std::bind
   {
     function<std::string()> tostring = std::bind(static_cast<std::string(*)(int)>(std::to_string), 31337);
-    TE_CHECK(tostring() == "31337");
+    DYNO_CHECK(tostring() == "31337");
   }
 
   // store a call to a member function and object
   {
     ToStringAdd const adder{314159};
     function<std::string(int)> f = std::bind(&ToStringAdd::to_string_add, adder, std::placeholders::_1);
-    TE_CHECK(f(1) == "314160");
-    TE_CHECK(f(2) == "314161");
-    TE_CHECK(f(3) == "314162");
-    TE_CHECK(f(-10) == "314149");
+    DYNO_CHECK(f(1) == "314160");
+    DYNO_CHECK(f(2) == "314161");
+    DYNO_CHECK(f(3) == "314162");
+    DYNO_CHECK(f(-10) == "314149");
   }
 
   // store a call to a member function and object ptr
   {
     ToStringAdd const adder{314159};
     function<std::string(int)> f = std::bind(&ToStringAdd::to_string_add, &adder, std::placeholders::_1);
-    TE_CHECK(f(1) == "314160");
-    TE_CHECK(f(2) == "314161");
-    TE_CHECK(f(3) == "314162");
-    TE_CHECK(f(-10) == "314149");
+    DYNO_CHECK(f(1) == "314160");
+    DYNO_CHECK(f(2) == "314161");
+    DYNO_CHECK(f(3) == "314162");
+    DYNO_CHECK(f(-10) == "314149");
   }
 
   // store a call to a function object
   {
     function<std::string(int)> tostring = ToString{};
-    TE_CHECK(tostring(1) == "1");
-    TE_CHECK(tostring(2) == "2");
-    TE_CHECK(tostring(3) == "3");
-    TE_CHECK(tostring(18) == "18");
+    DYNO_CHECK(tostring(1) == "1");
+    DYNO_CHECK(tostring(2) == "2");
+    DYNO_CHECK(tostring(3) == "3");
+    DYNO_CHECK(tostring(18) == "18");
   }
 }

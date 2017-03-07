@@ -2,18 +2,18 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_ERASE_FUNCTION_HPP
-#define TE_DETAIL_ERASE_FUNCTION_HPP
+#ifndef DYNO_DETAIL_ERASE_FUNCTION_HPP
+#define DYNO_DETAIL_ERASE_FUNCTION_HPP
 
-#include <te/detail/empty_object.hpp>
-#include <te/detail/eraser_traits.hpp>
+#include <dyno/detail/empty_object.hpp>
+#include <dyno/detail/eraser_traits.hpp>
 
 #include <boost/callable_traits/function_type.hpp>
 
 #include <utility>
 
 
-namespace te { namespace detail {
+namespace dyno { namespace detail {
 
 template <typename Eraser, typename F, typename PlaceholderSig, typename ActualSig>
 struct thunk;
@@ -68,6 +68,6 @@ constexpr auto erase_function(F const&) {
   return &Thunk::apply;
 }
 
-}} // end namespace te::detail
+}} // end namespace dyno::detail
 
-#endif // TE_DETAIL_ERASE_FUNCTION_HPP
+#endif // DYNO_DETAIL_ERASE_FUNCTION_HPP
