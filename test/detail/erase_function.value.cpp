@@ -14,7 +14,7 @@ struct Foo { };
 int main() {
   // erase_function should pass by-value arguments through
   {
-    auto f = [](Foo y) { };
+    auto f = [](Foo) { };
     auto erased = dyno::detail::erase_function<void (Foo)>(f);
     erased(Foo{});
 
@@ -27,7 +27,7 @@ int main() {
   // same as above, but with a function that does not return void
   // (hits a different specialization of `thunk`)
   {
-    auto f = [](Foo y) { return 5; };
+    auto f = [](Foo) { return 5; };
     auto erased = dyno::detail::erase_function<int (Foo)>(f);
     erased(Foo{});
 

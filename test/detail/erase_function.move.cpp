@@ -15,7 +15,7 @@ int main() {
   // erase_function should pass rvalues through as rvalues
   {
     awful::noncopyable x{};
-    auto f = [](awful::noncopyable&& y) { };
+    auto f = [](awful::noncopyable&&) { };
     auto erased = dyno::detail::erase_function<void (dyno::T&&)>(f);
     erased(static_cast<void*>(&x));
 
@@ -29,7 +29,7 @@ int main() {
   // (hits a different specialization of `thunk`)
   {
     awful::noncopyable x{};
-    auto f = [](awful::noncopyable&& y) { return 0; };
+    auto f = [](awful::noncopyable&&) { return 0; };
     auto erased = dyno::detail::erase_function<int (dyno::T&&)>(f);
     erased(static_cast<void*>(&x));
 
@@ -42,7 +42,7 @@ int main() {
   // same as above, but make sure we pass through non-erased arguments too
   {
     awful::noncopyable x{};
-    auto f = [](awful::noncopyable&& y) { };
+    auto f = [](awful::noncopyable&&) { };
     auto erased = dyno::detail::erase_function<void (awful::noncopyable&&)>(f);
     erased(std::move(x));
 
@@ -55,7 +55,7 @@ int main() {
   // same as above, but do not return void
   {
     awful::noncopyable x{};
-    auto f = [](awful::noncopyable&& y) { return 0; };
+    auto f = [](awful::noncopyable&&) { return 0; };
     auto erased = dyno::detail::erase_function<int (awful::noncopyable&&)>(f);
     erased(std::move(x));
 

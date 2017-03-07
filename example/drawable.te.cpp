@@ -41,7 +41,7 @@ Document& current(history_t<Document>& x) {
 }
 
 struct my_class_t { };
-void draw(my_class_t self, std::ostream& out)
+void draw(my_class_t /*self*/, std::ostream& out)
 { out << "my_class_t" << std::endl; }
 
 template <typename Object>

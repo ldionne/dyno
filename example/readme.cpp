@@ -42,7 +42,7 @@ struct Square { /* ... */ };
 
 template <>
 auto const dyno::concept_map<Drawable, Square> = dyno::make_concept_map(
-  "draw"_s = [](Square const& square, std::ostream& out) {
+  "draw"_s = [](Square const& /*square*/, std::ostream& out) {
     out << "square" << std::endl;
   }
 );

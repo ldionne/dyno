@@ -303,7 +303,7 @@ struct remote_storage {
     return static_cast<T const*>(ptr_);
   }
 
-  static constexpr bool can_store(dyno::storage_info info) {
+  static constexpr bool can_store(dyno::storage_info) {
     return true;
   }
 
@@ -351,7 +351,7 @@ struct shared_remote_storage {
   }
 
   template <typename VTable>
-  void destruct(VTable const& vtable) {
+  void destruct(VTable const&) {
     ptr_ = nullptr;
   }
 
@@ -381,7 +381,9 @@ private:
 // object.
 template <std::size_t Size, std::size_t Align = static_cast<std::size_t>(-1)>
 class local_storage {
-  static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<Size>) : Align;
+  static constexpr std::size_t SBAlign = Align == static_cast<std::size_t>(-1)
+                                            ? alignof(std::aligned_storage_t<Size>)
+                                            : Align;
   using SBStorage = std::aligned_storage_t<Size, SBAlign>;
   SBStorage buffer_;
 
@@ -478,7 +480,7 @@ struct non_owning_storage {
   { }
 
   template <typename VTable>
-  non_owning_storage(non_owning_storage const& other, VTable const& vtable)
+  non_owning_storage(non_owning_storage const& other, VTable const&)
     : ptr_{other.ptr_}
   { }
 
@@ -505,7 +507,7 @@ struct non_owning_storage {
     return static_cast<T const*>(ptr_);
   }
 
-  static constexpr bool can_store(dyno::storage_info info) {
+  static constexpr bool can_store(dyno::storage_info) {
     return true;
   }
 

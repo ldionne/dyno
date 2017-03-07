@@ -29,13 +29,13 @@ int main() {
     DYNO_CHECK(f(88) == 88);
   }
   {
-    auto lambda = [](int x, int y) { return y; };
+    auto lambda = [](int x, int y) { return x + y; };
     using Empty = dyno::detail::empty_object<decltype(lambda)>;
     static_assert(std::is_standard_layout<Empty::T1>{}, "");
     static_assert(std::is_standard_layout<Empty::T2>{}, "");
 
     auto f = Empty::get();
-    DYNO_CHECK(f(66, 77) == 77);
+    DYNO_CHECK(f(66, 77) == 66 + 77);
   }
 
   // Check with an empty function object.

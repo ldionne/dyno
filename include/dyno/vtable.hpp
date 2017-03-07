@@ -100,7 +100,7 @@ private:
   }
 
   template <typename Name_>
-  constexpr auto get_function(Name_ name, boost::hana::false_) const {
+  constexpr auto get_function(Name_, boost::hana::false_) const {
     constexpr bool always_false = sizeof(Name_) == 0;
     static_assert(always_false,
       "dyno::local_vtable::operator[]: Request for a virtual function that is "
@@ -174,7 +174,7 @@ struct joined_vtable {
 
 private:
   template <typename Name>
-  constexpr auto get_function(Name name, boost::hana::true_, boost::hana::true_) const {
+  constexpr auto get_function(Name, boost::hana::true_, boost::hana::true_) const {
     constexpr bool always_false = sizeof(Name) == 0;
     static_assert(always_false,
       "dyno::joined_vtable::operator[]: Request for a virtual function that is "
@@ -186,7 +186,7 @@ private:
   }
 
   template <typename Name>
-  constexpr auto get_function(Name name, boost::hana::false_, boost::hana::false_) const {
+  constexpr auto get_function(Name, boost::hana::false_, boost::hana::false_) const {
     constexpr bool always_false = sizeof(Name) == 0;
     static_assert(always_false,
       "dyno::joined_vtable::operator[]: Request for a virtual function that is "

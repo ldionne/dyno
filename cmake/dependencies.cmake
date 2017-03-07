@@ -37,7 +37,7 @@ ExternalProject_Add(install.Hana EXCLUDE_FROM_ALL 1
 add_dependencies(dependencies install.Hana)
 ExternalProject_Get_Property(install.Hana SOURCE_DIR)
 add_library(dependency.Hana INTERFACE)
-target_include_directories(dependency.Hana INTERFACE ${SOURCE_DIR}/include)
+target_include_directories(dependency.Hana SYSTEM INTERFACE ${SOURCE_DIR}/include)
 
 
 # [Boost.]CallableTraits
@@ -54,7 +54,7 @@ ExternalProject_Add(install.CallableTraits EXCLUDE_FROM_ALL 1
 add_dependencies(dependencies install.CallableTraits)
 ExternalProject_Get_Property(install.CallableTraits SOURCE_DIR)
 add_library(dependency.CallableTraits INTERFACE)
-target_include_directories(dependency.CallableTraits INTERFACE ${SOURCE_DIR}/include)
+target_include_directories(dependency.CallableTraits SYSTEM INTERFACE ${SOURCE_DIR}/include)
 
 
 # libawful
@@ -71,7 +71,7 @@ ExternalProject_Add(install.libawful EXCLUDE_FROM_ALL 1
 add_dependencies(dependencies install.libawful)
 ExternalProject_Get_Property(install.libawful SOURCE_DIR)
 add_library(dependency.libawful INTERFACE)
-target_include_directories(dependency.libawful INTERFACE ${SOURCE_DIR}/include)
+target_include_directories(dependency.libawful SYSTEM INTERFACE ${SOURCE_DIR}/include)
 
 
 # Google Benchmark
@@ -90,7 +90,7 @@ ExternalProject_Get_Property(install.GoogleBenchmark INSTALL_DIR)
 add_library(_libbenchmark STATIC IMPORTED)
 set_target_properties(_libbenchmark PROPERTIES IMPORTED_LOCATION ${INSTALL_DIR}/lib/libbenchmark.a)
 add_library(dependency.GoogleBenchmark INTERFACE)
-target_include_directories(dependency.GoogleBenchmark INTERFACE ${INSTALL_DIR}/include)
+target_include_directories(dependency.GoogleBenchmark SYSTEM INTERFACE ${INSTALL_DIR}/include)
 target_link_libraries(dependency.GoogleBenchmark INTERFACE _libbenchmark)
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   target_link_libraries(dependency.GoogleBenchmark INTERFACE -lpthread -lrt)
@@ -101,5 +101,5 @@ endif()
 find_package(Boost)
 if (Boost_FOUND)
   add_library(dependency.BoostTypeErasure INTERFACE)
-  target_include_directories(dependency.BoostTypeErasure INTERFACE ${Boost_INCLUDE_DIRS})
+  target_include_directories(dependency.BoostTypeErasure SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
 endif()

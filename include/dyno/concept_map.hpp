@@ -91,7 +91,7 @@ private:
   }
 
   template <typename Name_, bool function_is_in_the_map = false>
-  static constexpr auto get_function(Name_ name, boost::hana::false_) {
+  static constexpr auto get_function(Name_, boost::hana::false_) {
     static_assert(function_is_in_the_map,
       "dyno::concept_map_t::operator[]: Request for the implementation of a "
       "function that was not provided in the concept map. Make sure the "
