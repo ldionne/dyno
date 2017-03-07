@@ -5,13 +5,13 @@
 #ifndef ANY_ITERATOR_HPP
 #define ANY_ITERATOR_HPP
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <cassert>
 #include <iterator>
 #include <type_traits>
 #include <utility>
-using namespace te::literals;
+using namespace dyno::literals;
 
 
 // This is the definition of an Iterator concept using a "generic" language.
@@ -19,38 +19,38 @@ using namespace te::literals;
 // interface in terms of compile-time strings, assuming these may be fulfilled
 // in possibly many different ways.
 template <typename Reference>
-struct Iterator : decltype(te::requires(
-  te::CopyConstructible{},
-  te::CopyAssignable{},
-  te::Destructible{},
-  te::Swappable{},
-  "increment"_s = te::function<void (te::T&)>,
-  "dereference"_s = te::function<Reference (te::T&)>
+struct Iterator : decltype(dyno::requires(
+  dyno::CopyConstructible{},
+  dyno::CopyAssignable{},
+  dyno::Destructible{},
+  dyno::Swappable{},
+  "increment"_s = dyno::function<void (dyno::T&)>,
+  "dereference"_s = dyno::function<Reference (dyno::T&)>
 )) { };
 
 template <typename Reference>
-struct InputIterator : decltype(te::requires(
+struct InputIterator : decltype(dyno::requires(
   Iterator<Reference>{},
-  te::EqualityComparable{}
+  dyno::EqualityComparable{}
 )) { };
 
 template <typename Reference>
-struct ForwardIterator : decltype(te::requires(
+struct ForwardIterator : decltype(dyno::requires(
   InputIterator<Reference>{},
-  te::DefaultConstructible{}
+  dyno::DefaultConstructible{}
 )) { };
 
 template <typename Reference>
-struct BidirectionalIterator : decltype(te::requires(
+struct BidirectionalIterator : decltype(dyno::requires(
   ForwardIterator<Reference>{},
-  "decrement"_s = te::function<void (te::T&)>
+  "decrement"_s = dyno::function<void (dyno::T&)>
 )) { };
 
 template <typename Reference, typename Difference>
-struct RandomAccessIterator : decltype(te::requires(
+struct RandomAccessIterator : decltype(dyno::requires(
   BidirectionalIterator<Reference>{},
-  "advance"_s = te::function<void (te::T&, Difference)>,
-  "distance"_s = te::function<Difference (te::T const&, te::T const&)>
+  "advance"_s = dyno::function<void (dyno::T&, Difference)>,
+  "distance"_s = dyno::function<Difference (dyno::T const&, dyno::T const&)>
 )) { };
 
 
@@ -58,18 +58,18 @@ struct RandomAccessIterator : decltype(te::requires(
 // (method names as compile-time strings) to actual implementations for a
 // specific iterator type.
 template <typename Ref, typename T>
-auto const te::default_concept_map<Iterator<Ref>, T> = te::make_concept_map(
+auto const dyno::default_concept_map<Iterator<Ref>, T> = dyno::make_concept_map(
   "increment"_s = [](T& self) { ++self; },
   "dereference"_s = [](T& self) -> Ref { return *self; }
 );
 
 template <typename Ref, typename T>
-auto const te::default_concept_map<BidirectionalIterator<Ref>, T> = te::make_concept_map(
+auto const dyno::default_concept_map<BidirectionalIterator<Ref>, T> = dyno::make_concept_map(
   "decrement"_s = [](T& self) -> void { --self; }
 );
 
 template <typename Ref, typename Diff, typename T>
-auto const te::default_concept_map<RandomAccessIterator<Ref, Diff>, T> = te::make_concept_map(
+auto const dyno::default_concept_map<RandomAccessIterator<Ref, Diff>, T> = dyno::make_concept_map(
   "advance"_s = [](T& self, Diff diff) -> void {
     std::advance(self, diff);
   },
@@ -126,13 +126,13 @@ private:
   using Concept = typename detail::iterator_category_to_concept<
     iterator_category, reference, difference_type
   >::type;
-  using ActualConcept = decltype(te::requires(
+  using ActualConcept = decltype(dyno::requires(
     Concept{},
-    te::TypeId{} // For assertion in operator==
+    dyno::TypeId{} // For assertion in operator==
   ));
 
-  using Storage = te::local_storage<8>;
-  te::poly<ActualConcept, Storage> poly_;
+  using Storage = dyno::local_storage<8>;
+  dyno::poly<ActualConcept, Storage> poly_;
 
 public:
   template <typename It>

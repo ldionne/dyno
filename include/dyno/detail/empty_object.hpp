@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_EMPTY_OBJECT_HPP
-#define TE_DETAIL_EMPTY_OBJECT_HPP
+#ifndef DYNO_DETAIL_EMPTY_OBJECT_HPP
+#define DYNO_DETAIL_EMPTY_OBJECT_HPP
 
 #include <type_traits>
 
 
-namespace te { namespace detail {
+namespace dyno { namespace detail {
 
 // Hack to get an instance of an empty type that is not default constructible,
 // while still satisfying the C++ standard. None of this would be necessary if
@@ -81,6 +81,6 @@ struct empty_object {
   }
 };
 
-}} // end namespace te::detail
+}} // end namespace dyno::detail
 
-#endif // TE_DETAIL_EMPTY_OBJECT_HPP
+#endif // DYNO_DETAIL_EMPTY_OBJECT_HPP

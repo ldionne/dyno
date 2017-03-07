@@ -4,13 +4,13 @@
 
 #include "../test/testing.hpp"
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <cassert>
 #include <iterator>
 #include <utility>
 #include <vector>
-using namespace te::literals;
+using namespace dyno::literals;
 
 
 // This example shows how vtable traits can be used to customize the way
@@ -20,22 +20,22 @@ using namespace te::literals;
 // other functions (e.g. the destructor) in a remote vtable.
 
 template <typename Reference>
-struct Iterator : decltype(te::requires(
-  te::DefaultConstructible{},
-  te::CopyConstructible{},
-  te::CopyAssignable{},
-  te::Destructible{},
-  te::Swappable{},
-  te::EqualityComparable{},
-  "increment"_s = te::function<void (te::T&)>,
-  "decrement"_s = te::function<void (te::T&)>,
-  "dereference"_s = te::function<Reference (te::T&)>,
-  "advance"_s = te::function<void (te::T&, std::ptrdiff_t)>,
-  "distance"_s = te::function<std::ptrdiff_t (te::T const&, te::T const&)>
+struct Iterator : decltype(dyno::requires(
+  dyno::DefaultConstructible{},
+  dyno::CopyConstructible{},
+  dyno::CopyAssignable{},
+  dyno::Destructible{},
+  dyno::Swappable{},
+  dyno::EqualityComparable{},
+  "increment"_s = dyno::function<void (dyno::T&)>,
+  "decrement"_s = dyno::function<void (dyno::T&)>,
+  "dereference"_s = dyno::function<Reference (dyno::T&)>,
+  "advance"_s = dyno::function<void (dyno::T&, std::ptrdiff_t)>,
+  "distance"_s = dyno::function<std::ptrdiff_t (dyno::T const&, dyno::T const&)>
 )) { };
 
 template <typename Ref, typename T>
-auto const te::default_concept_map<Iterator<Ref>, T> = te::make_concept_map(
+auto const dyno::default_concept_map<Iterator<Ref>, T> = dyno::make_concept_map(
   "increment"_s = [](T& self) { ++self; },
   "decrement"_s = [](T& self) -> void { --self; },
   "dereference"_s = [](T& self) -> Ref { return *self; },
@@ -57,16 +57,16 @@ struct any_iterator {
 
 private:
   using Concept = Iterator<reference>;
-  using Storage = te::remote_storage;
-  using VTable = te::vtable<
-    te::local<te::only<
+  using Storage = dyno::remote_storage;
+  using VTable = dyno::vtable<
+    dyno::local<dyno::only<
       decltype("increment"_s), decltype("equal"_s), decltype("dereference"_s)
     >>,
-    te::remote<te::except<
+    dyno::remote<dyno::except<
       decltype("increment"_s), decltype("equal"_s), decltype("dereference"_s)
     >>
   >;
-  te::poly<Concept, Storage, VTable> poly_;
+  dyno::poly<Concept, Storage, VTable> poly_;
 
 public:
   template <typename It>
@@ -119,5 +119,5 @@ int main() {
   for (; first != last; ++first) {
     result.push_back(*first);
   }
-  TE_CHECK(result == input);
+  DYNO_CHECK(result == input);
 }

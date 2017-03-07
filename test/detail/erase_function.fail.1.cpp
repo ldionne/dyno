@@ -2,12 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te/detail/dsl.hpp>
-#include <te/detail/erase_function.hpp>
+#include <dyno/detail/dsl.hpp>
+#include <dyno/detail/erase_function.hpp>
 
 
 int main() {
   auto f = [](int& i) -> int& { return i; };
-  // Fails because `te::T&&` can't be fulfilled by `int&`.
-  auto erased = te::detail::erase_function<te::T&& (int&)>(f);
+  // Fails because `dyno::T&&` can't be fulfilled by `int&`.
+  auto erased = dyno::detail::erase_function<dyno::T&& (int&)>(f);
 }

@@ -2,10 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_CONCEPT_HPP
-#define TE_CONCEPT_HPP
+#ifndef DYNO_CONCEPT_HPP
+#define DYNO_CONCEPT_HPP
 
-#include <te/detail/dsl.hpp>
+#include <dyno/detail/dsl.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -19,7 +19,7 @@
 #include <type_traits>
 
 
-namespace te {
+namespace dyno {
 
 template <typename ...Clauses>
 struct concept;
@@ -31,7 +31,7 @@ namespace detail {
   }
 
   template <typename ...Clauses>
-  constexpr auto expand_clauses(te::concept<Clauses...> const&) {
+  constexpr auto expand_clauses(dyno::concept<Clauses...> const&) {
     return boost::hana::flatten(
       boost::hana::make_tuple(detail::expand_clauses(Clauses{})...)
     );
@@ -49,7 +49,7 @@ namespace detail {
 // A `concept` is a collection of clauses and refined concepts representing
 // requirements for a type to model the concept.
 //
-// A concept is created by using `te::requires`.
+// A concept is created by using `dyno::requires`.
 //
 // From a `concept`, one can generate a virtual function table by looking at
 // the signatures of the functions defined in the concept. In the future, it
@@ -81,9 +81,9 @@ struct concept : detail::concept_base {
 //
 // ```
 // template <typename Reference>
-// struct Iterator : decltype(te::requires(
+// struct Iterator : decltype(dyno::requires(
 //   Incrementable{},
-//   "dereference"_s = te::function<Reference (te::T&)>
+//   "dereference"_s = dyno::function<Reference (dyno::T&)>
 //   ...
 // )) { };
 // ```
@@ -92,10 +92,10 @@ struct concept : detail::concept_base {
 // alias), as above, because that ensures the uniqueness of concepts that have
 // the same clauses.
 template <typename ...Clauses>
-constexpr te::concept<Clauses...> requires(Clauses ...) {
+constexpr dyno::concept<Clauses...> requires(Clauses ...) {
   return {};
 }
 
-} // end namespace te
+} // end namespace dyno
 
-#endif // TE_CONCEPT_HPP
+#endif // DYNO_CONCEPT_HPP

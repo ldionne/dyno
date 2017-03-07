@@ -26,7 +26,7 @@ int main() {
     for (; first != last; ++first) {
       result.push_back(*first);
     }
-    TE_CHECK(result == input);
+    DYNO_CHECK(result == input);
   }
 
   {
@@ -41,7 +41,7 @@ int main() {
       *out = *first;
     }
     std::array<int, 4> expected{{4, 3, 2, 1}};
-    TE_CHECK(result == expected);
+    DYNO_CHECK(result == expected);
   }
 
   {
@@ -53,7 +53,7 @@ int main() {
     for (; first != last; ++first, ++out) {
       *out = *first;
     }
-    TE_CHECK(result == input);
+    DYNO_CHECK(result == input);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -64,8 +64,8 @@ int main() {
     std::vector<int> input{1, 2, 3, 4};
     Iterator first{input.begin()}, last{input.end()};
     Iterator cfirst(first), clast(last);
-    TE_CHECK(first == cfirst);
-    TE_CHECK(last == clast);
+    DYNO_CHECK(first == cfirst);
+    DYNO_CHECK(last == clast);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ int main() {
     for (; cfirst != clast; ++cfirst) {
       result.push_back(*cfirst);
     }
-    TE_CHECK(result == input);
+    DYNO_CHECK(result == input);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -91,9 +91,9 @@ int main() {
     using Iterator = any_iterator<int, std::random_access_iterator_tag>;
     std::vector<int> input{1, 2, 3, 4};
     Iterator first{input.begin()}, mid{input.begin() + 2};
-    TE_CHECK(*first == 1);
+    DYNO_CHECK(*first == 1);
     first = mid;
-    TE_CHECK(*first == 3);
+    DYNO_CHECK(*first == 3);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -103,9 +103,9 @@ int main() {
     using Iterator = any_iterator<int, std::random_access_iterator_tag>;
     std::vector<int> input{1, 2, 3, 4};
     Iterator first{input.begin()}, mid{input.begin() + 2};
-    TE_CHECK(*first == 1);
+    DYNO_CHECK(*first == 1);
     first = std::move(mid);
-    TE_CHECK(*first == 3);
+    DYNO_CHECK(*first == 3);
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -117,9 +117,9 @@ int main() {
     Iterator first{input.begin()}, last{input.end()};
     using std::swap;
     swap(first, last);
-    TE_CHECK(*last == 1);
+    DYNO_CHECK(*last == 1);
     ++last;
-    TE_CHECK(*last == 2);
-    TE_CHECK(first == Iterator{input.end()});
+    DYNO_CHECK(*last == 2);
+    DYNO_CHECK(first == Iterator{input.end()});
   }
 }

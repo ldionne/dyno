@@ -4,26 +4,26 @@
 
 #include "testing.hpp"
 
-#include <te/concept.hpp>
-#include <te/concept_map.hpp>
-#include <te/poly.hpp>
-using namespace te::literals;
+#include <dyno/concept.hpp>
+#include <dyno/concept_map.hpp>
+#include <dyno/poly.hpp>
+using namespace dyno::literals;
 
 
-struct Concept : decltype(te::requires(
-  "f"_s = te::function<int (te::T*)>
+struct Concept : decltype(dyno::requires(
+  "f"_s = dyno::function<int (dyno::T*)>
 )) { };
 
 struct Foo { };
 
 template <>
-auto const te::concept_map<Concept, Foo> = te::make_concept_map(
+auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
   "f"_s = [](Foo*) { return 111; }
 );
 
 int main() {
   Foo foo;
-  te::poly<Concept> poly{foo};
-  // MESSAGE[te::poly::virtual_: Passing a non-poly object as an argument]
-  TE_CHECK(poly.virtual_("f"_s)(static_cast<void*>(&poly)) == 111);
+  dyno::poly<Concept> poly{foo};
+  // MESSAGE[dyno::poly::virtual_: Passing a non-poly object as an argument]
+  DYNO_CHECK(poly.virtual_("f"_s)(static_cast<void*>(&poly)) == 111);
 }

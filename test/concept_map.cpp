@@ -4,31 +4,31 @@
 
 #include "testing.hpp"
 
-#include <te/concept.hpp>
-#include <te/concept_map.hpp>
-using namespace te::literals;
+#include <dyno/concept.hpp>
+#include <dyno/concept_map.hpp>
+using namespace dyno::literals;
 
 
-struct A : decltype(te::requires(
-  "f"_s = te::function<int (te::T&)>
+struct A : decltype(dyno::requires(
+  "f"_s = dyno::function<int (dyno::T&)>
 )) { };
 
-struct B : decltype(te::requires(
+struct B : decltype(dyno::requires(
   A{},
-  "g"_s = te::function<int (te::T&)>
+  "g"_s = dyno::function<int (dyno::T&)>
 )) { };
 
-struct C : decltype(te::requires(B{})) { };
+struct C : decltype(dyno::requires(B{})) { };
 
 struct Foo { };
 
 template <>
-auto const te::concept_map<A, Foo> = te::make_concept_map(
+auto const dyno::concept_map<A, Foo> = dyno::make_concept_map(
   "f"_s = [](Foo&) { return 222; }
 );
 
 template <>
-auto const te::concept_map<B, Foo> = te::make_concept_map(
+auto const dyno::concept_map<B, Foo> = dyno::make_concept_map(
   "g"_s = [](Foo&) { return 333; }
 );
 
@@ -36,17 +36,17 @@ int main() {
   Foo foo;
 
   {
-    auto complete = te::complete_concept_map<C, Foo>(te::concept_map<C, Foo>);
-    TE_CHECK(complete["f"_s](foo) == 222);
-    TE_CHECK(complete["g"_s](foo) == 333);
+    auto complete = dyno::complete_concept_map<C, Foo>(dyno::concept_map<C, Foo>);
+    DYNO_CHECK(complete["f"_s](foo) == 222);
+    DYNO_CHECK(complete["g"_s](foo) == 333);
   }
   {
-    auto complete = te::complete_concept_map<B, Foo>(te::concept_map<B, Foo>);
-    TE_CHECK(complete["f"_s](foo) == 222);
-    TE_CHECK(complete["g"_s](foo) == 333);
+    auto complete = dyno::complete_concept_map<B, Foo>(dyno::concept_map<B, Foo>);
+    DYNO_CHECK(complete["f"_s](foo) == 222);
+    DYNO_CHECK(complete["g"_s](foo) == 333);
   }
   {
-    auto complete = te::complete_concept_map<A, Foo>(te::concept_map<A, Foo>);
-    TE_CHECK(complete["f"_s](foo) == 222);
+    auto complete = dyno::complete_concept_map<A, Foo>(dyno::concept_map<A, Foo>);
+    DYNO_CHECK(complete["f"_s](foo) == 222);
   }
 }

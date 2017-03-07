@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_STORAGE_HPP
-#define TE_STORAGE_HPP
+#ifndef DYNO_STORAGE_HPP
+#define DYNO_STORAGE_HPP
 
-#include <te/builtin.hpp>
-#include <te/detail/dsl.hpp>
+#include <dyno/builtin.hpp>
+#include <dyno/detail/dsl.hpp>
 
 #include <cassert>
 #include <cstddef>
@@ -16,7 +16,7 @@
 #include <utility>
 
 
-namespace te {
+namespace dyno {
 
 // concept PolymorphicStorage
 //
@@ -80,7 +80,7 @@ namespace te {
 // template <typename T = void> T const* get() const;
 //  Semantics: Return a pointer to the object inside the polymorphic storage.
 //
-// static constexpr bool can_store(te::storage_info);
+// static constexpr bool can_store(dyno::storage_info);
 //  Semantics: Return whether the polymorphic storage can store an object with
 //             the specified type information.
 
@@ -114,7 +114,7 @@ public:
   sbo_storage& operator=(sbo_storage&&) = delete;
   sbo_storage& operator=(sbo_storage const&) = delete;
 
-  static constexpr bool can_store(te::storage_info info) {
+  static constexpr bool can_store(dyno::storage_info info) {
     return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
   }
 
@@ -123,7 +123,7 @@ public:
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
-    if (can_store(te::storage_info_for<RawT>)) {
+    if (can_store(dyno::storage_info_for<RawT>)) {
       uses_heap_ = false;
       new (&sb_) RawT(std::forward<T>(t));
     } else {
@@ -303,7 +303,7 @@ struct remote_storage {
     return static_cast<T const*>(ptr_);
   }
 
-  static constexpr bool can_store(te::storage_info info) {
+  static constexpr bool can_store(dyno::storage_info info) {
     return true;
   }
 
@@ -365,7 +365,7 @@ struct shared_remote_storage {
     return static_cast<T const*>(ptr_.get());
   }
 
-  static constexpr bool can_store(te::storage_info) {
+  static constexpr bool can_store(dyno::storage_info) {
     return true;
   }
 
@@ -392,7 +392,7 @@ public:
   local_storage& operator=(local_storage&&) = delete;
   local_storage& operator=(local_storage const&) = delete;
 
-  static constexpr bool can_store(te::storage_info info) {
+  static constexpr bool can_store(dyno::storage_info info) {
     return info.size <= sizeof(SBStorage) && alignof(SBStorage) % info.alignment == 0;
   }
 
@@ -401,8 +401,8 @@ public:
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit inside it.
-    static_assert(can_store(te::storage_info_for<RawT>),
-      "te::local_storage: Trying to construct from an object that won't fit "
+    static_assert(can_store(dyno::storage_info_for<RawT>),
+      "dyno::local_storage: Trying to construct from an object that won't fit "
       "in the local storage.");
 
     new (&buffer_) RawT(std::forward<T>(t));
@@ -411,7 +411,7 @@ public:
   template <typename VTable>
   local_storage(local_storage const& other, VTable const& vtable) {
     assert(can_store(vtable["storage_info"_s]()) &&
-      "te::local_storage: Trying to copy-construct using a vtable that "
+      "dyno::local_storage: Trying to copy-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
     vtable["copy-construct"_s](this->get(), other.get());
@@ -420,7 +420,7 @@ public:
   template <typename VTable>
   local_storage(local_storage&& other, VTable const& vtable) {
     assert(can_store(vtable["storage_info"_s]()) &&
-      "te::local_storage: Trying to move-construct using a vtable that "
+      "dyno::local_storage: Trying to move-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
     vtable["move-construct"_s](this->get(), other.get());
@@ -505,7 +505,7 @@ struct non_owning_storage {
     return static_cast<T const*>(ptr_);
   }
 
-  static constexpr bool can_store(te::storage_info info) {
+  static constexpr bool can_store(dyno::storage_info info) {
     return true;
   }
 
@@ -518,8 +518,8 @@ private:
 //
 // When the primary storage can be used to store a type, it is used. When it
 // can't, however, the secondary storage is used instead. This can be used
-// to implement a small buffer optimization, by using `te::local_storage` as
-// the primary storage, and `te::remote_storage` as the secondary.
+// to implement a small buffer optimization, by using `dyno::local_storage` as
+// the primary storage, and `dyno::remote_storage` as the secondary.
 //
 // TODO:
 // - Consider implementing this by storing a pointer to the active object.
@@ -546,15 +546,15 @@ public:
   fallback_storage& operator=(fallback_storage const&) = delete;
 
   template <typename T, typename RawT = std::decay_t<T>,
-            typename = std::enable_if_t<First::can_store(te::storage_info_for<RawT>)>>
+            typename = std::enable_if_t<First::can_store(dyno::storage_info_for<RawT>)>>
   explicit fallback_storage(T&& t) : in_first_{true}
   { new (&first_) First{std::forward<T>(t)}; }
 
   template <typename T, typename RawT = std::decay_t<T>, typename = void,
-            typename = std::enable_if_t<!First::can_store(te::storage_info_for<RawT>)>>
+            typename = std::enable_if_t<!First::can_store(dyno::storage_info_for<RawT>)>>
   explicit fallback_storage(T&& t) : in_first_{false} {
-    static_assert(can_store(te::storage_info_for<RawT>),
-      "te::fallback_storage<First, Second>: Trying to construct from a type "
+    static_assert(can_store(dyno::storage_info_for<RawT>),
+      "dyno::fallback_storage<First, Second>: Trying to construct from a type "
       "that can neither be stored in the primary nor in the secondary storage.");
 
     new (&second_) Second{std::forward<T>(t)};
@@ -644,11 +644,11 @@ public:
                                             : second_.template get<T>());
   }
 
-  static constexpr bool can_store(te::storage_info info) {
+  static constexpr bool can_store(dyno::storage_info info) {
     return First::can_store(info) || Second::can_store(info);
   }
 };
 
-} // end namespace te
+} // end namespace dyno
 
-#endif // TE_STORAGE_HPP
+#endif // DYNO_STORAGE_HPP

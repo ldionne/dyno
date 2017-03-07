@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te/builtin.hpp>
-#include <te/concept.hpp>
-#include <te/poly.hpp>
+#include <dyno/builtin.hpp>
+#include <dyno/concept.hpp>
+#include <dyno/poly.hpp>
 
 #include <awful.hpp>
 
@@ -15,9 +15,9 @@ int main() {
   // Make sure the copy constructor and friends don't get instantiated
   // all the time.
   {
-    using C = decltype(te::requires(te::MoveConstructible{}, te::Destructible{}));
+    using C = decltype(dyno::requires(dyno::MoveConstructible{}, dyno::Destructible{}));
 
-    te::poly<C> a{awful::noncopyable{}};
-    te::poly<C> b{std::move(a)};
+    dyno::poly<C> a{awful::noncopyable{}};
+    dyno::poly<C> b{std::move(a)};
   }
 }

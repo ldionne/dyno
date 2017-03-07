@@ -2,10 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_DETAIL_TRANSFORM_SIGNATURE_HPP
-#define TE_DETAIL_TRANSFORM_SIGNATURE_HPP
+#ifndef DYNO_DETAIL_TRANSFORM_SIGNATURE_HPP
+#define DYNO_DETAIL_TRANSFORM_SIGNATURE_HPP
 
-namespace te { namespace detail {
+namespace dyno { namespace detail {
 
 // Transforms a signature by applying a metafunction to the return type and
 // all the arguments of a function signature. This returns a function type,
@@ -25,6 +25,6 @@ struct transform_signature<R (Args..., ...), F> {
   using type = Result (typename F<Args>::type..., ...);
 };
 
-}} // end namespace te::detail
+}} // end namespace dyno::detail
 
-#endif // TE_DETAIL_TRANSFORM_SIGNATURE_HPP
+#endif // DYNO_DETAIL_TRANSFORM_SIGNATURE_HPP

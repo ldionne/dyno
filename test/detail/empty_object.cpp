@@ -4,7 +4,7 @@
 
 #include "../testing.hpp"
 
-#include <te/detail/empty_object.hpp>
+#include <dyno/detail/empty_object.hpp>
 
 #include <type_traits>
 
@@ -12,30 +12,30 @@
 int main() {
   {
     auto lambda = []() { return 99; };
-    using Empty = te::detail::empty_object<decltype(lambda)>;
+    using Empty = dyno::detail::empty_object<decltype(lambda)>;
     static_assert(std::is_standard_layout<Empty::T1>{}, "");
     static_assert(std::is_standard_layout<Empty::T2>{}, "");
 
     auto f = Empty::get();
-    TE_CHECK(f() == 99);
+    DYNO_CHECK(f() == 99);
   }
   {
     auto lambda = [](int x) { return x; };
-    using Empty = te::detail::empty_object<decltype(lambda)>;
+    using Empty = dyno::detail::empty_object<decltype(lambda)>;
     static_assert(std::is_standard_layout<Empty::T1>{}, "");
     static_assert(std::is_standard_layout<Empty::T2>{}, "");
 
     auto f = Empty::get();
-    TE_CHECK(f(88) == 88);
+    DYNO_CHECK(f(88) == 88);
   }
   {
     auto lambda = [](int x, int y) { return y; };
-    using Empty = te::detail::empty_object<decltype(lambda)>;
+    using Empty = dyno::detail::empty_object<decltype(lambda)>;
     static_assert(std::is_standard_layout<Empty::T1>{}, "");
     static_assert(std::is_standard_layout<Empty::T2>{}, "");
 
     auto f = Empty::get();
-    TE_CHECK(f(66, 77) == 77);
+    DYNO_CHECK(f(66, 77) == 77);
   }
 
   // Check with an empty function object.
@@ -45,11 +45,11 @@ int main() {
       int operator()() const { return 99; }
     };
 
-    using Empty = te::detail::empty_object<lambda>;
+    using Empty = dyno::detail::empty_object<lambda>;
     static_assert(std::is_standard_layout<Empty::T1>{}, "");
     static_assert(std::is_standard_layout<Empty::T2>{}, "");
 
     auto f = Empty::get();
-    TE_CHECK(f() == 99);
+    DYNO_CHECK(f() == 99);
   }
 }

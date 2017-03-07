@@ -2,22 +2,22 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te/concept.hpp>
-#include <te/concept_map.hpp>
-using namespace te::literals;
+#include <dyno/concept.hpp>
+#include <dyno/concept_map.hpp>
+using namespace dyno::literals;
 
 
-struct Fooable : decltype(te::requires(
-  "foo"_s = te::function<void (te::T&)>,
-  "bar"_s = te::function<void (te::T&)>
+struct Fooable : decltype(dyno::requires(
+  "foo"_s = dyno::function<void (dyno::T&)>,
+  "bar"_s = dyno::function<void (dyno::T&)>
 )) { };
 
 template <>
-auto const te::concept_map<Fooable, int> = te::make_concept_map(
+auto const dyno::concept_map<Fooable, int> = dyno::make_concept_map(
   "foo"_s = [](int&) { }
 );
 
 // MESSAGE[Incomplete definition of your concept map]
-auto const& complete = te::complete_concept_map<Fooable, int>(te::concept_map<Fooable, int>);
+auto const& complete = dyno::complete_concept_map<Fooable, int>(dyno::concept_map<Fooable, int>);
 
 int main() { }

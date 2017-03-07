@@ -8,9 +8,9 @@ add_custom_target(examples
 
 file(GLOB_RECURSE EXAMPLES "*.cpp")
 foreach(example IN LISTS EXAMPLES)
-  te_get_target_name(target "${example}")
+  dyno_get_target_name(target "${example}")
   add_executable(${target} EXCLUDE_FROM_ALL "${example}")
-  te_set_test_properties(${target})
+  dyno_set_test_properties(${target})
   add_test(${target} ${target})
   add_dependencies(examples ${target})
 endforeach()

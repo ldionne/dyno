@@ -4,24 +4,24 @@
 
 #include "testing.hpp"
 
-#include <te/concept.hpp>
-#include <te/concept_map.hpp>
-#include <te/poly.hpp>
-using namespace te::literals;
+#include <dyno/concept.hpp>
+#include <dyno/concept_map.hpp>
+#include <dyno/poly.hpp>
+using namespace dyno::literals;
 
 
-// This test makes sure that `te::poly` allows overriding the concept map used
+// This test makes sure that `dyno::poly` allows overriding the concept map used
 // for a type at construction time.
 
-struct Concept : decltype(te::requires(
-  "f"_s = te::function<int (te::T&)>,
-  "g"_s = te::function<int (te::T&)>
+struct Concept : decltype(dyno::requires(
+  "f"_s = dyno::function<int (dyno::T&)>,
+  "g"_s = dyno::function<int (dyno::T&)>
 )) { };
 
 struct Foo { };
 
 template <>
-auto const te::concept_map<Concept, Foo> = te::make_concept_map(
+auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
   "f"_s = [](Foo&) { return 111; },
   "g"_s = [](Foo&) { return 888; }
 );
@@ -29,17 +29,17 @@ auto const te::concept_map<Concept, Foo> = te::make_concept_map(
 int main() {
   {
     Foo foo;
-    te::poly<Concept> poly{foo};
-    TE_CHECK(poly.virtual_("f"_s)(poly) == 111);
-    TE_CHECK(poly.virtual_("g"_s)(poly) == 888);
+    dyno::poly<Concept> poly{foo};
+    DYNO_CHECK(poly.virtual_("f"_s)(poly) == 111);
+    DYNO_CHECK(poly.virtual_("g"_s)(poly) == 888);
   }
 
   {
     Foo foo;
-    te::poly<Concept> poly{foo, te::make_concept_map(
+    dyno::poly<Concept> poly{foo, dyno::make_concept_map(
       "f"_s = [](Foo&) { return 222; }
     )};
-    TE_CHECK(poly.virtual_("f"_s)(poly) == 222);
-    TE_CHECK(poly.virtual_("g"_s)(poly) == 888);
+    DYNO_CHECK(poly.virtual_("f"_s)(poly) == 222);
+    DYNO_CHECK(poly.virtual_("g"_s)(poly) == 888);
   }
 }

@@ -8,19 +8,19 @@
 //////////////////////////////////////////////////////////////////////////////
 // Important: Keep this file in sync with the Overview in the README
 //////////////////////////////////////////////////////////////////////////////
-#include <te.hpp>
+#include <dyno.hpp>
 #include <iostream>
-using namespace te::literals;
+using namespace dyno::literals;
 
 // Define the interface of something that can be drawn
-struct Drawable : decltype(te::requires(
-  "draw"_s = te::function<void (te::T const&, std::ostream&)>
+struct Drawable : decltype(dyno::requires(
+  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
 )) { };
 
 // Define an object that can hold anything that can be drawn.
 struct drawable {
   template <typename T>
-  drawable(T x) : poly_{x, te::make_concept_map(
+  drawable(T x) : poly_{x, dyno::make_concept_map(
     "draw"_s = [](T const& self, std::ostream& out) { self.draw(out); }
   )} { }
 
@@ -28,7 +28,7 @@ struct drawable {
   { poly_.virtual_("draw"_s)(poly_, out); }
 
 private:
-  te::poly<Drawable> poly_;
+  dyno::poly<Drawable> poly_;
 };
 
 struct Square {
@@ -50,11 +50,11 @@ int main() {
   std::cout.rdbuf(out.rdbuf());
 
   f(Square{});
-  TE_CHECK(out.str() == "Square");
+  DYNO_CHECK(out.str() == "Square");
   out.str("");
 
   f(Circle{});
-  TE_CHECK(out.str() == "Circle");
+  DYNO_CHECK(out.str() == "Circle");
 
   std::cout.rdbuf(coutbuf);
 }

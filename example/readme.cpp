@@ -2,27 +2,27 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <iostream>
 #include <type_traits>
 #include <vector>
-using namespace te::literals;
+using namespace dyno::literals;
 
 namespace std { template <typename ...> using void_t = void; }
 
 
-struct Drawable : decltype(te::requires(
-  "draw"_s = te::function<void (te::T const&, std::ostream&)>
+struct Drawable : decltype(dyno::requires(
+  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
 )) { };
 
 // TODO: Workaround Clang <= 3.8 bug with variable templates and generic lambdas.
 template <typename T, typename ...Args>
 constexpr auto delayed_concept_map(Args ...args)
-{ return te::make_concept_map(args...); }
+{ return dyno::make_concept_map(args...); }
 
 template <typename T>
-auto const te::default_concept_map<Drawable, T> = delayed_concept_map<T>(
+auto const dyno::default_concept_map<Drawable, T> = delayed_concept_map<T>(
   "draw"_s = [](auto const& t, std::ostream& out) { t.draw(out); }
 );
 
@@ -34,14 +34,14 @@ struct drawable {
   { poly_.virtual_("draw"_s)(poly_, out); }
 
 private:
-  te::poly<Drawable> poly_;
+  dyno::poly<Drawable> poly_;
 };
 
 
 struct Square { /* ... */ };
 
 template <>
-auto const te::concept_map<Drawable, Square> = te::make_concept_map(
+auto const dyno::concept_map<Drawable, Square> = dyno::make_concept_map(
   "draw"_s = [](Square const& square, std::ostream& out) {
     out << "square" << std::endl;
   }
@@ -56,9 +56,9 @@ struct Circle {
 
 
 template <typename T>
-auto const te::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
+auto const dyno::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
   std::cout << std::declval<T>()
-)>> = te::make_concept_map(
+)>> = dyno::make_concept_map(
   "draw"_s = [](std::vector<T> const& v, std::ostream& out) {
     for (auto const& x : v)
       out << x << ' ';

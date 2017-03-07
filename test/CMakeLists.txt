@@ -8,9 +8,9 @@ add_custom_target(tests
 
 # Generate tests that include each public header.
 include(TestHeaders)
-file(GLOB_RECURSE HEADERS RELATIVE "${TE_SOURCE_DIR}/include"
-                                   "${TE_SOURCE_DIR}/include/*.hpp")
-generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES te
+file(GLOB_RECURSE HEADERS RELATIVE "${DYNO_SOURCE_DIR}/include"
+                                   "${DYNO_SOURCE_DIR}/include/*.hpp")
+generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES dyno
                                  MASTER_TARGET tests EXCLUDE_FROM_ALL)
 
 
@@ -20,7 +20,7 @@ include(CompileFailTest)
 # create a test that succeeds whenever the test fails to build.
 file(GLOB_RECURSE UNIT_TESTS "*.cpp")
 foreach(ut IN LISTS UNIT_TESTS)
-  te_get_target_name(target "${ut}")
+  dyno_get_target_name(target "${ut}")
 
   if (target MATCHES "[.]fail")
     compile_fail("${target}" "${ut}")
@@ -30,5 +30,5 @@ foreach(ut IN LISTS UNIT_TESTS)
     add_dependencies(tests ${target})
   endif()
 
-  te_set_test_properties(${target})
+  dyno_set_test_properties(${target})
 endforeach()

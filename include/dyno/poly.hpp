@@ -2,14 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#ifndef TE_POLY_HPP
-#define TE_POLY_HPP
+#ifndef DYNO_POLY_HPP
+#define DYNO_POLY_HPP
 
-#include <te/builtin.hpp>
-#include <te/concept_map.hpp>
-#include <te/detail/is_placeholder.hpp>
-#include <te/storage.hpp>
-#include <te/vtable.hpp>
+#include <dyno/builtin.hpp>
+#include <dyno/concept_map.hpp>
+#include <dyno/detail/is_placeholder.hpp>
+#include <dyno/storage.hpp>
+#include <dyno/vtable.hpp>
 
 #include <boost/hana/type.hpp>
 
@@ -17,12 +17,12 @@
 #include <utility>
 
 
-namespace te {
+namespace dyno {
 
-// A `te::poly` encapsulates an object of a polymorphic type that supports the
+// A `dyno::poly` encapsulates an object of a polymorphic type that supports the
 // interface of the given `Concept`.
 //
-// `te::poly` is meant to be used as a holder for a polymorphic object. It can
+// `dyno::poly` is meant to be used as a holder for a polymorphic object. It can
 // manage the lifetime of that object and provide access to its dynamically-
 // dispatched methods. However, it does not directly implement any specific
 // interface beyond what's strictly necessary for managing the lifetime
@@ -31,13 +31,13 @@ namespace te {
 // the object it manages.
 //
 // The intended use case is for users to create their very own type-erased
-// wrappers on top of `te::poly`, defining their interface as they wish and
+// wrappers on top of `dyno::poly`, defining their interface as they wish and
 // using the dynamic dispatch provided by the library to implement runtime
 // polymorphism.
 //
-// Different aspects of a `te::poly` can also be customized:
+// Different aspects of a `dyno::poly` can also be customized:
 //  `Concept`
-//    The concept satisfied by `te::poly`. This determines which methods will
+//    The concept satisfied by `dyno::poly`. This determines which methods will
 //    be available for dynamic dispatching.
 //
 //  `Storage`
@@ -46,8 +46,8 @@ namespace te {
 //
 //  `VTable`
 //    The policy specifying how to implement the dynamic dispatching mechanism
-//    for methods. This must be a specialization of `te::vtable`.
-//    See `te::vtable` for details.
+//    for methods. This must be a specialization of `dyno::vtable`.
+//    See `dyno::vtable` for details.
 //
 // TODO:
 // - How to combine the storage of the object with that of the vtable?
@@ -56,28 +56,28 @@ namespace te {
 // - Is it actually OK to require Destructible and Storable all the time?
 template <
   typename Concept,
-  typename Storage = te::remote_storage,
-  typename VTablePolicy = te::vtable<te::remote<te::everything>>
+  typename Storage = dyno::remote_storage,
+  typename VTablePolicy = dyno::vtable<dyno::remote<dyno::everything>>
 >
 struct poly {
 private:
-  using ActualConcept = decltype(te::requires(
+  using ActualConcept = decltype(dyno::requires(
     Concept{},
-    te::Destructible{},
-    te::Storable{}
+    dyno::Destructible{},
+    dyno::Storable{}
   ));
   using VTable = typename VTablePolicy::template apply<ActualConcept>;
 
 public:
   template <typename T, typename RawT = std::decay_t<T>, typename ConceptMap>
   explicit poly(T&& t, ConceptMap map)
-    : vtable_{te::complete_concept_map<ActualConcept, RawT>(map)}
+    : vtable_{dyno::complete_concept_map<ActualConcept, RawT>(map)}
     , storage_{std::forward<T>(t)}
   { }
 
   template <typename T, typename RawT = std::decay_t<T>>
   explicit poly(T&& t)
-    : poly{std::forward<T>(t), te::concept_map<ActualConcept, RawT>}
+    : poly{std::forward<T>(t), dyno::concept_map<ActualConcept, RawT>}
   { }
 
   poly(poly const& other)
@@ -139,7 +139,7 @@ private:
     using RawArg = std::remove_cv_t<std::remove_reference_t<Arg>>;
     constexpr bool is_poly = std::is_same<poly, RawArg>::value;
     static_assert(is_poly,
-      "te::poly::virtual_: Passing a non-poly object as an argument to a virtual "
+      "dyno::poly::virtual_: Passing a non-poly object as an argument to a virtual "
       "function that specified a placeholder for that parameter.");
     return static_cast<Arg&&>(arg).get();
   }
@@ -148,12 +148,12 @@ private:
     using RawArg = std::remove_cv_t<Arg>;
     constexpr bool is_poly = std::is_same<poly, RawArg>::value;
     static_assert(is_poly,
-      "te::poly::virtual_: Passing a non-poly object as an argument to a virtual "
+      "dyno::poly::virtual_: Passing a non-poly object as an argument to a virtual "
       "function that specified a placeholder for that parameter.");
     return arg->get();
   }
 };
 
-} // end namespace te
+} // end namespace dyno
 
-#endif // TE_POLY_HPP
+#endif // DYNO_POLY_HPP

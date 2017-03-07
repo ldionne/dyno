@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-#include <te.hpp>
+#include <dyno.hpp>
 
 #include <benchmark/benchmark.h>
 
@@ -132,22 +132,22 @@ namespace { namespace classic {
   };
 }} // end namespace classic
 
-namespace { namespace te_split_ptr {
-  using namespace te::literals;
+namespace { namespace dyno_split_ptr {
+  using namespace dyno::literals;
 
-  struct Concept : decltype(te::requires(
-    "f1"_s = te::function<void (te::T&)>,
-    "f2"_s = te::function<void (te::T&)>,
-    "f3"_s = te::function<void (te::T&)>,
-    "f4"_s = te::function<void (te::T&)>,
-    "f5"_s = te::function<void (te::T&)>
+  struct Concept : decltype(dyno::requires(
+    "f1"_s = dyno::function<void (dyno::T&)>,
+    "f2"_s = dyno::function<void (dyno::T&)>,
+    "f3"_s = dyno::function<void (dyno::T&)>,
+    "f4"_s = dyno::function<void (dyno::T&)>,
+    "f5"_s = dyno::function<void (dyno::T&)>
   )) { };
 
   struct any {
     template <typename T>
     explicit any(T t)
       : vtable_{
-        te::complete_concept_map<Concept, T>(te::make_concept_map(
+        dyno::complete_concept_map<Concept, T>(dyno::make_concept_map(
           "f1"_s = [](T& self) { ++self; },
           "f2"_s = [](T& self) { --self; },
           "f3"_s = [](T& self) { ++self; },
@@ -165,12 +165,12 @@ namespace { namespace te_split_ptr {
     any& f5() { vtable_["f5"_s](self_); return *this; }
 
   private:
-    using VTable = typename te::vtable<te::remote<te::everything>>::
+    using VTable = typename dyno::vtable<dyno::remote<dyno::everything>>::
                    template apply<Concept>;
     VTable vtable_;
     void* self_;
   };
-}} // end namespace te_split_ptr
+}} // end namespace dyno_split_ptr
 
 template <typename Any>
 static void BM_any_1_function(benchmark::State& state) {
@@ -242,25 +242,25 @@ static constexpr int N = 100;
 BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_1_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, te_split_ptr::any         )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_1_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_2_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, te_split_ptr::any         )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_2_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_3_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, te_split_ptr::any         )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_3_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_4_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, te_split_ptr::any         )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_4_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_5_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, te_split_ptr::any         )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_5_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_MAIN();
