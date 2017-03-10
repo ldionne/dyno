@@ -13,12 +13,16 @@
 #include <boost/hana/bool.hpp>
 #include <boost/hana/contains.hpp>
 #include <boost/hana/difference.hpp>
+#include <boost/hana/first.hpp>
+#include <boost/hana/fold_left.hpp>
 #include <boost/hana/for_each.hpp>
-#include <boost/hana/functional/on.hpp>
+#include <boost/hana/is_subset.hpp>
 #include <boost/hana/keys.hpp>
+#include <boost/hana/length.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/or.hpp>
 #include <boost/hana/pair.hpp>
+#include <boost/hana/second.hpp>
 #include <boost/hana/set.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
@@ -216,56 +220,100 @@ private:
 // Selectors
 template <typename ...Functions>
 struct only {
-  template <typename Concept, template <typename ...> class VTable>
-  using apply = VTable<
-    boost::hana::pair<Functions, decltype(Concept{}.get_signature(Functions{}))>...
-  >;
+  template <typename All>
+  constexpr auto operator()(All all) const {
+    auto matched = boost::hana::make_set(Functions{}...);
+    static_assert(decltype(boost::hana::is_subset(matched, all))::value,
+      "dyno::only: Some functions specified in this selector are not part of "
+      "the concept to which the selector was applied.");
+    return boost::hana::make_pair(
+      boost::hana::difference(all, matched),
+      matched
+    );
+  }
 };
 
 template <typename ...Functions>
 struct except {
-  template <typename Concept>
-  static auto get_equivalent_only_selector() {
-    auto all = boost::hana::to_set(boost::hana::keys(Concept::all_clauses()));
-    auto ignored = boost::hana::make_set(Functions{}...);
-    auto kept = boost::hana::difference(all, ignored);
-    auto as_only = boost::hana::unpack(kept, [](auto ...f) {
-      return dyno::only<decltype(f)...>{};
-    });
-    return as_only;
+  template <typename All>
+  constexpr auto operator()(All all) const {
+    auto not_matched = boost::hana::make_set(Functions{}...);
+    static_assert(decltype(boost::hana::is_subset(not_matched, all))::value,
+      "dyno::except: Some functions specified in this selector are not part of "
+      "the concept to which the selector was applied.");
+    return boost::hana::make_pair(
+      not_matched,
+      boost::hana::difference(all, not_matched)
+    );
   }
-
-  template <typename Concept, template <typename ...> class VTable>
-  using apply = typename decltype(
-    get_equivalent_only_selector<Concept>()
-  )::template apply<Concept, VTable>;
 };
 
 struct everything {
-  template <typename Concept, template <typename ...> class VTable>
-  using apply = typename decltype(
-    boost::hana::unpack(Concept::all_clauses(),
-      boost::hana::template_<VTable> ^boost::hana::on^ boost::hana::decltype_
-    )
-  )::type;
+  template <typename All>
+  constexpr auto operator()(All all) const {
+    return boost::hana::make_pair(boost::hana::make_set(), all);
+  }
 };
 
+using everything_else = everything;
 
 //////////////////////////////////////////////////////////////////////////////
 // Vtable policies
 template <typename Selector>
 struct local {
-  template <typename Concept>
-  using apply = typename Selector::template apply<Concept, dyno::local_vtable>;
+  template <typename Concept, typename Functions>
+  static constexpr auto create(Concept, Functions functions) {
+    return boost::hana::unpack(functions, [](auto ...f) {
+      using VTable = dyno::local_vtable<
+        boost::hana::pair<decltype(f), decltype(Concept{}.get_signature(f))>...
+      >;
+      return boost::hana::basic_type<VTable>{};
+    });
+  }
+
+  Selector selector;
 };
 
 template <typename Selector>
 struct remote {
-  template <typename Concept>
-  using apply = dyno::remote_vtable<
-    typename Selector::template apply<Concept, dyno::local_vtable>
-  >;
+  template <typename Concept, typename Functions>
+  static constexpr auto create(Concept, Functions functions) {
+    return boost::hana::template_<dyno::remote_vtable>(
+      dyno::local<Selector>::create(Concept{}, functions)
+    );
+  }
+
+  Selector selector;
 };
+
+template <typename Concept, typename Policies>
+constexpr auto generate_vtable(Policies policies) {
+  auto functions = boost::hana::to_set(boost::hana::keys(Concept::all_clauses()));
+  auto state = boost::hana::make_pair(functions, boost::hana::basic_type<dyno::local_vtable<>>{});
+  auto result = boost::hana::fold_left(policies, state, [](auto state, auto policy) {
+    auto functions = boost::hana::first(state);
+    auto vtable = boost::hana::second(state);
+
+    auto selector_split = policy.selector(functions);
+    auto remaining = boost::hana::first(selector_split);
+    auto matched = boost::hana::second(selector_split);
+
+    auto new_vtable = boost::hana::basic_type<
+      dyno::joined_vtable<
+        typename decltype(vtable)::type,
+        typename decltype(policy.create(Concept{}, matched))::type
+      >
+    >{};
+    return boost::hana::make_pair(remaining, new_vtable);
+  });
+
+  constexpr bool all_functions_were_taken = decltype(boost::hana::length(boost::hana::first(result)))::value == 0;
+  static_assert(all_functions_were_taken,
+    "dyno::vtable: The policies specified in the vtable did not fully cover all "
+    "the functions provided by the concept. Some functions were not mapped to "
+    "any vtable, which is an error");
+  return boost::hana::second(result);
+}
 
 // Policy-based interface for defining vtables.
 //
@@ -298,8 +346,12 @@ struct remote {
 // all the functions except one (say `"f"`) are stored remotely, with `"f"`
 // being stored locally. This can be achieved by using the `dyno::remote` policy
 // with a selector that picks all functions except `"f"`, and the `dyno::local`
-// policy with a selector that picks only the function `"f"`. Selectors
-// provided by the library are:
+// policy with a selector that picks everything (all that remains). Note that
+// when multiple selectors are specified, functions picked by earlier selectors
+// will effectively be removed from the concept for later selectors, which
+// supports this use case. Otherwise, one would have to specify that the
+// `dyno::local` contains everything except the `"f"` function, which is
+// cumbersome. Selectors provided by the library are:
 //
 //  dyno::only<functions...>
 //    Picks only the specified functions from a concept. `functions` must be
@@ -311,31 +363,16 @@ struct remote {
 //
 //  dyno::everything
 //    Picks all the functions from a concept.
+//
+//  dyno::everything_else
+//    Equivalent to `dyno::everything`, but prettier to read when other
+//    policies are used before it.
 template <typename ...Policies>
-struct vtable;
-
-template <typename Policy1>
-struct vtable<Policy1> {
+struct vtable {
   template <typename Concept>
-  using apply = typename Policy1::template apply<Concept>;
-};
-
-template <typename Policy1, typename Policy2>
-struct vtable<Policy1, Policy2> {
-  template <typename Concept>
-  using apply = dyno::joined_vtable<
-    typename Policy1::template apply<Concept>,
-    typename Policy2::template apply<Concept>
-  >;
-};
-
-template <typename Policy1, typename Policy2, typename ...Policies>
-struct vtable<Policy1, Policy2, Policies...> {
-  template <typename Concept>
-  using apply = dyno::joined_vtable<
-    typename Policy1::template apply<Concept>,
-    typename vtable<Policy2, Policies...>::template apply<Concept>
-  >;
+  using apply = typename decltype(
+    dyno::generate_vtable<Concept>(boost::hana::make_tuple(Policies{}...))
+  )::type;
 };
 
 } // end namespace dyno

@@ -62,9 +62,7 @@ private:
     dyno::local<dyno::only<
       decltype("increment"_s), decltype("equal"_s), decltype("dereference"_s)
     >>,
-    dyno::remote<dyno::except<
-      decltype("increment"_s), decltype("equal"_s), decltype("dereference"_s)
-    >>
+    dyno::remote<dyno::everything_else>
   >;
   dyno::poly<Concept, Storage, VTable> poly_;
 

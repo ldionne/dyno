@@ -400,9 +400,58 @@ our `drawable` wrapper so that instead of storing a pointer to the vtable, it
 instead stores the vtable in the `drawable` object itself. This way, we'll
 avoid one indirection each time we access a virtual function:
 
-TODO: This section needs to be finished up. Dynamic dispatching policies work,
-      but they still need to be polished a lot more before they're sufficiently
-      easy to use and flexible.
+```c++
+struct drawable {
+  template <typename T>
+  drawable(T x) : poly_{x} { }
+
+  void draw(std::ostream& out) const
+  { poly_.virtual_("draw"_s)(poly_, out); }
+
+private:
+  using Storage = dyno::sbo_storage<16>;                      // storage policy
+  using VTable = dyno::vtable<dyno::local<dyno::everything>>; // vtable policy
+  dyno::poly<Drawable, Storage, VTable> poly_;
+};
+```
+
+Notice that nothing besides the vtable policy needs to change in the definition
+of our `drawable` type. Furthermore, if we wanted, we could change the storage
+policy independently from the vtable policy. With the above, even though we are
+saving all indirections, we are paying for it by making our `drawable` object
+larger (since it needs to hold the vtable locally). This could be prohibitive
+if we had many functions in the vtable. Instead, it would make more sense to
+store most of the vtable remotely, but only inline those few functions that we
+call heavily. __Dyno__ makes it very easy to do so by using __Selectors__, which
+can be used to customize what functions a policy applies to:
+
+```c++
+struct drawable {
+  template <typename T>
+  drawable(T x) : poly_{x} { }
+
+  void draw(std::ostream& out) const
+  { poly_.virtual_("draw"_s)(poly_, out); }
+
+private:
+  using Storage = dyno::sbo_storage<16>;
+  using VTable = dyno::vtable<
+    dyno::local<dyno::only<decltype("draw"_s)>>,
+    dyno::remote<dyno::everything_else>
+  >;
+  dyno::poly<Drawable, Storage, VTable> poly_;
+};
+```
+
+Given this definition, the vtable is actually split in two. The first part is
+local to the `drawable` object and contains only the `draw` method. The second
+part is a pointer to a vtable in static storage that holds the remaining methods
+(the destructor, for example).
+
+__Dyno__ provides two vtable policies, `dyno::local<>` and `dyno::remote<>`.
+Both of these policies must be customized using a __Selector__. The selectors
+supported by the library are `dyno::only<functions...>`, `dyno::except<...>`,
+and `dyno::everything_else` (which can also be spelled `dyno::everything`).
 
 
 ### Defaulted concept maps

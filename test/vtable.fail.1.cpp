@@ -22,6 +22,6 @@ int main() {
     dyno::complete_concept_map<Fooable, int>(dyno::concept_map<Fooable, int>)
   };
 
-  // MESSAGE[Request for a virtual function that is not in the vtable]
+  // MESSAGE[Request for a virtual function that is not present in any of the joined vtables]
   auto bar = vtable["bar"_s];
 }
