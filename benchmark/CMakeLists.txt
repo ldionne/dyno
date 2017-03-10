@@ -25,7 +25,12 @@ endforeach()
 
 if (NOT TARGET dependency.BoostTypeErasure OR NOT TARGET dependency.BoostVariant)
   message(STATUS "Boost.TypeErasure and/or Boost.Variant not found; benchmark.any_iterator not available")
+elseif(NOT TARGET dependency.MParkVariant)
+  message(STATUS "MPark.Variant not found; benchmark.any_iterator not available")
 else()
   add_benchmark(any_iterator.cpp)
-  target_link_libraries(benchmark.any_iterator.exe PRIVATE dependency.BoostTypeErasure)
+  target_link_libraries(benchmark.any_iterator.exe
+      PRIVATE dependency.BoostTypeErasure
+              dependency.BoostVariant
+              dependency.MParkVariant)
 endif()

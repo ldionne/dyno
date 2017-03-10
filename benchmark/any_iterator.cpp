@@ -11,6 +11,9 @@
 #include <boost/type_erasure/iterator.hpp>
 #include <boost/type_erasure/same_type.hpp>
 #include <boost/variant/variant.hpp>
+
+#include <mpark/variant.hpp>
+
 #include <iterator>
 #include <list>
 #include <memory>
@@ -286,6 +289,38 @@ namespace { namespace boost_variant {
   };
 }} // end namespace boost_variant
 
+namespace { namespace mpark_variant {
+  template <typename Value, typename Reference = Value&>
+  struct any_iterator {
+    using value_type = Value;
+    using reference = Reference;
+
+    template <typename Iterator>
+    explicit any_iterator(Iterator it)
+      : v_{std::move(it)}
+    { }
+
+    friend bool operator==(any_iterator const& a, any_iterator const& b)
+    { return a.v_ == b.v_; }
+
+    any_iterator& operator++() {
+      mpark::visit([](auto& x) { ++x; }, v_);
+      return *this;
+    }
+
+    reference operator*() {
+      return mpark::visit([](auto& x) -> decltype(auto) { return *x; }, v_);
+    }
+
+  private:
+    mpark::variant<
+      int*,
+      std::vector<int>::iterator,
+      std::list<int>::iterator
+    > v_;
+  };
+}} // end namespace mpark_variant
+
 
 template <typename Iterator>
 static void BM_any_iterator(benchmark::State& state) {
@@ -313,4 +348,5 @@ BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_classic::any_iterator<int>)->Arg(
 BENCHMARK_TEMPLATE(BM_any_iterator, boost_type_erasure::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, dyno_style::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, boost_variant::any_iterator<int>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_iterator, mpark_variant::any_iterator<int>)->Arg(N);
 BENCHMARK_MAIN();
