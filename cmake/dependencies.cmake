@@ -6,6 +6,7 @@
 # against to get the right includes and/or link libraries:
 #
 #   dependency.BoostTypeErasure
+#   dependency.BoostVariant
 #   dependency.CallableTraits
 #   dependency.GoogleBenchmark
 #   dependency.Hana
@@ -97,9 +98,12 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif()
 
 
-# Boost.TypeErasure
+# Boost.TypeErasure and Boost.Variant
 find_package(Boost)
 if (Boost_FOUND)
   add_library(dependency.BoostTypeErasure INTERFACE)
   target_include_directories(dependency.BoostTypeErasure SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
+
+  add_library(dependency.BoostVariant INTERFACE)
+  target_include_directories(dependency.BoostVariant SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
 endif()

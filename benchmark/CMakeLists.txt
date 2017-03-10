@@ -23,8 +23,8 @@ foreach(benchmark n_functions storage.swap.different_types storage.swap.same_typ
   add_benchmark(${benchmark}.cpp)
 endforeach()
 
-if (NOT TARGET dependency.BoostTypeErasure)
-  message(STATUS "Boost.TypeErasure not found; benchmark.any_iterator not available")
+if (NOT TARGET dependency.BoostTypeErasure OR NOT TARGET dependency.BoostVariant)
+  message(STATUS "Boost.TypeErasure and/or Boost.Variant not found; benchmark.any_iterator not available")
 else()
   add_benchmark(any_iterator.cpp)
   target_link_libraries(benchmark.any_iterator.exe PRIVATE dependency.BoostTypeErasure)
