@@ -319,6 +319,15 @@ namespace { namespace mpark_variant {
 }} // end namespace mpark_variant
 
 
+// We use this to make sure the compiler is not able to see through the
+// initialization of the `any_iterator`. Otherwise, inlining can cause
+// the whole dynamic dispatch to be elided, which does not faithfully
+// represent what would happen in a complex system.
+template <typename Iterator, typename T>
+__attribute__((noinline)) Iterator hide(T t) {
+  return Iterator{std::move(t)};
+}
+
 template <typename Iterator>
 static void BM_any_iterator(benchmark::State& state) {
   using T = typename Iterator::value_type;
@@ -327,8 +336,8 @@ static void BM_any_iterator(benchmark::State& state) {
   while (state.KeepRunning()) {
 
     state.PauseTiming();
-    Iterator first{input.begin()}, last{input.end()};
-    Iterator result{output.begin()};
+    Iterator first{hide<Iterator>(input.begin())}, last{hide<Iterator>(input.end())};
+    Iterator result{hide<Iterator>(output.begin())};
 
     state.ResumeTiming();
     for (; !(first == last); ++first, ++result) {
