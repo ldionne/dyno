@@ -15,7 +15,6 @@
 #include <mpark/variant.hpp>
 
 #include <iterator>
-#include <list>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -282,9 +281,8 @@ namespace { namespace boost_variant {
 
   private:
     boost::variant<
-      int*,
       std::vector<int>::iterator,
-      std::list<int>::iterator
+      int*
     > v_;
   };
 }} // end namespace boost_variant
@@ -314,9 +312,8 @@ namespace { namespace mpark_variant {
 
   private:
     mpark::variant<
-      int*,
       std::vector<int>::iterator,
-      std::list<int>::iterator
+      int*
     > v_;
   };
 }} // end namespace mpark_variant
