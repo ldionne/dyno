@@ -6,10 +6,12 @@
 # against to get the right includes and/or link libraries:
 #
 #   dependency.BoostTypeErasure
+#   dependency.BoostVariant
 #   dependency.CallableTraits
 #   dependency.GoogleBenchmark
 #   dependency.Hana
 #   dependency.libawful
+#   dependency.MParkVariant
 #
 # It also defines the following target, which can be used to install all the
 # dependencies:
@@ -74,6 +76,23 @@ add_library(dependency.libawful INTERFACE)
 target_include_directories(dependency.libawful SYSTEM INTERFACE ${SOURCE_DIR}/include)
 
 
+# MPark.Variant
+ExternalProject_Add(install.MParkVariant EXCLUDE_FROM_ALL 1
+  URL https://github.com/mpark/variant/archive/master.zip
+  TIMEOUT 120
+  PREFIX "${CMAKE_BINARY_DIR}/dependencies/MParkVariant"
+  CONFIGURE_COMMAND "" # Disable configure step
+  BUILD_COMMAND ""     # Disable build step
+  INSTALL_COMMAND ""   # Disable install step
+  TEST_COMMAND ""      # Disable test step
+  UPDATE_COMMAND ""    # Disable source work-tree update
+)
+add_dependencies(dependencies install.MParkVariant)
+ExternalProject_Get_Property(install.MParkVariant SOURCE_DIR)
+add_library(dependency.MParkVariant INTERFACE)
+target_include_directories(dependency.MParkVariant SYSTEM INTERFACE ${SOURCE_DIR}/include)
+
+
 # Google Benchmark
 ExternalProject_Add(install.GoogleBenchmark EXCLUDE_FROM_ALL 1
   URL https://github.com/google/benchmark/archive/master.zip
@@ -97,9 +116,12 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif()
 
 
-# Boost.TypeErasure
+# Boost.TypeErasure and Boost.Variant
 find_package(Boost)
 if (Boost_FOUND)
   add_library(dependency.BoostTypeErasure INTERFACE)
   target_include_directories(dependency.BoostTypeErasure SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
+
+  add_library(dependency.BoostVariant INTERFACE)
+  target_include_directories(dependency.BoostVariant SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
 endif()
