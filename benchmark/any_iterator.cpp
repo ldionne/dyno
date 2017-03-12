@@ -67,7 +67,7 @@ namespace { namespace classic {
   };
 }} // end namespace classic
 
-namespace { namespace handrolled_split_ptr {
+namespace { namespace handrolled_remote {
   template <typename Reference>
   struct VTable {
     void (*increment)(void*);
@@ -124,7 +124,7 @@ namespace { namespace handrolled_split_ptr {
     VTable<reference> const* vptr_;
     std::shared_ptr<void> self_;
   };
-}} // end namespace handrolled_split_ptr
+}} // end namespace handrolled_remote
 
 namespace { namespace boost_type_erasure {
   template <typename Value, typename Reference = Value&>
@@ -212,7 +212,7 @@ namespace { namespace handrolled_classic {
   };
 }} // end namespace handrolled_classic
 
-namespace { namespace dyno_style {
+namespace { namespace dyno_remote {
   using namespace dyno::literals;
 
   template <typename Reference>
@@ -254,7 +254,7 @@ namespace { namespace dyno_style {
     using VTable = dyno::vtable<dyno::remote<dyno::everything>>;
     dyno::poly<Iterator<reference>, Storage, VTable> poly_;
   };
-}} // end namespace dyno_style
+}} // end namespace dyno_remote
 
 namespace { namespace boost_variant {
   template <typename Value, typename Reference = Value&>
@@ -349,10 +349,10 @@ static void BM_any_iterator(benchmark::State& state) {
 static constexpr int N = 100;
 BENCHMARK_TEMPLATE(BM_any_iterator, std::vector<int>::iterator)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, classic::any_iterator<int>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_split_ptr::any_iterator<int>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_remote::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, handrolled_classic::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, boost_type_erasure::any_iterator<int>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_any_iterator, dyno_style::any_iterator<int>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_iterator, dyno_remote::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, boost_variant::any_iterator<int>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_iterator, mpark_variant::any_iterator<int>)->Arg(N);
 BENCHMARK_MAIN();

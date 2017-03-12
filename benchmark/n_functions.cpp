@@ -54,7 +54,7 @@ namespace { namespace handrolled_classic {
   };
 }} // end namespace handrolled_classic
 
-namespace { namespace handrolled_split_ptr {
+namespace { namespace handrolled_remote {
   struct VTable {
     void (*f1)(void*);
     void (*f2)(void*);
@@ -96,7 +96,7 @@ namespace { namespace handrolled_split_ptr {
     VTable const* vptr_;
     void* self_;
   };
-}} // end namespace handrolled_split_ptr
+}} // end namespace handrolled_remote
 
 namespace { namespace classic {
   struct any {
@@ -132,7 +132,7 @@ namespace { namespace classic {
   };
 }} // end namespace classic
 
-namespace { namespace dyno_split_ptr {
+namespace { namespace dyno_remote {
   using namespace dyno::literals;
 
   struct Concept : decltype(dyno::requires(
@@ -143,9 +143,10 @@ namespace { namespace dyno_split_ptr {
     "f5"_s = dyno::function<void (dyno::T&)>
   )) { };
 
-  struct any {
+  template <typename Policy>
+  struct any_template {
     template <typename T>
-    explicit any(T t)
+    explicit any_template(T t)
       : vtable_{
         dyno::complete_concept_map<Concept, T>(dyno::make_concept_map(
           "f1"_s = [](T& self) { ++self; },
@@ -158,19 +159,24 @@ namespace { namespace dyno_split_ptr {
       , self_{new T(t)}
     { }
 
-    any& f1() { vtable_["f1"_s](self_); return *this; }
-    any& f2() { vtable_["f2"_s](self_); return *this; }
-    any& f3() { vtable_["f3"_s](self_); return *this; }
-    any& f4() { vtable_["f4"_s](self_); return *this; }
-    any& f5() { vtable_["f5"_s](self_); return *this; }
+    any_template& f1() { vtable_["f1"_s](self_); return *this; }
+    any_template& f2() { vtable_["f2"_s](self_); return *this; }
+    any_template& f3() { vtable_["f3"_s](self_); return *this; }
+    any_template& f4() { vtable_["f4"_s](self_); return *this; }
+    any_template& f5() { vtable_["f5"_s](self_); return *this; }
 
   private:
-    using VTable = typename dyno::vtable<dyno::remote<dyno::everything>>::
-                   template apply<Concept>;
+    using VTable = typename dyno::vtable<Policy>::template apply<Concept>;
     VTable vtable_;
     void* self_;
   };
-}} // end namespace dyno_split_ptr
+
+  using any = any_template<dyno::remote<dyno::everything>>;
+}} // end namespace dyno_remote
+
+namespace { namespace dyno_local {
+  using any = dyno_remote::any_template<dyno::local<dyno::everything>>;
+}} // end namespace dyno_local
 
 template <typename Any>
 static void BM_any_1_function(benchmark::State& state) {
@@ -240,27 +246,33 @@ static void BM_any_5_function(benchmark::State& state) {
 static constexpr int N = 100;
 
 BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_1_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_1_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_1_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_2_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_2_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_2_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_3_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_3_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_3_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_4_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_4_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_4_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 
 BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_split_ptr::any )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
 BENCHMARK_TEMPLATE(BM_any_5_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, dyno_split_ptr::any       )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_5_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_5_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+
 BENCHMARK_MAIN();
