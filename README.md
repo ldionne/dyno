@@ -14,6 +14,11 @@ objects and dispaching to virtual methods. It does not require inheritance,
 heap allocation or leaving the comfortable world of value semantics, and it
 can do so while outperforming vanilla C++.
 
+__Dyno__ is pure-library implementation of what's also known as [Rust traits][],
+[Go interfaces][], [Haskell type classes][], and [virtual concepts][]. Under the
+hood, it uses a C++ technique known as [type erasure][], which is the idea
+behind [`std::any`][], [`std::function`][] and many other useful types.
+
 <!-- Important: keep this in sync with example/overview.cpp -->
 ```c++
 #include <dyno.hpp>
@@ -524,9 +529,16 @@ f(std::vector<int>{1, 2, 3}) // prints "1 2 3 "
 
 
 <!-- Links -->
+[`std::any`]: http://en.cppreference.com/w/cpp/utility/any
+[`std::function`]: http://en.cppreference.com/w/cpp/utility/functional/function
 [badge.Travis]: https://travis-ci.org/ldionne/dyno.svg?branch=master
 [Boost.Hana]: https://github.com/boostorg/hana
 [C++0x Concept Maps]: https://isocpp.org/wiki/faq/cpp0x-concepts-history#cpp0x-concept-maps
 [CallableTraits]: https://github.com/badair/callable_traits
+[Go interfaces]: https://gobyexample.com/interfaces
 [Google Benchmark]: https://github.com/google/benchmark
+[Haskell type classes]: http://learnyouahaskell.com/types-and-typeclasses
 [libawful]: https://github.com/ldionne/libawful
+[Rust traits]: https://doc.rust-lang.org/beta/book/traits.html
+[type erasure]: https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Type_Erasure
+[virtual concepts]: https://github.com/andyprowl/virtual-concepts
