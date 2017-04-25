@@ -14,12 +14,12 @@
 #include <boost/hana/contains.hpp>
 #include <boost/hana/difference.hpp>
 #include <boost/hana/fold_left.hpp>
-#include <boost/hana/insert.hpp>
 #include <boost/hana/is_subset.hpp>
 #include <boost/hana/keys.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/set.hpp>
+#include <boost/hana/union.hpp>
 #include <boost/hana/unpack.hpp>
 
 #include <type_traits>
@@ -135,18 +135,12 @@ template <typename Concept, typename T, typename = void>
 auto const concept_map = dyno::make_concept_map();
 
 namespace detail {
-  // TODO: This should be `boost::hana::union_` for maps, I think.
-  template <typename Map1, typename Map2>
-  constexpr auto merge(Map1 map1, Map2 map2) {
-    return boost::hana::fold_left(map2, map1, boost::hana::insert);
-  }
-
   // Takes a Hana map, and completes it by interpreting it as a concept map
   // for fulfilling the given `Concept` for the given type `T`.
   template <typename Concept, typename T, typename Map>
   constexpr auto complete_concept_map_impl(Map map) {
     // 1. Bring in the functions provided in the default concept map.
-    auto with_defaults = detail::merge(map, dyno::default_concept_map<Concept, T>);
+    auto with_defaults = boost::hana::union_(dyno::default_concept_map<Concept, T>, map);
 
     // 2. For each refined concept, recursively complete the concept map for
     //    that Concept and merge that into the current concept map.
@@ -154,7 +148,7 @@ namespace detail {
     auto merged = boost::hana::fold_left(refined, with_defaults, [](auto m, auto c) {
       using C = typename decltype(c)::type;
       auto completed = detail::complete_concept_map_impl<C, T>(dyno::concept_map<C, T>);
-      return detail::merge(m, completed);
+      return boost::hana::union_(completed, m);
     });
 
     return merged;
