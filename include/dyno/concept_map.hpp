@@ -180,7 +180,7 @@ namespace diagnostic {
   template <typename ...> struct ________________EXACT_TYPE_OF_YOUR_CONCEPT_MAP;
 
   template <typename ..., bool concept_map_is_complete = false>
-  constexpr void INCOMPLEDYNO_CONCEPT_MAP() {
+  constexpr void INCOMPLETE_CONCEPT_MAP() {
     static_assert(concept_map_is_complete,
       "dyno::concept_map: Incomplete definition of your concept map. Despite "
       "looking at the default concept map for this concept and the concept "
@@ -189,7 +189,7 @@ namespace diagnostic {
       "not forget to define a function in your concept map, and otherwise make "
       "sure the proper default concept maps are kicking in. You can find information "
       "to help you debug this error in the compiler error message, probably in "
-      "the instantiation of the INCOMPLEDYNO_CONCEPT_MAP<.....> function. Good luck!");
+      "the instantiation of the INCOMPLETE_CONCEPT_MAP<.....> function. Good luck!");
   }
 } // end namespace diagnostic
 
@@ -258,7 +258,7 @@ constexpr void complete_concept_map(Map map) {
   auto declared = boost::hana::to_set(boost::hana::keys(complete_map));
   auto missing = boost::hana::difference(required, declared);
   auto as_concept_map = detail::to_concept_map<Concept, T>(complete_map);
-  diagnostic::INCOMPLEDYNO_CONCEPT_MAP<
+  diagnostic::INCOMPLETE_CONCEPT_MAP<
     diagnostic::________________THE_CONCEPT_IS<Concept>,
     diagnostic::________________YOUR_MODEL_IS<T>,
     diagnostic::________________FUNCTIONS_MISSING_FROM_YOUR_CONCEPT_MAP<decltype(missing)>,
