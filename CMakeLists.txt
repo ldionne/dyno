@@ -6,9 +6,6 @@ cmake_minimum_required(VERSION 3.7)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 project(DYNO VERSION 0.0.1 LANGUAGES CXX)
-# TODO: Set these as interface properties when supported
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 
 # Setup the `dyno` library target, assuming the dependencies are provided.
@@ -16,6 +13,7 @@ include(dependencies)
 add_library(dyno INTERFACE)
 target_include_directories(dyno INTERFACE include)
 target_link_libraries(dyno INTERFACE dependency.Hana dependency.CallableTraits)
+target_compile_options(dyno INTERFACE -freflection -std=c++1z)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-Wno-gnu-string-literal-operator-template" DYNO_HAS_WNO_GNU_STRING_UDL)

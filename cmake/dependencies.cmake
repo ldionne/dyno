@@ -93,6 +93,7 @@ add_library(dependency.MParkVariant INTERFACE)
 target_include_directories(dependency.MParkVariant SYSTEM INTERFACE ${SOURCE_DIR}/include)
 
 
+if (FALSE)
 # Google Benchmark
 ExternalProject_Add(install.GoogleBenchmark EXCLUDE_FROM_ALL 1
   URL https://github.com/google/benchmark/archive/master.zip
@@ -100,6 +101,7 @@ ExternalProject_Add(install.GoogleBenchmark EXCLUDE_FROM_ALL 1
   PREFIX "${CMAKE_BINARY_DIR}/dependencies/GoogleBenchmark"
   CMAKE_ARGS "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
              "-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>"
+             "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}"
              "-DBENCHMARK_ENABLE_TESTING=OFF"
              "-DCMAKE_BUILD_TYPE=Release" # Always build in release mode
   UPDATE_COMMAND "" # Disable source work-tree update
@@ -114,7 +116,7 @@ target_link_libraries(dependency.GoogleBenchmark INTERFACE _libbenchmark)
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   target_link_libraries(dependency.GoogleBenchmark INTERFACE -lpthread -lrt)
 endif()
-
+endif()
 
 # Boost.TypeErasure and Boost.Variant
 find_package(Boost)

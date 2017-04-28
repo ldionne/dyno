@@ -1,0 +1,3 @@
+(rm -rf build && mkdir build && cd build && CXX="/Users/ldionne/code/asutton-llvm/build/bin/clang-5.0" cmake .. -GNinja -DCMAKE_CXX_FLAGS="-isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1 -isystem /usr/local/include -isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include -isystem /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -isystem /usr/include -isystem /Users/ldionne/code/asutton-llvm/build/install/include" && ninja dependencies)
+
+ninja -C build test.worksheet
