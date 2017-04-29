@@ -166,10 +166,25 @@ namespace detail {
   // the given `Concept`, is missing any functions.
   template <typename Concept, typename T, typename Map>
   struct concept_map_is_complete : decltype(boost::hana::is_subset(
-      boost::hana::keys(Concept::all_clauses()),
-      boost::hana::keys(std::declval<Map>())
+    boost::hana::keys(Concept::all_clauses()),
+    boost::hana::keys(std::declval<Map>())
   )) { };
 } // end namespace detail
+
+// Returns whether the type `T` models the given `Concept`.
+//
+// Specifically, checks whether it is possible to complete the concept map of
+// the given type for the given concept. Usage goes as follows:
+// ```
+// static_assert(dyno::models<Drawable, my_polygon>);
+// ```
+template <typename Concept, typename T>
+constexpr auto models = detail::concept_map_is_complete<
+  Concept, T,
+  decltype(detail::complete_concept_map_impl<Concept, T>(
+    dyno::concept_map<Concept, T>
+  ))
+>{};
 
 namespace diagnostic {
   template <typename ...> struct ________________THE_CONCEPT_IS;
