@@ -75,10 +75,14 @@ namespace dyno {
 //             not be called.
 //
 // template <typename T = void> T* get();
-//  Semantics: Return a pointer to the object inside the polymorphic storage.
+//  Semantics: Return a pointer of type `T` to the object inside the polymorphic
+//             storage. If `T` is not the actual type of the object stored
+//             inside the polymorphic storage, the behavior is undefined.
 //
 // template <typename T = void> T const* get() const;
-//  Semantics: Return a pointer to the object inside the polymorphic storage.
+//  Semantics: Return a pointer of type `T` to the object inside the polymorphic
+//             storage. If `T` is not the actual type of the object stored
+//             inside the polymorphic storage, the behavior is undefined.
 //
 // static constexpr bool can_store(dyno::storage_info);
 //  Semantics: Return whether the polymorphic storage can store an object with
