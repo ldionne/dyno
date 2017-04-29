@@ -20,7 +20,7 @@ function(add_benchmark benchmark)
 endfunction()
 
 foreach(benchmark n_functions storage.swap.different_types storage.swap.same_type)
-  add_benchmark(${benchmark}.cpp)
+  add_benchmark("${benchmark}.cpp")
 endforeach()
 
 if (NOT TARGET dependency.BoostTypeErasure OR NOT TARGET dependency.BoostVariant)

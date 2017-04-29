@@ -3,7 +3,7 @@
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 cmake_minimum_required(VERSION 3.8)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(DYNO VERSION 0.0.1 LANGUAGES CXX)
 
@@ -51,9 +51,9 @@ function(dyno_get_target_name out file)
   if (NOT IS_ABSOLUTE ${file})
     set(file "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
   endif()
-  file(RELATIVE_PATH _relative ${DYNO_SOURCE_DIR} ${file})
-  string(REPLACE ".cpp" "" _name ${_relative})
-  string(REGEX REPLACE "/" "." _name ${_name})
+  file(RELATIVE_PATH _relative "${DYNO_SOURCE_DIR}" "${file}")
+  string(REPLACE ".cpp" "" _name "${_relative}")
+  string(REGEX REPLACE "/" "." _name "${_name}")
   set(${out} "${_name}" PARENT_SCOPE)
 endfunction()
 
