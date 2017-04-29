@@ -2,18 +2,15 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.8)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 project(DYNO VERSION 0.0.1 LANGUAGES CXX)
-# TODO: Set these as interface properties when supported
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED YES)
-
 
 # Setup the `dyno` library target, assuming the dependencies are provided.
 include(dependencies)
 add_library(dyno INTERFACE)
+target_compile_features(dyno INTERFACE cxx_std_14)
 target_include_directories(dyno INTERFACE include)
 target_link_libraries(dyno INTERFACE dependency.Hana dependency.CallableTraits)
 
