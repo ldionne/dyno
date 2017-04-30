@@ -116,9 +116,6 @@ public:
     return virtual_impl(boost::hana::basic_type<Signature>{}, name);
   }
 
-  constexpr auto get() { return storage_.get(); }
-  constexpr auto get() const { return storage_.get(); }
-
 private:
   VTable vtable_;
   Storage storage_;
@@ -141,7 +138,7 @@ private:
     static_assert(is_poly,
       "dyno::poly::virtual_: Passing a non-poly object as an argument to a virtual "
       "function that specified a placeholder for that parameter.");
-    return static_cast<Arg&&>(arg).get();
+    return static_cast<Arg&&>(arg).storage_.get();
   }
   template <typename T, typename Arg, std::enable_if_t<detail::is_placeholder<T>::value, int> = 0>
   static constexpr decltype(auto) unerase_poly(Arg* arg) {
@@ -150,7 +147,7 @@ private:
     static_assert(is_poly,
       "dyno::poly::virtual_: Passing a non-poly object as an argument to a virtual "
       "function that specified a placeholder for that parameter.");
-    return arg->get();
+    return arg->storage_.get();
   }
 };
 
