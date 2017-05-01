@@ -189,6 +189,82 @@ private:
   }
 };
 
+// Specialization of the eraser traits for the `poly` Eraser.
+namespace detail {
+  template <typename ...Args>
+  struct erase_placeholder<dyno::poly<Args...>, dyno::T const&> {
+    using type = dyno::poly<Args...> const&;
+  };
+  template <typename ...Args>
+  struct erase_placeholder<dyno::poly<Args...>, dyno::T&> {
+    using type = dyno::poly<Args...>&;
+  };
+  template <typename ...Args>
+  struct erase_placeholder<dyno::poly<Args...>, dyno::T&&> {
+    using type = dyno::poly<Args...>&&;
+  };
+  template <typename ...Args>
+  struct erase_placeholder<dyno::poly<Args...>, dyno::T*> {
+    using type = dyno::poly<Args...>*;
+  };
+  template <typename ...Args>
+  struct erase_placeholder<dyno::poly<Args...>, dyno::T const*> {
+    using type = dyno::poly<Args...> const*;
+  };
+
+  template <typename ...Args>
+  struct erase<dyno::poly<Args...>, dyno::T const&> {
+    template <typename Arg>
+    static constexpr dyno::poly<Args...> const& apply(Arg const& arg);
+  };
+  template <typename ...Args>
+  struct erase<dyno::poly<Args...>, dyno::T&> {
+    template <typename Arg>
+    static constexpr dyno::poly<Args...>& apply(Arg& arg);
+  };
+  template <typename ...Args>
+  struct erase<dyno::poly<Args...>, dyno::T&&> {
+    template <typename Arg>
+    static constexpr dyno::poly<Args...>&& apply(Arg&& arg);
+  };
+  template <typename ...Args>
+  struct erase<dyno::poly<Args...>, dyno::T*> {
+    template <typename Arg>
+    static constexpr dyno::poly<Args...>* apply(Arg* arg);
+  };
+  template <typename ...Args>
+  struct erase<dyno::poly<Args...>, dyno::T const*> {
+    template <typename Arg>
+    static constexpr dyno::poly<Args...> const* apply(Arg const* arg);
+  };
+
+  template <typename ...Args, typename Actual>
+  struct unerase<dyno::poly<Args...>, dyno::T&, Actual&> {
+    static constexpr Actual& apply(dyno::poly<Args...>& arg)
+    { return *arg.storage_.template get<Actual>(); }
+  };
+  template <typename ...Args, typename Actual>
+  struct unerase<dyno::poly<Args...>, dyno::T const&, Actual const&> {
+    static constexpr Actual const& apply(dyno::poly<Args...> const& arg)
+    { return arg.storage_.template get<Actual const>(); }
+  };
+  template <typename ...Args, typename Actual>
+  struct unerase<dyno::poly<Args...>, dyno::T&&, Actual&&> {
+    static constexpr Actual&& apply(dyno::poly<Args...>&& arg)
+    { return std::move(*arg.storage_.template get<Actual>()); }
+  };
+  template <typename ...Args, typename Actual>
+  struct unerase<dyno::poly<Args...>, dyno::T*, Actual*> {
+    static constexpr Actual* apply(dyno::poly<Args...>* arg)
+    { return arg->storage_.template get<Actual>(); }
+  };
+  template <typename ...Args, typename Actual>
+  struct unerase<dyno::poly<Args...>, dyno::T const*, Actual const*> {
+    static constexpr Actual const* apply(dyno::poly<Args...> const* arg)
+    { return arg->storage_.template get<Actual const>(); }
+  };
+} // end namespace detail
+
 } // end namespace dyno
 
 #endif // DYNO_POLY_HPP
