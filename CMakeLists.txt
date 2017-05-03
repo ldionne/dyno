@@ -7,10 +7,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(DYNO VERSION 0.0.1 LANGUAGES CXX)
 
-# Setup the `dyno` library target, assuming the dependencies are provided.
+# Setup the `dyno` library target.
 add_library(dyno INTERFACE)
 target_compile_features(dyno INTERFACE cxx_std_14)
-target_include_directories(dyno INTERFACE include)
+target_include_directories(dyno INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                          $<INSTALL_INTERFACE:include>)
 find_package(Hana REQUIRED)
 find_package(CallableTraits REQUIRED)
 target_link_libraries(dyno INTERFACE hana callable_traits)
@@ -30,7 +31,14 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif()
 
 
-# All unit tests and examples are given those properties.
+# Setup the installation target for dyno and the related exports.
+install(TARGETS dyno EXPORT DynoConfig)
+install(EXPORT DynoConfig          DESTINATION lib/cmake/dyno)
+install(FILES     include/dyno.hpp DESTINATION include)
+install(DIRECTORY include/dyno     DESTINATION include FILES_MATCHING PATTERN "*.hpp")
+
+
+# All unit tests and examples are given the following properties:
 find_package(Awful REQUIRED)
 function(dyno_set_test_properties target)
   target_link_libraries(${target} PRIVATE dyno awful)
