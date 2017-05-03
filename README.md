@@ -63,10 +63,11 @@ void f(drawable const& d) {
 
 
 ## Dependencies
-The library depends on [Boost.Hana][] and [CallableTraits][]. The unit tests
-depend on [libawful][] and the benchmarks on [Google Benchmark][], but you don't
-need them to use the library. For local development, all the dependencies are
-pulled automatically.
+The library depends on [Boost.Hana][] and [Boost.CallableTraits][]. The unit
+tests depend on [libawful][] and the benchmarks on [Google Benchmark][], but
+you don't need them to use the library. For local development, the
+`dependencies/install.sh` script can be used to install all the
+dependencies automatically.
 
 
 ## Building the library
@@ -76,8 +77,9 @@ sure the dependencies are satisfied), and you're good to go. However, there
 are unit tests, examples and benchmarks that can be built:
 
 ```sh
-(mkdir build && cd build && cmake ..)     # Setup the build directory
-cmake --build build --target dependencies # Fetch and build all the dependencies
+(cd dependencies && ./install.sh) # Install dependencies; will print a path to add to CMAKE_PREFIX_PATH
+mkdir build
+(cd build && cmake .. -DCMAKE_PREFIX_PATH="${PWD}/../dependencies/install") # Setup the build directory
 
 cmake --build build --target examples   # Build and run the examples
 cmake --build build --target tests      # Build and run the unit tests
@@ -532,9 +534,9 @@ f(std::vector<int>{1, 2, 3}) // prints "1 2 3 "
 [`std::any`]: http://en.cppreference.com/w/cpp/utility/any
 [`std::function`]: http://en.cppreference.com/w/cpp/utility/functional/function
 [badge.Travis]: https://travis-ci.org/ldionne/dyno.svg?branch=master
+[Boost.CallableTraits]: https://github.com/badair/callable_traits
 [Boost.Hana]: https://github.com/boostorg/hana
 [C++0x Concept Maps]: https://isocpp.org/wiki/faq/cpp0x-concepts-history#cpp0x-concept-maps
-[CallableTraits]: https://github.com/badair/callable_traits
 [Go interfaces]: https://gobyexample.com/interfaces
 [Google Benchmark]: https://github.com/google/benchmark
 [Haskell type classes]: http://learnyouahaskell.com/types-and-typeclasses

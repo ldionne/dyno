@@ -2,7 +2,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-if (NOT TARGET dependency.GoogleBenchmark)
+find_package(benchmark) # This is GoogleBenchmark
+if (NOT TARGET benchmark::benchmark)
   message(WARNING "The Google Benchmark library is not found; benchmarks won't be available.")
   return()
 endif()
@@ -14,7 +15,7 @@ function(add_benchmark benchmark)
   add_executable(${target}.exe EXCLUDE_FROM_ALL "${benchmark}")
   dyno_set_test_properties(${target}.exe)
   target_compile_options(${target}.exe PRIVATE -O3)
-  target_link_libraries(${target}.exe PRIVATE dependency.GoogleBenchmark)
+  target_link_libraries(${target}.exe PRIVATE benchmark::benchmark)
   add_custom_target(${target} COMMAND ${target}.exe DEPENDS ${target}.exe)
   add_dependencies(benchmarks ${target})
 endfunction()
@@ -23,14 +24,13 @@ foreach(benchmark n_functions storage.swap.different_types storage.swap.same_typ
   add_benchmark("${benchmark}.cpp")
 endforeach()
 
-if (NOT TARGET dependency.BoostTypeErasure OR NOT TARGET dependency.BoostVariant)
-  message(STATUS "Boost.TypeErasure and/or Boost.Variant not found; benchmark.any_iterator not available")
-elseif(NOT TARGET dependency.MParkVariant)
+find_package(Boost)
+find_package(mpark_variant)
+if (NOT TARGET Boost::boost)
+  message(STATUS "Boost headers were not found; benchmark.any_iterator not available")
+elseif(NOT TARGET mpark_variant)
   message(STATUS "MPark.Variant not found; benchmark.any_iterator not available")
 else()
   add_benchmark(any_iterator.cpp)
-  target_link_libraries(benchmark.any_iterator.exe
-      PRIVATE dependency.BoostTypeErasure
-              dependency.BoostVariant
-              dependency.MParkVariant)
+  target_link_libraries(benchmark.any_iterator.exe PRIVATE Boost::boost mpark_variant)
 endif()

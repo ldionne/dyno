@@ -8,11 +8,12 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 project(DYNO VERSION 0.0.1 LANGUAGES CXX)
 
 # Setup the `dyno` library target, assuming the dependencies are provided.
-include(dependencies)
 add_library(dyno INTERFACE)
 target_compile_features(dyno INTERFACE cxx_std_14)
 target_include_directories(dyno INTERFACE include)
-target_link_libraries(dyno INTERFACE dependency.Hana dependency.CallableTraits)
+find_package(Hana REQUIRED)
+find_package(CallableTraits REQUIRED)
+target_link_libraries(dyno INTERFACE hana callable_traits)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-Wno-gnu-string-literal-operator-template" DYNO_HAS_WNO_GNU_STRING_UDL)
@@ -30,8 +31,9 @@ endif()
 
 
 # All unit tests and examples are given those properties.
+find_package(Awful REQUIRED)
 function(dyno_set_test_properties target)
-  target_link_libraries(${target} PRIVATE dyno dependency.libawful)
+  target_link_libraries(${target} PRIVATE dyno awful)
   set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
   macro(setflag testname flag)
       check_cxx_compiler_flag(${flag} ${testname})

@@ -110,9 +110,9 @@ install:
     fi
 
 before_script:
-  - cd ${TRAVIS_BUILD_DIR}
-  - (mkdir build && cd build && cmake .. -DBOOST_ROOT=${BOOST_DIR})
-  - cmake --build build --target dependencies
+  - cd "${TRAVIS_BUILD_DIR}"
+  - (cd dependencies && ./install.sh)
+  - (mkdir build && cd build && cmake .. -DBOOST_ROOT="${BOOST_DIR}" -DCMAKE_PREFIX_PATH="${TRAVIS_BUILD_DIR}/dependencies/install" -DCMAKE_INSTALL_PREFIX="${TRAVIS_BUILD_DIR}/build/install")
 
 script:
   - cmake --build build --target check
