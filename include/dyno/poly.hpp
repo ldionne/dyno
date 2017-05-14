@@ -73,13 +73,16 @@ private:
 
 public:
   template <typename T, typename RawT = std::decay_t<T>, typename ConceptMap>
-  explicit poly(T&& t, ConceptMap map)
+  poly(T&& t, ConceptMap map)
     : vtable_{dyno::complete_concept_map<ActualConcept, RawT>(map)}
     , storage_{std::forward<T>(t)}
   { }
 
-  template <typename T, typename RawT = std::decay_t<T>>
-  explicit poly(T&& t)
+  template <typename T, typename RawT = std::decay_t<T>,
+    typename = std::enable_if_t<!std::is_same<RawT, poly>::value>,
+    typename = std::enable_if_t<dyno::models<ActualConcept, RawT>>
+  >
+  poly(T&& t)
     : poly{std::forward<T>(t), dyno::concept_map<ActualConcept, RawT>}
   { }
 
