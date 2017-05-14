@@ -110,6 +110,11 @@ public:
 
   ~poly() { storage_.destruct(vtable_); }
 
+  template <typename ...T, typename Name, typename ...Args>
+  decltype(auto) operator->*(dyno::detail::delayed_call<Name, Args...>&& delayed) {
+    return std::move(delayed).apply(*this);
+  }
+
   template <typename Function>
   constexpr decltype(auto) virtual_(Function name) const {
     using Signature = typename decltype(Concept{}.get_signature(name))::type;
