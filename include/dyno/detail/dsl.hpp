@@ -10,7 +10,6 @@
 #include <boost/hana/string.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
-#include <boost/hana/unpack.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -30,14 +29,7 @@ struct T;
 namespace detail {
   template <typename Name, typename ...Args>
   struct delayed_call {
-    // Only allow calling this on temporaries.
-    template <typename Poly>
-    constexpr decltype(auto) apply(Poly&& poly) && {
-      return boost::hana::unpack(
-        std::move(args_),
-        std::forward<Poly>(poly).virtual_(Name{})
-      );
-    }
+    boost::hana::tuple<Args...> args;
 
     // All the constructors are private so that only `dyno::string` can
     // construct an instance of this. The intent is that we can only
@@ -46,11 +38,9 @@ namespace detail {
     template <char ...c> friend struct string;
 
     template <typename ...T>
-    constexpr delayed_call(T&& ...t) : args_{std::forward<T>(t)...} { }
+    constexpr delayed_call(T&& ...t) : args{std::forward<T>(t)...} { }
     delayed_call(delayed_call const&) = default;
     delayed_call(delayed_call&&) = default;
-
-    boost::hana::tuple<Args...> args_;
   };
 
   template <char ...c>

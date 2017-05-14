@@ -12,6 +12,7 @@
 #include <dyno/vtable.hpp>
 
 #include <boost/hana/type.hpp>
+#include <boost/hana/unpack.hpp>
 
 #include <type_traits>
 #include <utility>
@@ -112,7 +113,11 @@ public:
 
   template <typename ...T, typename Name, typename ...Args>
   decltype(auto) operator->*(dyno::detail::delayed_call<Name, Args...>&& delayed) {
-    return std::move(delayed).apply(*this);
+    auto f = virtual_(Name{});
+    auto injected = [f,this](auto&& ...args) -> decltype(auto) {
+      return f(*this, static_cast<decltype(args)&&>(args)...);
+    };
+    return boost::hana::unpack(std::move(delayed.args), injected);
   }
 
   template <typename Function>
