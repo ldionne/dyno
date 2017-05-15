@@ -15,7 +15,7 @@ ExternalProject_Add(Hana
 )
 
 ExternalProject_Add(CallableTraits
-  URL https://github.com/ldionne/callable_traits/archive/export.zip
+  URL https://github.com/badair/callable_traits/archive/master.zip
   INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
   TEST_COMMAND ""      # Disable test step
