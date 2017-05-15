@@ -49,9 +49,10 @@ function(dyno_set_test_properties target)
           target_compile_options(${target} PRIVATE ${flag})
       endif()
   endmacro()
-  setflag(DYNO_HAS_PEDANTIC       -pedantic)
-  setflag(DYNO_HAS_WALL           -Wall)
-  setflag(DYNO_HAS_WEXTRA         -Wextra)
+  setflag(DYNO_HAS_FTEMPLATE_BACKTRACE_LIMIT -ftemplate-backtrace-limit=0) # helps debugging
+  setflag(DYNO_HAS_PEDANTIC                  -pedantic)
+  setflag(DYNO_HAS_WALL                      -Wall)
+  setflag(DYNO_HAS_WEXTRA                    -Wextra)
 endfunction()
 
 # Return the target name associated to a source file. If the path of the
