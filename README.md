@@ -7,12 +7,12 @@ No stability of interface or quality of implementation is guaranteed at.
 Use at your own risks.
 
 ## Overview
-__Dyno__ solves the problem of runtime polymorphism in C++ better than the
-language does. It provides a way to define interfaces that can be fulfilled
-non-intrusively, and it provides a fully customizable way of storing polymorphic
-objects and dispaching to virtual methods. It does not require inheritance,
-heap allocation or leaving the comfortable world of value semantics, and it
-can do so while outperforming vanilla C++.
+__Dyno__ solves the problem of runtime polymorphism better than vanilla C++
+does. It provides a way to define interfaces that can be fulfilled
+non-intrusively, and it provides a fully customizable way of storing
+polymorphic objects and dispaching to virtual methods. It does not
+require inheritance, heap allocation or leaving the comfortable world
+of value semantics, and it can do so while outperforming vanilla C++.
 
 __Dyno__ is pure-library implementation of what's also known as [Rust traits][],
 [Go interfaces][], [Haskell type classes][], and [virtual concepts][]. Under the
