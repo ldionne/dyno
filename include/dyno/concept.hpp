@@ -39,9 +39,10 @@ namespace detail {
 
   struct concept_base { };
   struct is_concept {
-    template <typename T>
-    constexpr auto operator()(boost::hana::basic_type<T> const&) const {
-      return boost::hana::bool_<std::is_base_of<detail::concept_base, T>{}>{};
+    template <typename T, bool IsBase = std::is_base_of<detail::concept_base, T>::value>
+    constexpr boost::hana::bool_<IsBase>
+    operator()(boost::hana::basic_type<T>) const {
+      return {};
     }
   };
 } // end namespace detail
@@ -57,15 +58,12 @@ namespace detail {
 // whether a type satisfies the concept.
 template <typename ...Clauses>
 struct concept : detail::concept_base {
-  template <typename Name_>
-  constexpr auto get_signature(Name_ name) const {
+  boost::hana::tuple<boost::hana::basic_type<Clauses>...> clauses;
+
+  template <typename Name>
+  constexpr auto get_signature(Name name) const {
     auto clauses = all_clauses();
     return clauses[name];
-  }
-
-  static constexpr auto refined_concepts() {
-    auto clauses = boost::hana::make_tuple(boost::hana::basic_type<Clauses>{}...);
-    return boost::hana::filter(clauses, detail::is_concept{});
   }
 
   static constexpr auto all_clauses() {
@@ -74,6 +72,17 @@ struct concept : detail::concept_base {
     return boost::hana::to_map(flat);
   }
 };
+
+// Returns a sequence of the concepts refined by the given concept.
+//
+// Only the concepts that are refined directly by `c` are returned, i.e. we
+// do not get the refined concepts of the refined concepts recursively. Also,
+// the concepts are returned wrapped in `hana::basic_type`s, not straight
+// concepts.
+template <typename Concept>
+constexpr auto refined_concepts(Concept c) {
+  return boost::hana::filter(c.clauses, detail::is_concept{});
+}
 
 // Creates a `concept` with the given clauses. Note that a clause may be a
 // concept itself, in which case the clauses of that concept are used, and

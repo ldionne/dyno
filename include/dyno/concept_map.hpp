@@ -5,6 +5,7 @@
 #ifndef DYNO_CONCEPT_MAP_HPP
 #define DYNO_CONCEPT_MAP_HPP
 
+#include <dyno/concept.hpp>
 #include <dyno/detail/bind_signature.hpp>
 #include <dyno/detail/dsl.hpp>
 #include <dyno/detail/empty_object.hpp>
@@ -144,7 +145,7 @@ namespace detail {
 
     // 2. For each refined concept, recursively complete the concept map for
     //    that Concept and merge that into the current concept map.
-    auto refined = Concept::refined_concepts();
+    auto refined = dyno::refined_concepts(Concept{});
     auto merged = boost::hana::fold_left(refined, with_defaults, [](auto m, auto c) {
       using C = typename decltype(c)::type;
       auto completed = detail::complete_concept_map_impl<C, T>(dyno::concept_map<C, T>);

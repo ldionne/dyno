@@ -24,13 +24,13 @@ struct C : decltype(dyno::requires(
   B{}
 )) { };
 
-static_assert(boost::hana::to_set(A::refined_concepts()) ==
+static_assert(boost::hana::to_set(dyno::refined_concepts(A{})) ==
               boost::hana::make_set(), "");
 
-static_assert(boost::hana::to_set(B::refined_concepts()) ==
+static_assert(boost::hana::to_set(dyno::refined_concepts(B{})) ==
               boost::hana::make_set(boost::hana::type<A>{}), "");
 
-static_assert(boost::hana::to_set(C::refined_concepts()) ==
+static_assert(boost::hana::to_set(dyno::refined_concepts(C{})) ==
               boost::hana::make_set(boost::hana::type<B>{}), "");
 
 int main() { }
