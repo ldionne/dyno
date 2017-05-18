@@ -5,6 +5,7 @@
 #ifndef DYNO_EXPERIMENTAL_UNROLLED_VTABLE_HPP
 #define DYNO_EXPERIMENTAL_UNROLLED_VTABLE_HPP
 
+#include <dyno/concept.hpp>
 #include <dyno/detail/erase_function.hpp>
 #include <dyno/detail/erase_signature.hpp>
 
@@ -23,7 +24,7 @@ namespace detail {
 
 template <typename Concept>
 using unrolled_vtable = typename decltype(
-  boost::hana::unpack(Concept::all_clauses(),
+  boost::hana::unpack(dyno::clauses(Concept{}),
     boost::hana::template_<detail::unrolled_vtable_impl> ^boost::hana::on^ boost::hana::decltype_
   )
 )::type;

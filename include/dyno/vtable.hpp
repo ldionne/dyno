@@ -288,7 +288,7 @@ struct remote {
 
 template <typename Concept, typename Policies>
 constexpr auto generate_vtable(Policies policies) {
-  auto functions = boost::hana::to_set(boost::hana::keys(Concept::all_clauses()));
+  auto functions = boost::hana::to_set(boost::hana::keys(dyno::clauses(Concept{})));
   auto state = boost::hana::make_pair(functions, boost::hana::basic_type<dyno::local_vtable<>>{});
   auto result = boost::hana::fold_left(policies, state, [](auto state, auto policy) {
     auto functions = boost::hana::first(state);

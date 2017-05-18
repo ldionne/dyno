@@ -15,6 +15,7 @@
 #include <boost/hana/pair.hpp>
 #include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
+#include <boost/hana/unpack.hpp>
 
 #include <type_traits>
 
@@ -45,7 +46,28 @@ namespace detail {
       return {};
     }
   };
+
+  struct expand_all_clauses {
+    template <typename ...Clauses>
+    constexpr auto operator()(Clauses ...) const {
+      return boost::hana::make_tuple(
+        detail::expand_clauses(typename Clauses::type{})...
+      );
+    }
+  };
 } // end namespace detail
+
+// Returns a `hana::map` containing all the clauses of the given concept and
+// its derived concepts.
+//
+// The keys of the map are the names of the clauses, and the values in the map
+// are the clauses themselves.
+template <typename Concept>
+constexpr auto clauses(Concept c) {
+  auto all = boost::hana::unpack(c.clauses, detail::expand_all_clauses{});
+  auto flat = boost::hana::flatten(all);
+  return boost::hana::to_map(flat);
+}
 
 // A `concept` is a collection of clauses and refined concepts representing
 // requirements for a type to model the concept.
@@ -62,14 +84,8 @@ struct concept : detail::concept_base {
 
   template <typename Name>
   constexpr auto get_signature(Name name) const {
-    auto clauses = all_clauses();
+    auto clauses = dyno::clauses(*this);
     return clauses[name];
-  }
-
-  static constexpr auto all_clauses() {
-    auto all = boost::hana::make_tuple(detail::expand_clauses(Clauses{})...);
-    auto flat = boost::hana::flatten(all);
-    return boost::hana::to_map(flat);
   }
 };
 

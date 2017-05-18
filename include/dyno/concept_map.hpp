@@ -167,7 +167,7 @@ namespace detail {
   // the given `Concept`, is missing any functions.
   template <typename Concept, typename T, typename Map>
   struct concept_map_is_complete : decltype(boost::hana::is_subset(
-    boost::hana::keys(Concept::all_clauses()),
+    boost::hana::keys(dyno::clauses(Concept{})),
     boost::hana::keys(std::declval<Map>())
   )) { };
 } // end namespace detail
@@ -270,7 +270,7 @@ template <typename Concept, typename T, typename Map,
 >
 constexpr void complete_concept_map(Map map) {
   auto complete_map = detail::complete_concept_map_impl<Concept, T>(map);
-  auto required = boost::hana::to_set(boost::hana::keys(Concept::all_clauses()));
+  auto required = boost::hana::to_set(boost::hana::keys(dyno::clauses(Concept{})));
   auto declared = boost::hana::to_set(boost::hana::keys(complete_map));
   auto missing = boost::hana::difference(required, declared);
   auto as_concept_map = detail::to_concept_map<Concept, T>(complete_map);
