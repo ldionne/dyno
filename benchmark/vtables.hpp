@@ -2,6 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
+#ifndef VTABLES_HPP
+#define VTABLES_HPP
+
 #include <dyno.hpp>
 
 #include <benchmark/benchmark.h>
@@ -222,106 +225,4 @@ namespace { namespace dyno_local {
   using any = dyno_remote::any_template<dyno::local<dyno::everything>>;
 }} // end namespace dyno_local
 
-template <typename Any>
-static void BM_any_1_function(benchmark::State& state) {
-  Any a{0};
-  int const N = state.range(0);
-  while (state.KeepRunning()) {
-    for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a.f1());
-    }
-  }
-}
-
-template <typename Any>
-static void BM_any_2_function(benchmark::State& state) {
-  Any a{0};
-  int const N = state.range(0);
-  while (state.KeepRunning()) {
-    for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a.f1());
-      benchmark::DoNotOptimize(a.f2());
-    }
-  }
-}
-
-template <typename Any>
-static void BM_any_3_function(benchmark::State& state) {
-  Any a{0};
-  int const N = state.range(0);
-  while (state.KeepRunning()) {
-    for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a.f1());
-      benchmark::DoNotOptimize(a.f2());
-      benchmark::DoNotOptimize(a.f3());
-    }
-  }
-}
-
-template <typename Any>
-static void BM_any_4_function(benchmark::State& state) {
-  Any a{0};
-  int const N = state.range(0);
-  while (state.KeepRunning()) {
-    for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a.f1());
-      benchmark::DoNotOptimize(a.f2());
-      benchmark::DoNotOptimize(a.f3());
-      benchmark::DoNotOptimize(a.f4());
-    }
-  }
-}
-
-template <typename Any>
-static void BM_any_5_function(benchmark::State& state) {
-  Any a{0};
-  int const N = state.range(0);
-  while (state.KeepRunning()) {
-    for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a.f1());
-      benchmark::DoNotOptimize(a.f2());
-      benchmark::DoNotOptimize(a.f3());
-      benchmark::DoNotOptimize(a.f4());
-      benchmark::DoNotOptimize(a.f5());
-    }
-  }
-}
-
-static constexpr int N = 100;
-
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-
-BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-
-BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-
-BENCHMARK_MAIN();
+#endif // !VTABLES_HPP
