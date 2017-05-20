@@ -77,39 +77,39 @@ static void BM_any_5_function(benchmark::State& state) {
 
 volatile int N = 100;
 
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_1_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_remote::any    )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_local::any     )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, dyno_remote::any          )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_1_function, dyno_local::any           )->Arg(N);
 
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_2_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_remote::any    )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, handrolled_local::any     )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, dyno_remote::any          )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_2_function, dyno_local::any           )->Arg(N);
 
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_3_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_remote::any    )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, handrolled_local::any     )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, dyno_remote::any          )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_3_function, dyno_local::any           )->Arg(N);
 
-BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_4_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_remote::any    )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_4_function, handrolled_local::any     )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_4_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_4_function, dyno_remote::any          )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_4_function, dyno_local::any           )->Arg(N);
 
-BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_classic::any   )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_remote::any    )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_local::any     )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, classic::any              )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, dyno_remote::any          )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
-BENCHMARK_TEMPLATE(BM_any_5_function, dyno_local::any           )->Arg(N)->Repetitions(4)->ReportAggregatesOnly(true);
+BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_classic::any   )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_remote::any    )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_5_function, handrolled_local::any     )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_5_function, classic::any              )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_5_function, dyno_remote::any          )->Arg(N);
+BENCHMARK_TEMPLATE(BM_any_5_function, dyno_local::any           )->Arg(N);
 
 BENCHMARK_MAIN();
