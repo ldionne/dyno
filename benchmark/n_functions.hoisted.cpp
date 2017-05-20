@@ -5,12 +5,16 @@
 #include "vtables.hpp"
 
 
+inline void escape(void* v) {
+  asm volatile("" : : "g"(v) : "memory");
+}
+
 template <typename Any>
 static void BM_any_1_function(benchmark::State& state) {
   Any a{0};
-  benchmark::DoNotOptimize(a);
   int const N = state.range(0);
   while (state.KeepRunning()) {
+    escape(&a);
     for (int i = 0; i != N; ++i) {
       a.f1();
     }
@@ -20,9 +24,9 @@ static void BM_any_1_function(benchmark::State& state) {
 template <typename Any>
 static void BM_any_2_function(benchmark::State& state) {
   Any a{0};
-  benchmark::DoNotOptimize(a);
   int const N = state.range(0);
   while (state.KeepRunning()) {
+    escape(&a);
     for (int i = 0; i != N; ++i) {
       a.f1();
       a.f2();
@@ -33,9 +37,9 @@ static void BM_any_2_function(benchmark::State& state) {
 template <typename Any>
 static void BM_any_3_function(benchmark::State& state) {
   Any a{0};
-  benchmark::DoNotOptimize(a);
   int const N = state.range(0);
   while (state.KeepRunning()) {
+    escape(&a);
     for (int i = 0; i != N; ++i) {
       a.f1();
       a.f2();
@@ -47,9 +51,9 @@ static void BM_any_3_function(benchmark::State& state) {
 template <typename Any>
 static void BM_any_4_function(benchmark::State& state) {
   Any a{0};
-  benchmark::DoNotOptimize(a);
   int const N = state.range(0);
   while (state.KeepRunning()) {
+    escape(&a);
     for (int i = 0; i != N; ++i) {
       a.f1();
       a.f2();
@@ -62,9 +66,9 @@ static void BM_any_4_function(benchmark::State& state) {
 template <typename Any>
 static void BM_any_5_function(benchmark::State& state) {
   Any a{0};
-  benchmark::DoNotOptimize(a);
   int const N = state.range(0);
   while (state.KeepRunning()) {
+    escape(&a);
     for (int i = 0; i != N; ++i) {
       a.f1();
       a.f2();
@@ -75,7 +79,7 @@ static void BM_any_5_function(benchmark::State& state) {
   }
 }
 
-volatile int N = 100;
+volatile int N = 1000;
 
 BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_remote::any    )->Arg(N);

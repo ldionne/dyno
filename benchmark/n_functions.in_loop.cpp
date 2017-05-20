@@ -2,9 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
-
 #include "vtables.hpp"
 
+
+inline void escape(void* v) {
+  asm volatile("" : : "g"(v) : "memory");
+}
 
 template <typename Any>
 static void BM_any_1_function(benchmark::State& state) {
@@ -12,7 +15,7 @@ static void BM_any_1_function(benchmark::State& state) {
   int const N = state.range(0);
   while (state.KeepRunning()) {
     for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a);
+      escape(&a);
       a.f1();
     }
   }
@@ -24,7 +27,7 @@ static void BM_any_2_function(benchmark::State& state) {
   int const N = state.range(0);
   while (state.KeepRunning()) {
     for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a);
+      escape(&a);
       a.f1();
       a.f2();
     }
@@ -37,7 +40,7 @@ static void BM_any_3_function(benchmark::State& state) {
   int const N = state.range(0);
   while (state.KeepRunning()) {
     for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a);
+      escape(&a);
       a.f1();
       a.f2();
       a.f3();
@@ -51,7 +54,7 @@ static void BM_any_4_function(benchmark::State& state) {
   int const N = state.range(0);
   while (state.KeepRunning()) {
     for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a);
+      escape(&a);
       a.f1();
       a.f2();
       a.f3();
@@ -66,7 +69,7 @@ static void BM_any_5_function(benchmark::State& state) {
   int const N = state.range(0);
   while (state.KeepRunning()) {
     for (int i = 0; i != N; ++i) {
-      benchmark::DoNotOptimize(a);
+      escape(&a);
       a.f1();
       a.f2();
       a.f3();
@@ -76,7 +79,7 @@ static void BM_any_5_function(benchmark::State& state) {
   }
 }
 
-volatile int N = 100;
+volatile int N = 1000;
 
 BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_classic::any   )->Arg(N);
 BENCHMARK_TEMPLATE(BM_any_1_function, handrolled_remote::any    )->Arg(N);
