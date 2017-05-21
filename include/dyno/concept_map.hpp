@@ -13,10 +13,10 @@
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
 #include <boost/hana/contains.hpp>
+#include <boost/hana/core/to.hpp>
 #include <boost/hana/difference.hpp>
 #include <boost/hana/fold_left.hpp>
 #include <boost/hana/is_subset.hpp>
-#include <boost/hana/keys.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/set.hpp>
@@ -167,7 +167,7 @@ namespace detail {
   // the given `Concept`, is missing any functions.
   template <typename Concept, typename T, typename Map>
   struct concept_map_is_complete : decltype(boost::hana::is_subset(
-    boost::hana::keys(dyno::clauses(Concept{})),
+    dyno::clause_names(Concept{}),
     boost::hana::keys(std::declval<Map>())
   )) { };
 } // end namespace detail
@@ -270,7 +270,7 @@ template <typename Concept, typename T, typename Map,
 >
 constexpr void complete_concept_map(Map map) {
   auto complete_map = detail::complete_concept_map_impl<Concept, T>(map);
-  auto required = boost::hana::to_set(boost::hana::keys(dyno::clauses(Concept{})));
+  auto required = boost::hana::to_set(dyno::clause_names(Concept{}));
   auto declared = boost::hana::to_set(boost::hana::keys(complete_map));
   auto missing = boost::hana::difference(required, declared);
   auto as_concept_map = detail::to_concept_map<Concept, T>(complete_map);

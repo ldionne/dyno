@@ -4,8 +4,10 @@
 
 #include <dyno/concept.hpp>
 
+#include <boost/hana/core/to.hpp>
 #include <boost/hana/equal.hpp>
-#include <boost/hana/map.hpp>
+#include <boost/hana/set.hpp>
+#include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
 using namespace dyno::literals;
 namespace hana = boost::hana;
@@ -25,23 +27,23 @@ struct C : decltype(dyno::requires(
   B{}
 )) { };
 
-static_assert(dyno::clauses(A{}) ==
-              hana::make_map(
+static_assert(hana::to_set(dyno::clauses(A{})) ==
+              hana::to_set(hana::make_tuple(
                 "f"_s = dyno::function<void (dyno::T&)>
-              ), "");
+              )), "");
 
-static_assert(dyno::clauses(B{}) ==
-              hana::make_map(
+static_assert(hana::to_set(dyno::clauses(B{})) ==
+              hana::to_set(hana::make_tuple(
                 "f"_s = dyno::function<void (dyno::T&)>,
                 "g"_s = dyno::function<int (dyno::T&)>,
                 "h"_s = dyno::function<double (dyno::T&, int)>
-              ), "");
+              )), "");
 
-static_assert(dyno::clauses(C{}) ==
-              hana::make_map(
+static_assert(hana::to_set(dyno::clauses(C{})) ==
+              hana::to_set(hana::make_tuple(
                 "f"_s = dyno::function<void (dyno::T&)>,
                 "g"_s = dyno::function<int (dyno::T&)>,
                 "h"_s = dyno::function<double (dyno::T&, int)>
-              ), "");
+              )), "");
 
 int main() { }

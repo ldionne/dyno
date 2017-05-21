@@ -17,7 +17,6 @@
 #include <boost/hana/fold_left.hpp>
 #include <boost/hana/for_each.hpp>
 #include <boost/hana/is_subset.hpp>
-#include <boost/hana/keys.hpp>
 #include <boost/hana/length.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/or.hpp>
@@ -288,7 +287,7 @@ struct remote {
 
 template <typename Concept, typename Policies>
 constexpr auto generate_vtable(Policies policies) {
-  auto functions = boost::hana::to_set(boost::hana::keys(dyno::clauses(Concept{})));
+  auto functions = boost::hana::to_set(dyno::clause_names(Concept{}));
   auto state = boost::hana::make_pair(functions, boost::hana::basic_type<dyno::local_vtable<>>{});
   auto result = boost::hana::fold_left(policies, state, [](auto state, auto policy) {
     auto functions = boost::hana::first(state);

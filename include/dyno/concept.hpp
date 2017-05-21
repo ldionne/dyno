@@ -8,8 +8,11 @@
 #include <dyno/detail/dsl.hpp>
 
 #include <boost/hana/at_key.hpp>
+#include <boost/hana/basic_tuple.hpp>
 #include <boost/hana/bool.hpp>
+#include <boost/hana/core/to.hpp>
 #include <boost/hana/filter.hpp>
+#include <boost/hana/first.hpp>
 #include <boost/hana/flatten.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
@@ -55,18 +58,35 @@ namespace detail {
       );
     }
   };
+
+  struct get_clause_names {
+    template <typename ...Clause>
+    constexpr auto operator()(Clause ...c) const {
+      return boost::hana::make_basic_tuple(boost::hana::first(c)...);
+    }
+  };
 } // end namespace detail
 
-// Returns a `hana::map` containing all the clauses of the given concept and
+// Returns a sequence containing all the clauses of the given concept and
 // its derived concepts.
 //
-// The keys of the map are the names of the clauses, and the values in the map
-// are the clauses themselves.
+// In the returned sequence, each clause is a pair where the first element
+// is the name of the clause and the second element is the clause itself
+// (e.g. a `dyno::function`). The order of clauses is not specified.
 template <typename Concept>
 constexpr auto clauses(Concept c) {
   auto all = boost::hana::unpack(c.clauses, detail::expand_all_clauses{});
   auto flat = boost::hana::flatten(all);
-  return boost::hana::to_map(flat);
+  return flat;
+}
+
+// Returns a sequence containing the names associated to all the claused of
+// the given concept, and its derived concepts.
+//
+// The order of the clause names is not specified.
+template <typename Concept>
+constexpr auto clause_names(Concept c) {
+  return boost::hana::unpack(dyno::clauses(c), detail::get_clause_names{});
 }
 
 // A `concept` is a collection of clauses and refined concepts representing
@@ -84,7 +104,7 @@ struct concept : detail::concept_base {
 
   template <typename Name>
   constexpr auto get_signature(Name name) const {
-    auto clauses = dyno::clauses(*this);
+    auto clauses = boost::hana::to_map(dyno::clauses(*this));
     return clauses[name];
   }
 };
