@@ -147,7 +147,7 @@ namespace detail {
     //    that Concept and merge that into the current concept map.
     auto refined = dyno::refined_concepts(Concept{});
     auto merged = boost::hana::fold_left(refined, with_defaults, [](auto m, auto c) {
-      using C = typename decltype(c)::type;
+      using C = decltype(c);
       auto completed = detail::complete_concept_map_impl<C, T>(dyno::concept_map<C, T>);
       return boost::hana::union_(completed, m);
     });

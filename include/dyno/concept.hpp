@@ -16,7 +16,6 @@
 #include <boost/hana/flatten.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
-#include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 
 #include <type_traits>
@@ -44,16 +43,16 @@ namespace detail {
   struct is_concept {
     template <typename T, bool IsBase = std::is_base_of<detail::concept_base, T>::value>
     constexpr boost::hana::bool_<IsBase>
-    operator()(boost::hana::basic_type<T>) const {
+    operator()(T) const {
       return {};
     }
   };
 
   struct expand_all_clauses {
     template <typename ...Clauses>
-    constexpr auto operator()(Clauses ...) const {
+    constexpr auto operator()(Clauses ...c) const {
       return boost::hana::make_basic_tuple(
-        detail::expand_clauses(typename Clauses::type{})...
+        detail::expand_clauses(c)...
       );
     }
   };
@@ -99,7 +98,7 @@ constexpr auto clause_names(Concept c) {
 // whether a type satisfies the concept.
 template <typename ...Clauses>
 struct concept : detail::concept_base {
-  boost::hana::basic_tuple<boost::hana::basic_type<Clauses>...> clauses_;
+  boost::hana::basic_tuple<Clauses...> clauses_;
 
   template <typename Name>
   constexpr auto get_signature(Name name) const {
@@ -111,9 +110,7 @@ struct concept : detail::concept_base {
 // Returns a sequence of the concepts refined by the given concept.
 //
 // Only the concepts that are refined directly by `c` are returned, i.e. we
-// do not get the refined concepts of the refined concepts recursively. Also,
-// the concepts are returned wrapped in `hana::basic_type`s, not straight
-// concepts.
+// do not get the refined concepts of the refined concepts recursively.
 template <typename Concept>
 constexpr auto refined_concepts(Concept c) {
   return boost::hana::filter(c.clauses_, detail::is_concept{});
