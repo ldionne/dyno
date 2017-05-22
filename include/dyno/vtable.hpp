@@ -10,8 +10,10 @@
 #include <dyno/detail/erase_signature.hpp>
 
 #include <boost/hana/at_key.hpp>
+#include <boost/hana/basic_tuple.hpp>
 #include <boost/hana/bool.hpp>
 #include <boost/hana/contains.hpp>
+#include <boost/hana/core/to.hpp>
 #include <boost/hana/difference.hpp>
 #include <boost/hana/first.hpp>
 #include <boost/hana/fold_left.hpp>
@@ -370,7 +372,7 @@ template <typename ...Policies>
 struct vtable {
   template <typename Concept>
   using apply = typename decltype(
-    dyno::generate_vtable<Concept>(boost::hana::make_tuple(Policies{}...))
+    dyno::generate_vtable<Concept>(boost::hana::basic_tuple<Policies...>{})
   )::type;
 };
 
