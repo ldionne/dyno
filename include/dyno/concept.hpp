@@ -75,7 +75,7 @@ namespace detail {
 // (e.g. a `dyno::function`). The order of clauses is not specified.
 template <typename Concept>
 constexpr auto clauses(Concept c) {
-  auto all = boost::hana::unpack(c.clauses, detail::expand_all_clauses{});
+  auto all = boost::hana::unpack(c.clauses_, detail::expand_all_clauses{});
   auto flat = boost::hana::flatten(all);
   return flat;
 }
@@ -100,7 +100,7 @@ constexpr auto clause_names(Concept c) {
 // whether a type satisfies the concept.
 template <typename ...Clauses>
 struct concept : detail::concept_base {
-  boost::hana::tuple<boost::hana::basic_type<Clauses>...> clauses;
+  boost::hana::tuple<boost::hana::basic_type<Clauses>...> clauses_;
 
   template <typename Name>
   constexpr auto get_signature(Name name) const {
@@ -117,7 +117,7 @@ struct concept : detail::concept_base {
 // concepts.
 template <typename Concept>
 constexpr auto refined_concepts(Concept c) {
-  return boost::hana::filter(c.clauses, detail::is_concept{});
+  return boost::hana::filter(c.clauses_, detail::is_concept{});
 }
 
 // Creates a `concept` with the given clauses. Note that a clause may be a
