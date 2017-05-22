@@ -16,7 +16,6 @@
 #include <boost/hana/flatten.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
-#include <boost/hana/tuple.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 
@@ -30,14 +29,14 @@ struct concept;
 
 namespace detail {
   template <typename Str, typename Fun>
-  constexpr auto expand_clauses(boost::hana::pair<Str, Fun> const& p) {
-    return boost::hana::make_tuple(p);
-  }
+  constexpr boost::hana::basic_tuple<boost::hana::pair<Str, Fun>>
+    expand_clauses(boost::hana::pair<Str, Fun> const&)
+  { return {}; }
 
   template <typename ...Clauses>
   constexpr auto expand_clauses(dyno::concept<Clauses...> const&) {
     return boost::hana::flatten(
-      boost::hana::make_tuple(detail::expand_clauses(Clauses{})...)
+      boost::hana::make_basic_tuple(detail::expand_clauses(Clauses{})...)
     );
   }
 
@@ -53,7 +52,7 @@ namespace detail {
   struct expand_all_clauses {
     template <typename ...Clauses>
     constexpr auto operator()(Clauses ...) const {
-      return boost::hana::make_tuple(
+      return boost::hana::make_basic_tuple(
         detail::expand_clauses(typename Clauses::type{})...
       );
     }
@@ -100,7 +99,7 @@ constexpr auto clause_names(Concept c) {
 // whether a type satisfies the concept.
 template <typename ...Clauses>
 struct concept : detail::concept_base {
-  boost::hana::tuple<boost::hana::basic_type<Clauses>...> clauses_;
+  boost::hana::basic_tuple<boost::hana::basic_type<Clauses>...> clauses_;
 
   template <typename Name>
   constexpr auto get_signature(Name name) const {
