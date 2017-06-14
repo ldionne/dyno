@@ -140,6 +140,20 @@ public:
                              "that is not part of the Concept");
   }
 
+  // Returns a pointer to the underlying storage.
+  //
+  // The pointer is potentially invalidated whenever the poly is modified;
+  // the specific storage policy should be consulted to know when pointers
+  // to the underlying storage are invalidated.
+  //
+  // The behavior is undefined if the requested type is not cv-qualified `void`
+  // and the underlying storage is not of the requested type.
+  template <typename T>
+  T* unsafe_get() { return storage_.template get<T>(); }
+
+  template <typename T>
+  T const* unsafe_get() const { return storage_.template get<T>(); }
+
 private:
   VTable vtable_;
   Storage storage_;
