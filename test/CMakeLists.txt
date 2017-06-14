@@ -8,8 +8,8 @@ add_custom_target(tests
 
 # Generate tests that include each public header.
 include(TestHeaders)
-file(GLOB_RECURSE HEADERS RELATIVE "${DYNO_SOURCE_DIR}/include"
-                                   "${DYNO_SOURCE_DIR}/include/*.hpp")
+file(GLOB_RECURSE HEADERS RELATIVE "${PROJECT_SOURCE_DIR}/include"
+                                   "${PROJECT_SOURCE_DIR}/include/*.hpp")
 generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES Dyno::dyno
                                  MASTER_TARGET tests EXCLUDE_FROM_ALL)
 
@@ -39,9 +39,9 @@ endforeach()
 # then use the provided `DynoConfig.cmake` config file to use `dyno` from an
 # external project.
 include(ExternalProject)
-set(DYNO_FAKE_INSTALL_DIR "${DYNO_BINARY_DIR}/fakeroot")
+set(DYNO_FAKE_INSTALL_DIR "${PROJECT_BINARY_DIR}/fakeroot")
 ExternalProject_Add(test.deploy.fakeroot
-  SOURCE_DIR "${DYNO_SOURCE_DIR}"
+  SOURCE_DIR "${PROJECT_SOURCE_DIR}"
   EXCLUDE_FROM_ALL TRUE
   BUILD_ALWAYS TRUE
   INSTALL_DIR "${DYNO_FAKE_INSTALL_DIR}"

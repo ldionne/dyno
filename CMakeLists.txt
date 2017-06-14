@@ -69,10 +69,10 @@ endfunction()
 # source file relative from the root of the project is `path/to/file.cpp`,
 # the target name associated to it will be `path.to.file`.
 function(dyno_get_target_name out file)
-  if (NOT IS_ABSOLUTE ${file})
+  if (NOT IS_ABSOLUTE "${file}")
     set(file "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
   endif()
-  file(RELATIVE_PATH _relative "${DYNO_SOURCE_DIR}" "${file}")
+  file(RELATIVE_PATH _relative "${PROJECT_SOURCE_DIR}" "${file}")
   string(REPLACE ".cpp" "" _name "${_relative}")
   string(REGEX REPLACE "/" "." _name "${_name}")
   set(${out} "${_name}" PARENT_SCOPE)
