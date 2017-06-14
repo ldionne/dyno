@@ -38,13 +38,26 @@ endforeach()
 # Add the deployment test, which checks that we can indeed install `dyno` and
 # then use the provided `DynoConfig.cmake` config file to use `dyno` from an
 # external project.
+include(ExternalProject)
+set(DYNO_FAKE_INSTALL_DIR "${DYNO_BINARY_DIR}/fakeroot")
+ExternalProject_Add(test.deploy.fakeroot
+  SOURCE_DIR "${DYNO_SOURCE_DIR}"
+  EXCLUDE_FROM_ALL TRUE
+  BUILD_ALWAYS TRUE
+  INSTALL_DIR "${DYNO_FAKE_INSTALL_DIR}"
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+             -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
+  TEST_COMMAND ""      # Disable test step
+  UPDATE_COMMAND ""    # Disable source work-tree update
+)
+
 add_custom_target(test.deploy
-  COMMAND ${CMAKE_COMMAND} --build "${CMAKE_BINARY_DIR}" --target install
+  DEPENDS test.deploy.fakeroot
   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/deploy"
   COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/deploy"
             ${CMAKE_COMMAND} "${CMAKE_CURRENT_SOURCE_DIR}/deploy"
                              -DCMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}"
-                             -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}\;${CMAKE_INSTALL_PREFIX}"
+                             -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}\;${DYNO_FAKE_INSTALL_DIR}"
   COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/deploy"
 )
 add_dependencies(tests test.deploy)
