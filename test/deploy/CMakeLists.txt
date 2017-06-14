@@ -12,4 +12,4 @@ find_package(Hana REQUIRED)
 find_package(CallableTraits REQUIRED)
 
 add_executable(main main.cpp)
-target_link_libraries(main dyno)
+target_link_libraries(main Dyno::dyno)

@@ -10,7 +10,7 @@ add_custom_target(tests
 include(TestHeaders)
 file(GLOB_RECURSE HEADERS RELATIVE "${DYNO_SOURCE_DIR}/include"
                                    "${DYNO_SOURCE_DIR}/include/*.hpp")
-generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES dyno
+generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES Dyno::dyno
                                  MASTER_TARGET tests EXCLUDE_FROM_ALL)
 
 

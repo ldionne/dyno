@@ -5,13 +5,14 @@
 cmake_minimum_required(VERSION 3.8)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-project(DYNO VERSION 0.0.1 LANGUAGES CXX)
+project(Dyno VERSION 0.0.1 LANGUAGES CXX)
 
 # Setup the `dyno` library target.
 add_library(dyno INTERFACE)
+add_library(Dyno::dyno ALIAS dyno)
 target_compile_features(dyno INTERFACE cxx_std_14)
 target_include_directories(dyno INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                          $<INSTALL_INTERFACE:include>)
+                                           $<INSTALL_INTERFACE:include>)
 find_package(Hana REQUIRED)
 find_package(CallableTraits REQUIRED)
 target_link_libraries(dyno INTERFACE hana callable_traits)
@@ -32,8 +33,17 @@ endif()
 
 
 # Setup the installation target for dyno and the related exports.
-install(TARGETS dyno EXPORT DynoConfig)
-install(EXPORT DynoConfig          DESTINATION lib/cmake/dyno)
+install(TARGETS dyno EXPORT DynoConfig
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+install(EXPORT DynoConfig
+  FILE DynoConfig.cmake
+  NAMESPACE Dyno::
+  DESTINATION lib/cmake/Dyno
+)
 install(FILES     include/dyno.hpp DESTINATION include)
 install(DIRECTORY include/dyno     DESTINATION include FILES_MATCHING PATTERN "*.hpp")
 
@@ -41,7 +51,7 @@ install(DIRECTORY include/dyno     DESTINATION include FILES_MATCHING PATTERN "*
 # All unit tests and examples are given the following properties:
 find_package(Awful REQUIRED)
 function(dyno_set_test_properties target)
-  target_link_libraries(${target} PRIVATE dyno awful)
+  target_link_libraries(${target} PRIVATE Dyno::dyno awful)
   set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
   macro(setflag testname flag)
       check_cxx_compiler_flag(${flag} ${testname})
