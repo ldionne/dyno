@@ -13,16 +13,26 @@ file(GLOB_RECURSE HEADERS RELATIVE "${PROJECT_SOURCE_DIR}/include"
 generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES Dyno::dyno
                                  MASTER_TARGET tests EXCLUDE_FROM_ALL)
 
+# Add the special `test.poly.allocator` target, which depends on Boost.Interprocess.
+find_package(Boost)
+add_executable(test.poly.allocator EXCLUDE_FROM_ALL "poly.allocator.cpp")
+target_link_libraries(test.poly.allocator PRIVATE Boost::boost)
+dyno_set_test_properties(test.poly.allocator)
+add_test(test.poly.allocator test.poly.allocator)
+add_dependencies(tests test.poly.allocator)
 
+# Add all the regular unit tests (that have not already been added above).
+# When a test has `.fail` in its name, we create a test that succeeds
+# whenever the test fails to build.
 include(CompileFailTest)
-
-# Add all the regular unit tests. When a test has `.fail` in its name, we
-# create a test that succeeds whenever the test fails to build.
 file(GLOB_RECURSE UNIT_TESTS "*.cpp")
 file(GLOB_RECURSE EXCLUDED_UNIT_TESTS "deploy/*.cpp")
 list(REMOVE_ITEM UNIT_TESTS ${EXCLUDED_UNIT_TESTS})
 foreach(ut IN LISTS UNIT_TESTS)
   dyno_get_target_name(target "${ut}")
+  if (TARGET ${target})
+    continue()
+  endif()
 
   if (target MATCHES "[.]fail")
     compile_fail("${target}" "${ut}")
