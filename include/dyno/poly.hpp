@@ -6,11 +6,13 @@
 #define DYNO_POLY_HPP
 
 #include <dyno/builtin.hpp>
+#include <dyno/concept.hpp>
 #include <dyno/concept_map.hpp>
 #include <dyno/detail/is_placeholder.hpp>
 #include <dyno/storage.hpp>
 #include <dyno/vtable.hpp>
 
+#include <boost/hana/contains.hpp>
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 
@@ -120,10 +122,22 @@ public:
     return boost::hana::unpack(std::move(delayed.args), injected);
   }
 
-  template <typename Function>
+  template <typename Function,
+    bool HasClause = decltype(boost::hana::contains(dyno::clause_names(Concept{}), Function{})){},
+    std::enable_if_t<HasClause>* = nullptr
+  >
   constexpr decltype(auto) virtual_(Function name) const {
     using Signature = typename decltype(Concept{}.get_signature(name))::type;
     return virtual_impl(boost::hana::basic_type<Signature>{}, name);
+  }
+
+  template <typename Function,
+    bool HasClause = decltype(boost::hana::contains(dyno::clause_names(Concept{}), Function{})){},
+    std::enable_if_t<!HasClause>* = nullptr
+  >
+  constexpr decltype(auto) virtual_(Function) const {
+    static_assert(HasClause, "dyno::poly::virtual_: Trying to access a function "
+                             "that is not part of the Concept");
   }
 
 private:
