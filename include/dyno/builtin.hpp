@@ -9,6 +9,7 @@
 #include <dyno/concept_map.hpp>
 
 #include <cstddef>
+#include <type_traits>
 #include <typeinfo>
 
 
@@ -51,7 +52,9 @@ struct DefaultConstructible : decltype(dyno::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<DefaultConstructible, T> = dyno::make_concept_map(
+auto const default_concept_map<DefaultConstructible, T,
+  std::enable_if_t<std::is_default_constructible<T>::value>
+> = dyno::make_concept_map(
   "default-construct"_s = [](void* p) {
     new (p) T();
   }
@@ -63,7 +66,9 @@ struct MoveConstructible : decltype(dyno::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<MoveConstructible, T> = dyno::make_concept_map(
+auto const default_concept_map<MoveConstructible, T,
+  std::enable_if_t<std::is_move_constructible<T>::value>
+> = dyno::make_concept_map(
   "move-construct"_s = [](void* p, T&& other) {
     new (p) T(std::move(other));
   }
@@ -76,7 +81,9 @@ struct CopyConstructible : decltype(dyno::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<CopyConstructible, T> = dyno::make_concept_map(
+auto const default_concept_map<CopyConstructible, T,
+  std::enable_if_t<std::is_copy_constructible<T>::value>
+> = dyno::make_concept_map(
   "copy-construct"_s = [](void* p, T const& other) {
     new (p) T(other);
   }
@@ -104,7 +111,9 @@ struct EqualityComparable : decltype(dyno::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<EqualityComparable, T> = dyno::make_concept_map(
+auto const default_concept_map<EqualityComparable, T,
+  decltype((void)(std::declval<T>() == std::declval<T>()))
+> = dyno::make_concept_map(
   "equal"_s = [](T const& a, T const& b) -> bool { return a == b; }
 );
 
@@ -114,7 +123,9 @@ struct Destructible : decltype(dyno::requires(
 )) { };
 
 template <typename T>
-auto const default_concept_map<Destructible, T> = dyno::make_concept_map(
+auto const default_concept_map<Destructible, T,
+  std::enable_if_t<std::is_destructible<T>::value>
+> = dyno::make_concept_map(
   "destruct"_s = [](T& self) { self.~T(); }
 );
 
