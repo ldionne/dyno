@@ -16,7 +16,8 @@
 // happened.
 
 struct wrapper {
-  template <typename T>
+  template <typename T,
+    typename = std::enable_if_t<!std::is_same<std::decay_t<T>, wrapper>::value>>
   wrapper(T&& x)
     : poly_{std::forward<T>(x)}
   { }
