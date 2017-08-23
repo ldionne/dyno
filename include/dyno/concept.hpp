@@ -74,8 +74,7 @@ namespace detail {
 template <typename Concept>
 constexpr auto clauses(Concept c) {
   auto all = boost::hana::unpack(c.clauses_, detail::expand_all_clauses{});
-  auto flat = boost::hana::flatten(all);
-  return flat;
+  return boost::hana::flatten(all);
 }
 
 // Returns a sequence containing the names associated to all the claused of
