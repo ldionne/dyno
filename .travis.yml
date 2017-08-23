@@ -3,6 +3,8 @@
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 language: cpp
+os: linux # Use Linux unless specified otherwise
+dist: precise # Use precise unless specified otherwise
 sudo: false
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
@@ -17,25 +19,24 @@ cache:
 
 matrix:
   include:
-    - os: linux
-      env: LLVM_VERSION=3.7.1
+    - env: COMPILER=clang++-3.7
       addons: { apt: { packages: ["clang-3.7"], sources: ["llvm-toolchain-precise-3.7", "ubuntu-toolchain-r-test"] } }
 
-    - os: linux
-      env: LLVM_VERSION=3.8.1
+    - env: COMPILER=clang++-3.8
       addons: { apt: { packages: ["clang-3.8"], sources: ["llvm-toolchain-precise-3.8", "ubuntu-toolchain-r-test"] } }
 
-    - os: linux
-      env: LLVM_VERSION=3.9.1
+    - env: COMPILER=clang++-3.9
       addons: { apt: { packages: ["clang-3.9"], sources: ["llvm-toolchain-precise-3.9", "ubuntu-toolchain-r-test"] } }
 
-    - os: linux
-      env: LLVM_VERSION=4.0.0
+    - env: COMPILER=clang++-4.0
       addons: { apt: { packages: ["clang-4.0"], sources: ["llvm-toolchain-trusty-4.0", "ubuntu-toolchain-r-test"] } }
 
-    - os: linux
-      env: COMPILER=g++-6
+    - env: COMPILER=g++-6
       addons: { apt: { packages: ["g++-6"], sources: ["ubuntu-toolchain-r-test"] } }
+
+    - env: COMPILER=g++-7
+      addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
+      dist: trusty
 
     - os: osx
       env: COMPILER=clang++
@@ -60,7 +61,6 @@ matrix:
 install:
   # Set the ${CXX} variable properly
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
-  - if [[ "${LLVM_VERSION}" != "" ]]; then export CXX="clang++-${LLVM_VERSION%.[0-9]}"; fi
   - ${CXX} --version
 
   # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
@@ -81,7 +81,13 @@ install:
 
   # Install libc++ and libc++abi if needed
   - |
-    if [[ "${LLVM_VERSION}" != "" ]]; then
+    if [[ "${CXX%%+*}" == "clang" ]]; then
+      if   [[ "${CXX}" == "clang++-3.7" ]]; then LLVM_VERSION="3.7.1";
+      elif [[ "${CXX}" == "clang++-3.8" ]]; then LLVM_VERSION="3.8.1";
+      elif [[ "${CXX}" == "clang++-3.9" ]]; then LLVM_VERSION="3.9.1";
+      elif [[ "${CXX}" == "clang++-4.0" ]]; then LLVM_VERSION="4.0.0";
+      fi
+
       LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
       LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
       LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
