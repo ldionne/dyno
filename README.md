@@ -14,10 +14,10 @@ polymorphic objects and dispaching to virtual methods. It does not
 require inheritance, heap allocation or leaving the comfortable world
 of value semantics, and it can do so while outperforming vanilla C++.
 
-__Dyno__ is pure-library implementation of what's also known as [Rust traits][],
-[Go interfaces][], [Haskell type classes][], and [virtual concepts][]. Under the
-hood, it uses a C++ technique known as [type erasure][], which is the idea
-behind [`std::any`][], [`std::function`][] and many other useful types.
+__Dyno__ is pure-library implementation of what's also known as [Rust trait
+objects][], [Go interfaces][], [Haskell type classes][], and [virtual concepts][].
+Under the hood, it uses a C++ technique known as [type erasure][], which is
+the idea behind [`std::any`][], [`std::function`][] and many other useful types.
 
 <!-- Important: keep this in sync with example/overview.cpp -->
 ```c++
@@ -541,6 +541,6 @@ f(std::vector<int>{1, 2, 3}) // prints "1 2 3 "
 [Google Benchmark]: https://github.com/google/benchmark
 [Haskell type classes]: http://learnyouahaskell.com/types-and-typeclasses
 [libawful]: https://github.com/ldionne/libawful
-[Rust traits]: https://doc.rust-lang.org/beta/book/traits.html
+[Rust trait objects]: https://doc.rust-lang.org/book/first-edition/trait-objects.html
 [type erasure]: https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Type_Erasure
 [virtual concepts]: https://github.com/andyprowl/virtual-concepts
