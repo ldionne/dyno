@@ -59,6 +59,11 @@ struct Circle {
 void f(drawable const& d) {
   d.draw(std::cout);
 }
+
+int main() {
+  f(Square{}); // prints Square
+  f(Circle{}); // prints Circle
+}
 ```
 
 

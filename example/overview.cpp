@@ -3,7 +3,9 @@
 // (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
 #include "../test/testing.hpp"
-#include <sstream>
+
+#include <iostream>
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Important: Keep this file in sync with the Overview in the README
@@ -46,19 +48,9 @@ struct Circle {
 void f(drawable const& d) {
   d.draw(std::cout);
 }
-//////////////////////////////////////////////////////////////////////////////
 
 int main() {
-  std::stringstream out;
-  std::streambuf* coutbuf = std::cout.rdbuf();
-  std::cout.rdbuf(out.rdbuf());
-
-  f(Square{});
-  DYNO_CHECK(out.str() == "Square");
-  out.str("");
-
-  f(Circle{});
-  DYNO_CHECK(out.str() == "Circle");
-
-  std::cout.rdbuf(coutbuf);
+  f(Square{}); // prints Square
+  f(Circle{}); // prints Circle
 }
+//////////////////////////////////////////////////////////////////////////////
