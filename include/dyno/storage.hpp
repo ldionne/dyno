@@ -358,7 +358,7 @@ struct shared_remote_storage {
 
   template <typename VTable>
   void destruct(VTable const&) {
-    ptr_ = nullptr;
+    ptr_.reset();
   }
 
   template <typename T = void>
