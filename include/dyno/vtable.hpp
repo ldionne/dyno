@@ -78,8 +78,10 @@ struct local_vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>.
   constexpr explicit local_vtable(ConceptMap map)
     : vtbl_{boost::hana::make_map(
       boost::hana::make_pair(Name{}, detail::erase_function<Signature>(map[Name{}]))...
-    )}
-  { }
+    )} {
+    // suppress "unused" warnings for empty parameter packs
+    (void) map;
+  }
 
   template <typename Name_>
   constexpr auto contains(Name_ name) const {
