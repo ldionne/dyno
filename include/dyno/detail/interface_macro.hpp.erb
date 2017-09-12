@@ -1,0 +1,137 @@
+// Copyright Louis Dionne 2017
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
+
+#ifndef DYNO_INTERFACE_MACRO_HPP
+#define DYNO_INTERFACE_MACRO_HPP
+
+//////////////////////////////////////////////////////////////////////////////
+// THIS FILE WAS GENERATED; DO NOT EDIT DIRECTLY.
+//
+//
+// This file is generated from the <dyno/detail/interface_macro.hpp.erb> ERB[1]
+// template file. The maximum number of methods that can be handled by the
+// macros can be controlled with the 'MAX_NUMBER_OF_METHODS' variable, which
+// can be set when calling ERB to generate the header:
+//
+//    export MAX_NUMBER_OF_METHODS=55
+//    erb include/dyno/detail/interface_macro.hpp.erb > include/dyno/interface_macro.hpp
+//
+// Due to the limits of some preprocessor macros we're using in the implementation,
+// 'MAX_NUMBER_OF_METHODS' must be <= 62, otherwise an error is triggered.
+// If 'MAX_NUMBER_OF_METHODS' is not specified, it defaults to 20.
+//
+// [1]: http://en.wikipedia.org/wiki/ERuby
+//////////////////////////////////////////////////////////////////////////////
+
+<%
+  MAX_NUMBER_OF_METHODS = (ENV["MAX_NUMBER_OF_METHODS"] || 20).to_i
+  raise "MAX_NUMBER_OF_METHODS must be <= 62" if MAX_NUMBER_OF_METHODS > 62
+%>
+
+#include <dyno/builtin.hpp>
+#include <dyno/concept.hpp>
+#include <dyno/concept_map.hpp>
+#include <dyno/detail/dsl.hpp>
+#include <dyno/detail/preprocessor.hpp>
+#include <dyno/poly.hpp>
+
+#include <boost/callable_traits/function_type.hpp>
+#include <boost/callable_traits/is_const_member.hpp>
+#include <boost/callable_traits/return_type.hpp>
+
+#include <type_traits>
+#include <utility>
+
+
+// TODOS
+// - Properly bolt `method` into GitHub issue #4: support for method definitions
+// - Do not hardcode the requirement on CopyConstructible
+// - Allow specifying custom base concepts
+// - Handle const and non-const more gracefully
+// - Try to get rid of commas in the method definition. Use a BOOST_PP_SEQ
+
+namespace dyno { namespace detail {
+  template <typename ...> struct invalid;
+  template <typename Signature>
+  constexpr detail::invalid<Signature> method;
+
+  template <typename R, typename ...Args>
+  constexpr auto method<R(Args...) const> = dyno::function<R (dyno::T const&, Args...)>;
+  template <typename R, typename ...Args>
+  constexpr auto method<R(Args...)> = dyno::function<R (dyno::T&, Args...)>;
+}} // end namespace dyno::detail
+
+#define DYNO_INTERFACE(name, ...) \
+  DYNO_PP_CONCAT(DYNO_PP_INTERFACE_IMPL_, DYNO_PP_NARG(__VA_ARGS__))(name, __VA_ARGS__)
+
+<% (0..MAX_NUMBER_OF_METHODS).each do |n|
+args = (1..n).map { |i| "arg#{i}" }
+
+def dyno_string(arg)
+  "DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD #{arg}))"
+end
+%>
+
+#define DYNO_PP_INTERFACE_IMPL_<%= n %>(name<%= args.map { |arg| ", #{arg}" }.join %>)\
+  struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
+    static auto make_type() {                                                 \
+      return ::dyno::requires(                                                \
+        ::dyno::CopyConstructible{},                                          \
+        <% args.each_with_index do |arg, i| %>                                \
+          <%= ',' if i > 0 %>                                                 \
+          <%= dyno_string(arg) %> = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL <%= arg %>>\
+        <% end %>                                                             \
+      );                                                                      \
+    }                                                                         \
+  };                                                                          \
+                                                                              \
+  class name {                                                                \
+    struct concept_t                                                          \
+      : decltype(DYNO_PP_CONCAT(dyno_concept_for_, name)::make_type())        \
+    { };                                                                      \
+  public:                                                                     \
+    template <typename T>                                                     \
+    name(T&& x)                                                               \
+      : poly_{static_cast<T&&>(x), ::dyno::make_concept_map(                  \
+        <% args.each_with_index do |arg, i| %>                                \
+          <%= ',' if i > 0 %>                                                 \
+          <%= dyno_string(arg) %> = [](auto&& self, auto&& ...args) -> decltype(auto) {\
+              return static_cast<decltype(self)&&>(self)                      \
+                .DYNO_PP_VARIADIC_HEAD <%= arg %>                             \
+                  (static_cast<decltype(args)&&>(args)...);                   \
+            }                                                                 \
+        <% end %>                                                             \
+      )}                                                                      \
+    { }                                                                       \
+    <% args.each_with_index do |arg, i| %>                                    \
+      template <typename ...Args, typename = decltype(                        \
+        ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL <%= arg %>>>()\
+          (::std::declval<Args&&>()...)                                       \
+      ), typename = ::std::enable_if_t<                                       \
+        !::boost::callable_traits::is_const_member<DYNO_PP_VARIADIC_TAIL <%= arg %>>::value,\
+        char[sizeof...(Args)+1] /* make the enable_if dependent */            \
+      >>                                                                      \
+      ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL <%= arg %>>\
+      DYNO_PP_VARIADIC_HEAD <%= arg %>(Args&& ...args) {                      \
+        return poly_.virtual_(<%= dyno_string(arg) %>)(poly_, static_cast<Args&&>(args)...);\
+      }                                                                       \
+      template <typename ...Args, typename = decltype(                        \
+        ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL <%= arg %>>>()\
+          (::std::declval<Args&&>()...)                                       \
+      ), typename = ::std::enable_if_t<                                       \
+        ::boost::callable_traits::is_const_member<DYNO_PP_VARIADIC_TAIL <%= arg %>>::value,\
+        char[sizeof...(Args)+1] /* make the enable_if dependent */            \
+      >>                                                                      \
+      ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL <%= arg %>>\
+      DYNO_PP_VARIADIC_HEAD <%= arg %>(Args&& ...args) const {                \
+        return poly_.virtual_(<%= dyno_string(arg) %>)(poly_, static_cast<Args&&>(args)...);\
+      }                                                                       \
+    <% end %>                                                                 \
+  private:                                                                    \
+    ::dyno::poly<concept_t> poly_;                                            \
+  }
+
+<% end %>
+
+#endif // DYNO_INTERFACE_MACRO_HPP
