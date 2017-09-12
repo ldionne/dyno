@@ -104,12 +104,9 @@ class sbo_storage {
   static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<SBSize>) : Align;
   using SBStorage = std::aligned_storage_t<SBSize, SBAlign>;
 
-  union {
-    void* ptr_;
-    SBStorage sb_;
-  };
   // TODO: It might be possible to pack this bool inside the union somehow.
-  bool uses_heap_;
+  void* ptr_;
+  SBStorage sb_;
 
 public:
   sbo_storage() = delete;
@@ -128,46 +125,46 @@ public:
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
     if (can_store(dyno::storage_info_for<RawT>)) {
-      uses_heap_ = false;
-      new (&sb_) RawT(std::forward<T>(t));
+      ptr_ = &sb_;
     } else {
-      uses_heap_ = true;
       ptr_ = std::malloc(sizeof(RawT));
       // TODO: Allocating and then calling the constructor is not
       //       exception-safe if the constructor throws.
       // TODO: That's not a really nice way to handle this
       assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
-      new (ptr_) RawT(std::forward<T>(t));
     }
+
+    new (ptr_) RawT(std::forward<T>(t));
   }
 
   template <typename VTable>
   sbo_storage(sbo_storage const& other, VTable const& vtable) {
     if (other.uses_heap()) {
       auto info = vtable["storage_info"_s]();
-      uses_heap_ = true;
       ptr_ = std::malloc(info.size);
       // TODO: That's not a really nice way to handle this
       assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
-      vtable["copy-construct"_s](ptr_, other.get());
     } else {
-      uses_heap_ = false;
-      vtable["copy-construct"_s](&sb_, other.get());
+      ptr_ = &sb_;
     }
+
+    vtable["copy-construct"_s](ptr_, other.get());
   }
 
   template <typename VTable>
-  sbo_storage(sbo_storage&& other, VTable const& vtable)
-    : uses_heap_{other.uses_heap()}
-  {
-    if (uses_heap()) {
+  sbo_storage(sbo_storage&& other, VTable const& vtable) {
+    if (other.uses_heap()) {
       this->ptr_ = other.ptr_;
       other.ptr_ = nullptr;
     } else {
-      vtable["move-construct"_s](this->get(), other.get());
+      this->ptr_ = &sb_;
+      vtable["move-construct"_s](ptr_, other.get());
     }
   }
 
+  // TODO: We have a bug somewhere in there if one of the two storages have
+  //       been moved from. This manifests when we assign to a poly, which
+  //       does a swap under the hood.
   template <typename MyVTable, typename OtherVTable>
   void swap(MyVTable const& this_vtable, sbo_storage& other, OtherVTable const& other_vtable) {
     if (this == &other)
@@ -183,11 +180,10 @@ public:
         // Bring `other`'s contents to `*this`, destructively
         other_vtable["move-construct"_s](&this->sb_, &other.sb_);
         other_vtable["destruct"_s](&other.sb_);
-        this->uses_heap_ = false;
+        this->ptr_ = &this->sb_;
 
         // Bring `*this`'s stuff to `other`
         other.ptr_ = ptr;
-        other.uses_heap_ = true;
       }
     } else {
       if (other.uses_heap()) {
@@ -196,11 +192,10 @@ public:
         // Bring `*this`'s contents to `other`, destructively
         this_vtable["move-construct"_s](&other.sb_, &this->sb_);
         this_vtable["destruct"_s](&this->sb_);
-        other.uses_heap_ = false;
+        other.ptr_ = &other.sb_;
 
         // Bring `other`'s stuff to `*this`
         this->ptr_ = ptr;
-        this->uses_heap_ = true;
 
       } else {
         // Move `other` into temporary local storage, destructively.
@@ -235,16 +230,16 @@ public:
 
   template <typename T = void>
   T* get() {
-    return static_cast<T*>(uses_heap() ? ptr_ : &sb_);
+    return static_cast<T*>(ptr_);
   }
 
   template <typename T = void>
   T const* get() const {
-    return static_cast<T const*>(uses_heap() ? ptr_ : &sb_);
+    return static_cast<T const*>(ptr_);
   }
 
 private:
-  bool uses_heap() const { return uses_heap_; }
+  bool uses_heap() const { return ptr_ != nullptr && ptr_ != &sb_; }
 };
 
 // Class implementing storage on the heap. Just like the `sbo_storage`, it
