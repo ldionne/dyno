@@ -8,6 +8,7 @@
 #include <dyno/builtin.hpp>
 #include <dyno/concept.hpp>
 #include <dyno/concept_map.hpp>
+#include <dyno/macro.hpp>
 #include <dyno/poly.hpp>
 #include <dyno/storage.hpp>
 #include <dyno/vtable.hpp>

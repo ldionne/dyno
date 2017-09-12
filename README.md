@@ -66,6 +66,37 @@ int main() {
 }
 ```
 
+Alternatively, if you find this to be too much boilerplate and you can stand
+using a macro, the following is equivalent:
+
+<!-- Important: keep this in sync with example/overview.macro.cpp -->
+```c++
+#include <dyno.hpp>
+#include <iostream>
+
+// Define the interface of something that can be drawn
+DYNO_INTERFACE(Drawable,
+  (draw, void (std::ostream&) const)
+);
+
+struct Square {
+  void draw(std::ostream& out) const { out << "Square"; }
+};
+
+struct Circle {
+  void draw(std::ostream& out) const { out << "Circle"; }
+};
+
+void f(Drawable const& d) {
+  d.draw(std::cout);
+}
+
+int main() {
+  f(Square{}); // prints Square
+  f(Circle{}); // prints Circle
+}
+```
+
 
 ## Dependencies
 The library depends on [Boost.Hana][] and [Boost.CallableTraits][]. The unit
