@@ -17,7 +17,7 @@
 // wrappers with different storage policies.
 
 template <typename StoragePolicy, typename T>
-static void BM_copy_int(benchmark::State& state) {
+static void BM_copy(benchmark::State& state) {
   T x{};
   model<StoragePolicy> original{x};
   while (state.KeepRunning()) {
