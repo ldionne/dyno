@@ -3,7 +3,7 @@
 
 ## DISCLAIMER
 At this point, this library is experimental and it is a pure curiosity.
-No stability of interface or quality of implementation is guaranteed at.
+No stability of interface or quality of implementation is guaranteed.
 Use at your own risks.
 
 ## Overview
