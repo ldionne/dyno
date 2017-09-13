@@ -28,6 +28,7 @@
 #include <boost/hana/type.hpp>
 #include <boost/hana/unpack.hpp>
 
+#include <type_traits>
 #include <utility>
 
 
@@ -260,10 +261,35 @@ struct everything {
 
 using everything_else = everything;
 
+namespace detail {
+  template <typename T>
+  struct is_valid_selector : boost::hana::false_ { };
+
+  template <typename ...Methods>
+  struct is_valid_selector<dyno::only<Methods...>>
+    : boost::hana::true_
+  { };
+
+  template <typename ...Methods>
+  struct is_valid_selector<dyno::except<Methods...>>
+    : boost::hana::true_
+  { };
+
+  template <>
+  struct is_valid_selector<dyno::everything>
+    : boost::hana::true_
+  { };
+} // end namespace detail
+
 //////////////////////////////////////////////////////////////////////////////
 // Vtable policies
 template <typename Selector>
 struct local {
+  static_assert(detail::is_valid_selector<Selector>::value,
+    "dyno::local: Provided invalid selector. Valid selectors are "
+    "'dyno::only<METHODS...>', 'dyno::except<METHODS...>', "
+    "'dyno::everything', and 'dyno::everything_else'.");
+
   template <typename Concept, typename Functions>
   static constexpr auto create(Concept, Functions functions) {
     return boost::hana::unpack(functions, [](auto ...f) {
@@ -279,6 +305,11 @@ struct local {
 
 template <typename Selector>
 struct remote {
+  static_assert(detail::is_valid_selector<Selector>::value,
+    "dyno::remote: Provided invalid selector. Valid selectors are "
+    "'dyno::only<METHODS...>', 'dyno::except<METHODS...>', "
+    "'dyno::everything', and 'dyno::everything_else'.");
+
   template <typename Concept, typename Functions>
   static constexpr auto create(Concept, Functions functions) {
     return boost::hana::template_<dyno::remote_vtable>(
