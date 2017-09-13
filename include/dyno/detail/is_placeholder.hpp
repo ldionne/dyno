@@ -12,7 +12,7 @@
 
 namespace dyno { namespace detail {
 
-// Metafunction returning whether a type is a possibly cv/ref-qualified
+// Metafunction returning whether a type is a possibly const/ref-qualified
 // placeholder, or a pointer to one.
 template <typename T>
 struct is_placeholder : std::false_type { };
