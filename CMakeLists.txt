@@ -11,8 +11,7 @@ project(Dyno VERSION 0.0.1 LANGUAGES CXX)
 add_library(dyno INTERFACE)
 add_library(Dyno::dyno ALIAS dyno)
 target_compile_features(dyno INTERFACE cxx_std_14)
-target_include_directories(dyno INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                           $<INSTALL_INTERFACE:include>)
+target_include_directories(dyno INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 find_package(Hana REQUIRED)
 find_package(CallableTraits REQUIRED)
 target_link_libraries(dyno INTERFACE hana callable_traits)
@@ -33,10 +32,8 @@ endif()
 
 
 # Setup the installation target for dyno and the related exports.
-install(TARGETS dyno EXPORT DynoConfig
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
+install(TARGETS dyno
+  EXPORT DynoConfig
   INCLUDES DESTINATION include
 )
 install(EXPORT DynoConfig
