@@ -283,6 +283,10 @@ private:
 };
 ```
 
+> Note: You could technically use `dyno::poly` directly in your interfaces.
+> However, it is much more convenient to use a wrapper with real methods
+> than `dyno::poly`, and so writing a wrapper is recommended.
+
 Let's break this down. First, we define a member `poly_` that is a polymorphic
 container for anything that models the `Drawable` concept:
 
