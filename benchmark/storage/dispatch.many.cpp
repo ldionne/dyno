@@ -30,9 +30,9 @@ static void BM_dispatch_many(benchmark::State& state) {
   benchmark::DoNotOptimize(models);
   while (state.KeepRunning()) {
     for (auto& model : models) {
-      model.a();
-      model.b();
-      model.c();
+      model.f1();
+      model.f2();
+      model.f3();
     }
   }
 }
@@ -44,6 +44,7 @@ static constexpr int N = 10;
 
 // Always insert the same type in the type-erasure wrapper (may interact with
 // branch prediction and caches).
+BENCHMARK_TEMPLATE(BM_dispatch_many, inheritance_tag,         WithSize<4>, WithSize<4>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch_many, dyno::remote_storage,    WithSize<4>, WithSize<4>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch_many, dyno::sbo_storage<4>,    WithSize<4>, WithSize<4>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch_many, dyno::sbo_storage<8>,    WithSize<4>, WithSize<4>)->Arg(N);
@@ -56,6 +57,7 @@ BENCHMARK_TEMPLATE(BM_dispatch_many, dyno::local_storage<16>, WithSize<8>, WithS
 
 // Insert two different types in the type-erasure wrapper to look at what happens
 // with SBO.
+BENCHMARK_TEMPLATE(BM_dispatch_many, inheritance_tag,         WithSize<8>, WithSize<16>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch_many, dyno::remote_storage,    WithSize<8>, WithSize<16>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch_many, dyno::sbo_storage<4>,    WithSize<8>, WithSize<16>)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch_many, dyno::sbo_storage<8>,    WithSize<8>, WithSize<16>)->Arg(N);

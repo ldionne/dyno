@@ -30,12 +30,14 @@ static void BM_move(benchmark::State& state) {
 template <std::size_t Bytes>
 using WithSize = std::aligned_storage_t<Bytes>;
 
+BENCHMARK_TEMPLATE(BM_move, inheritance_tag,         WithSize<4>);
 BENCHMARK_TEMPLATE(BM_move, dyno::remote_storage,    WithSize<4>);
 BENCHMARK_TEMPLATE(BM_move, dyno::sbo_storage<4>,    WithSize<4>);
 BENCHMARK_TEMPLATE(BM_move, dyno::sbo_storage<8>,    WithSize<4>);
 BENCHMARK_TEMPLATE(BM_move, dyno::sbo_storage<16>,   WithSize<4>);
 BENCHMARK_TEMPLATE(BM_move, dyno::local_storage<16>, WithSize<4>);
 
+BENCHMARK_TEMPLATE(BM_move, inheritance_tag,         WithSize<16>);
 BENCHMARK_TEMPLATE(BM_move, dyno::remote_storage,    WithSize<16>);
 BENCHMARK_TEMPLATE(BM_move, dyno::sbo_storage<4>,    WithSize<16>);
 BENCHMARK_TEMPLATE(BM_move, dyno::sbo_storage<8>,    WithSize<16>);

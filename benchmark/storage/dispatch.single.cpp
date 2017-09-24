@@ -21,15 +21,16 @@ static void BM_dispatch_single(benchmark::State& state) {
   model<StoragePolicy> m{T{}};
   benchmark::DoNotOptimize(m);
   while (state.KeepRunning()) {
-    m.a();
-    m.b();
-    m.c();
+    m.f1();
+    m.f2();
+    m.f3();
   }
 }
 
 template <std::size_t Bytes>
 using WithSize = std::aligned_storage_t<Bytes>;
 
+BENCHMARK_TEMPLATE(BM_dispatch_single, inheritance_tag,         WithSize<8>);
 BENCHMARK_TEMPLATE(BM_dispatch_single, dyno::remote_storage,    WithSize<8>);
 BENCHMARK_TEMPLATE(BM_dispatch_single, dyno::sbo_storage<4>,    WithSize<8>);
 BENCHMARK_TEMPLATE(BM_dispatch_single, dyno::sbo_storage<8>,    WithSize<8>);

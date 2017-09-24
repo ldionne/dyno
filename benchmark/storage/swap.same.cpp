@@ -28,6 +28,7 @@ static void BM_swap_same(benchmark::State& state) {
   }
 }
 
+BENCHMARK_TEMPLATE(BM_swap_same, inheritance_tag);
 BENCHMARK_TEMPLATE(BM_swap_same, dyno::sbo_storage<4>);
 BENCHMARK_TEMPLATE(BM_swap_same, dyno::sbo_storage<8>);
 BENCHMARK_TEMPLATE(BM_swap_same, dyno::sbo_storage<16>);

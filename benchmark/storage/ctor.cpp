@@ -29,12 +29,14 @@ static void BM_ctor(benchmark::State& state) {
 template <std::size_t Bytes>
 using WithSize = std::aligned_storage_t<Bytes>;
 
+BENCHMARK_TEMPLATE(BM_ctor, inheritance_tag,         WithSize<4>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::remote_storage,    WithSize<4>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::sbo_storage<4>,    WithSize<4>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::sbo_storage<8>,    WithSize<4>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::sbo_storage<16>,   WithSize<4>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::local_storage<16>, WithSize<4>);
 
+BENCHMARK_TEMPLATE(BM_ctor, inheritance_tag,         WithSize<16>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::remote_storage,    WithSize<16>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::sbo_storage<4>,    WithSize<16>);
 BENCHMARK_TEMPLATE(BM_ctor, dyno::sbo_storage<8>,    WithSize<16>);

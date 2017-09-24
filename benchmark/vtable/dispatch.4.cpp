@@ -11,14 +11,10 @@ using namespace dyno::literals;
 
 
 // This benchmark measures the overhead of dispatching virtual calls using
-// different vtable policies.
+// different vtable policies, and inheritance.
 
-template <typename ...InlineMethods>
+template <typename VTablePolicy>
 static void BM_dispatch4(benchmark::State& state) {
-  using VTablePolicy = dyno::vtable<
-    dyno::local<dyno::only<InlineMethods...>>,
-    dyno::remote<dyno::everything_else>
-  >;
   unsigned int x = 0;
   model<VTablePolicy> m{x};
   int const N = state.range(0);
@@ -33,10 +29,17 @@ static void BM_dispatch4(benchmark::State& state) {
   }
 }
 
+template <typename ...InlineMethods>
+using inline_only = dyno::vtable<
+  dyno::local<dyno::only<InlineMethods...>>,
+  dyno::remote<dyno::everything_else>
+>;
+
 static constexpr int N = 100;
-BENCHMARK(BM_dispatch4)->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, decltype("f1"_s))->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, decltype("f1"_s), decltype("f2"_s))->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, decltype("f1"_s), decltype("f2"_s), decltype("f3"_s))->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, decltype("f1"_s), decltype("f2"_s), decltype("f3"_s), decltype("f4"_s))->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inheritance_tag)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s)>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s), decltype("f2"_s)>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s), decltype("f2"_s), decltype("f3"_s)>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s), decltype("f2"_s), decltype("f3"_s), decltype("f4"_s)>)->Arg(N);
 BENCHMARK_MAIN();
