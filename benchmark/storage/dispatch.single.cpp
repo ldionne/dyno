@@ -31,6 +31,7 @@ template <std::size_t Bytes>
 using WithSize = std::aligned_storage_t<Bytes>;
 
 BENCHMARK_TEMPLATE(BM_dispatch_single, dyno::remote_storage,    WithSize<8>);
+BENCHMARK_TEMPLATE(BM_dispatch_single, inheritance_tag,         WithSize<8>);
 BENCHMARK_TEMPLATE(BM_dispatch_single, dyno::sbo_storage<4>,    WithSize<8>);
 BENCHMARK_TEMPLATE(BM_dispatch_single, dyno::sbo_storage<8>,    WithSize<8>);
 BENCHMARK_TEMPLATE(BM_dispatch_single, dyno::sbo_storage<16>,   WithSize<8>);
