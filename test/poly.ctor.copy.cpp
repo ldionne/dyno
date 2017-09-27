@@ -12,12 +12,11 @@
 
 
 int main() {
-  // Make sure the copy constructor and friends don't get instantiated
-  // all the time.
+  // Make sure the copy constructor is not instantiated unless requested.
   {
-    using C = decltype(dyno::requires(dyno::MoveConstructible{}, dyno::Destructible{}));
-
-    dyno::poly<C> a{awful::noncopyable{}};
-    dyno::poly<C> b{std::move(a)};
+    using NonCopyable = decltype(dyno::requires(dyno::MoveConstructible{},
+                                                dyno::Destructible{}));
+    dyno::poly<NonCopyable> a{awful::noncopyable{}};
+    dyno::poly<NonCopyable> b{std::move(a)};
   }
 }
