@@ -6,6 +6,7 @@
 
 #include <dyno.hpp>
 
+#include <cstddef>
 #include <functional>
 #include <string>
 #include <utility>
@@ -21,6 +22,9 @@ struct Callable;
 
 template <typename R, typename ...Args>
 struct Callable<R(Args...)> : decltype(dyno::requires(
+  dyno::CopyConstructible{},
+  dyno::MoveConstructible{},
+  dyno::Destructible{},
   "call"_s = dyno::function<R (dyno::T const&, Args...)>
 )) { };
 
@@ -31,21 +35,29 @@ auto const dyno::default_concept_map<Callable<R(Args...)>, F> = dyno::make_conce
   }
 );
 
-template <typename Signature>
-struct function;
+template <typename Signature, typename StoragePolicy>
+struct basic_function;
 
-template <typename R, typename ...Args>
-struct function<R(Args...)> {
+template <typename R, typename ...Args, typename StoragePolicy>
+struct basic_function<R(Args...), StoragePolicy> {
   template <typename F = R(Args...)>
-  function(F&& f) : poly_{std::forward<F>(f)} { }
+  basic_function(F&& f) : poly_{std::forward<F>(f)} { }
 
-  R operator()(Args ...args) const {
-    return poly_.virtual_("call"_s)(poly_, std::forward<Args>(args)...);
-  }
+  R operator()(Args ...args) const
+  { return poly_.virtual_("call"_s)(poly_, std::forward<Args>(args)...); }
 
 private:
-  dyno::poly<Callable<R(Args...)>> poly_;
+  dyno::poly<Callable<R(Args...)>, StoragePolicy> poly_;
 };
+
+template <typename Signature>
+using function = basic_function<Signature, dyno::sbo_storage<16>>;
+
+template <typename Signature>
+using function_view = basic_function<Signature, dyno::non_owning_storage>;
+
+template <typename Signature> // could also templatize the size
+using inplace_function = basic_function<Signature, dyno::local_storage<16>>;
 
 
 //
@@ -62,7 +74,8 @@ struct ToString {
   std::string operator()(int i) const { return std::to_string(i); }
 };
 
-int main() {
+template <template <typename> class Function>
+void test() {
   // store a free function
   {
     function<std::string(int)> tostring = std::to_string;
@@ -74,9 +87,10 @@ int main() {
 
   // store a lambda
   {
-    function<int(std::string const&)> size = [](std::string const& s) {
+    auto lambda = [](std::string const& s) {
       return s.size();
     };
+    function<int(std::string const&)> size = lambda;
 
     DYNO_CHECK(size("") == 0);
     DYNO_CHECK(size("a") == 1);
@@ -87,14 +101,16 @@ int main() {
 
   // store the result of a call to std::bind
   {
-    function<std::string()> tostring = std::bind(static_cast<std::string(*)(int)>(std::to_string), 31337);
+    auto bind = std::bind(static_cast<std::string(*)(int)>(std::to_string), 31337);
+    function<std::string()> tostring = bind;
     DYNO_CHECK(tostring() == "31337");
   }
 
   // store a call to a member function and object
   {
     ToStringAdd const adder{314159};
-    function<std::string(int)> f = std::bind(&ToStringAdd::to_string_add, adder, std::placeholders::_1);
+    auto bind = std::bind(&ToStringAdd::to_string_add, adder, std::placeholders::_1);
+    function<std::string(int)> f = bind;
     DYNO_CHECK(f(1) == "314160");
     DYNO_CHECK(f(2) == "314161");
     DYNO_CHECK(f(3) == "314162");
@@ -104,7 +120,8 @@ int main() {
   // store a call to a member function and object ptr
   {
     ToStringAdd const adder{314159};
-    function<std::string(int)> f = std::bind(&ToStringAdd::to_string_add, &adder, std::placeholders::_1);
+    auto bind = std::bind(&ToStringAdd::to_string_add, &adder, std::placeholders::_1);
+    function<std::string(int)> f = bind;
     DYNO_CHECK(f(1) == "314160");
     DYNO_CHECK(f(2) == "314161");
     DYNO_CHECK(f(3) == "314162");
@@ -113,10 +130,17 @@ int main() {
 
   // store a call to a function object
   {
-    function<std::string(int)> tostring = ToString{};
+    ToString f{};
+    function<std::string(int)> tostring = f;
     DYNO_CHECK(tostring(1) == "1");
     DYNO_CHECK(tostring(2) == "2");
     DYNO_CHECK(tostring(3) == "3");
     DYNO_CHECK(tostring(18) == "18");
   }
+}
+
+int main() {
+  test<function>();
+  test<function_view>();
+  test<inplace_function>();
 }
