@@ -60,6 +60,15 @@ namespace detail {
 
     using hana_tag = typename boost::hana::tag_of<boost::hana::string<c...>>::type;
   };
+
+  template <typename S, std::size_t ...N>
+  constexpr detail::string<S::get()[N]...> prepare_string_impl(std::index_sequence<N...>)
+  { return {}; }
+
+  template <typename S>
+  constexpr auto prepare_string(S) {
+    return detail::prepare_string_impl<S>(std::make_index_sequence<S::size()>{});
+  }
 } // end namespace detail
 
 inline namespace literals {
@@ -68,6 +77,23 @@ inline namespace literals {
   template <typename CharT, CharT ...c>
   constexpr auto operator""_s() { return detail::string<c...>{}; }
 } // end namespace literals
+
+// Creates a Dyno compile-time string without requiring the use of a
+// user-defined literal.
+//
+// The user-defined literal is non-standard as of C++17, and it requires
+// brining the literal in scope (through a using declaration or such),
+// which is not always convenient or possible.
+#define DYNO_STRING(s)                                                      \
+  (::dyno::detail::prepare_string([]{                                       \
+      struct tmp {                                                          \
+          /* exclude null terminator in size() */                           \
+          static constexpr std::size_t size() { return sizeof(s) - 1; }     \
+          static constexpr char const* get() { return s; }                  \
+      };                                                                    \
+      return tmp{};                                                         \
+  }()))                                                                     \
+/**/
 
 } // end namespace dyno
 
