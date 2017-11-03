@@ -10,9 +10,9 @@ add_custom_target(tests
 include(TestHeaders)
 file(GLOB_RECURSE HEADERS RELATIVE "${PROJECT_SOURCE_DIR}/include"
                                    "${PROJECT_SOURCE_DIR}/include/*.hpp")
-generate_standalone_header_tests(HEADERS ${HEADERS} LINK_LIBRARIES Dyno::dyno
-                                 MASTER_TARGET tests EXCLUDE_FROM_ALL)
-
+add_header_test(test.headers EXCLUDE_FROM_ALL HEADERS ${HEADERS})
+target_link_libraries(test.headers PRIVATE Dyno::dyno)
+add_dependencies(tests test.headers)
 
 include(CompileFailTest)
 
