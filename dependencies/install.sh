@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 CMAKE_BINARY_DIR="${PWD}/build"
 CMAKE_INSTALL_PREFIX="${PWD}/install"
 CMAKE_SOURCE_DIR="${PWD}"
