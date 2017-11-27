@@ -46,6 +46,7 @@ ExternalProject_Add(test.deploy.fakeroot
   BUILD_ALWAYS TRUE
   INSTALL_DIR "${DYNO_FAKE_INSTALL_DIR}"
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
              -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
   TEST_COMMAND ""      # Disable test step
   UPDATE_COMMAND ""    # Disable source work-tree update
