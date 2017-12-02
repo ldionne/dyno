@@ -5,12 +5,13 @@
 add_custom_target(examples
   COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
   COMMENT "Build and run all the examples.")
+add_dependencies(check examples)
 
 file(GLOB_RECURSE EXAMPLES "*.cpp")
 foreach(example IN LISTS EXAMPLES)
   dyno_get_target_name(target "${example}")
   add_executable(${target} EXCLUDE_FROM_ALL "${example}")
-  dyno_set_test_properties(${target})
+  dyno_set_common_properties(${target})
   add_test(${target} ${target})
   add_dependencies(examples ${target})
 endforeach()

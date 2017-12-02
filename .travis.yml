@@ -50,6 +50,10 @@ matrix:
       env: COMPILER=clang++
       osx_image: xcode9.1
 
+    # Build without the optional dependencies
+    - env: COMPILER=clang++-4.0 NO_OPTIONAL_DEPENDENCIES=true
+      addons: { apt: { packages: ["clang-4.0"], sources: ["llvm-toolchain-trusty-4.0", "ubuntu-toolchain-r-test"] } }
+
 install:
   # Set the ${CXX} variable properly
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
@@ -101,17 +105,27 @@ install:
   - BOOST_VERSION=1.65.1 # Keep this in sync with the cached directory
   - BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
   - |
-    if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
+    if [[ "${NO_OPTIONAL_DEPENDENCIES}" != "true" && -z "$(ls -A ${BOOST_DIR})" ]]; then
       BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.gz"
       mkdir -p ${BOOST_DIR}
       { travis_retry wget -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
     fi
 
+  # Install other dependencies
+  - |
+    if [[ "${NO_OPTIONAL_DEPENDENCIES}" == "true" ]]; then
+      (cd "${TRAVIS_BUILD_DIR}/dependencies" && ./install.sh --minimal)
+    else
+      (cd "${TRAVIS_BUILD_DIR}/dependencies" && ./install.sh)
+    fi
+
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
-  - (cd dependencies && ./install.sh)
   - (mkdir build && cd build && cmake .. -DBOOST_ROOT="${BOOST_DIR}" -DCMAKE_PREFIX_PATH="${TRAVIS_BUILD_DIR}/dependencies/install" -DCMAKE_INSTALL_PREFIX="${TRAVIS_BUILD_DIR}/build/install")
 
 script:
   - cmake --build build --target check
-  - cmake --build build --target benchmarks
+  - |
+    if [[ "${NO_OPTIONAL_DEPENDENCIES}" != "true" ]]; then
+      cmake --build build --target benchmarks
+    fi

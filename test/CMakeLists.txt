@@ -2,9 +2,16 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE.md or copy at http://boost.org/LICENSE_1_0.txt)
 
+find_package(Awful QUIET)
+if (NOT TARGET awful)
+  message(WARNING "The Awful library is not found; unit tests won't be available.")
+  return()
+endif()
+
 add_custom_target(tests
   COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
   COMMENT "Build and run all the unit tests.")
+add_dependencies(check tests)
 
 # Generate tests that include each public header.
 include(TestHeaders)
@@ -32,7 +39,8 @@ foreach(ut IN LISTS UNIT_TESTS)
     add_dependencies(tests ${target})
   endif()
 
-  dyno_set_test_properties(${target})
+  dyno_set_common_properties(${target})
+  target_link_libraries(${target} PRIVATE awful)
 endforeach()
 
 # Add the deployment test, which checks that we can indeed install `dyno` and

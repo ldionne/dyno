@@ -7,7 +7,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(Dyno VERSION 0.0.1 LANGUAGES CXX)
 
+##############################################################################
 # Setup the `dyno` library target.
+##############################################################################
 add_library(dyno INTERFACE)
 add_library(Dyno::dyno ALIAS dyno)
 target_compile_features(dyno INTERFACE cxx_std_14)
@@ -31,7 +33,9 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif()
 
 
+##############################################################################
 # Setup the installation target for dyno and the related exports.
+##############################################################################
 install(TARGETS dyno
   EXPORT DynoConfig
   INCLUDES DESTINATION include
@@ -45,10 +49,12 @@ install(FILES     include/dyno.hpp DESTINATION include)
 install(DIRECTORY include/dyno     DESTINATION include FILES_MATCHING PATTERN "*.hpp")
 
 
-# All unit tests and examples are given the following properties:
-find_package(Awful REQUIRED)
-function(dyno_set_test_properties target)
-  target_link_libraries(${target} PRIVATE Dyno::dyno awful)
+##############################################################################
+# Setup unit tests, examples, etc.
+##############################################################################
+# Properties common to unit tests and examples:
+function(dyno_set_common_properties target)
+  target_link_libraries(${target} PRIVATE Dyno::dyno)
   set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
   macro(setflag testname flag)
       check_cxx_compiler_flag(${flag} ${testname})
@@ -75,13 +81,11 @@ function(dyno_get_target_name out file)
   set(${out} "${_name}" PARENT_SCOPE)
 endfunction()
 
+# Setup the `check` convenience target, which is equivalent to examples + tests.
+add_custom_target(check COMMENT "Build and run all the tests and examples.")
 
 # Setup subdirectories
 enable_testing()
 add_subdirectory(benchmark)
 add_subdirectory(example)
 add_subdirectory(test)
-
-# Setup the `check` convenience target, which is equivalent to examples + tests.
-add_custom_target(check DEPENDS examples tests
-  COMMENT "Build and run all the tests and examples.")
