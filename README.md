@@ -167,8 +167,8 @@ However, this approach has several drawbacks. It is
    Because of the lack of value semantics, we usually end up allocating these
    polymorphic objects on the heap. This is both horribly inefficient and
    semantically wrong, since chances are we did not need the dynamic storage
-   duration at all, and a simple stack-allocated object with the usual lifetime
-   would have been enough.
+   duration at all, and an object with automatic storage duration (e.g. on
+   the stack) would have been enough.
 
 4. __Slow__<br>
    95% of the time, we end up calling a virtual method through a polymorphic
@@ -200,9 +200,9 @@ drawbacks listed above, and many more goodies. It is:
    The way a polymorphic object is stored is really an implementation detail,
    and it should not interfere with the way you use that object. __Dyno__ gives
    you complete control over the way your objects are stored. You have a lot of
-   small polymorphic objects? Sure, let's store them on the stack directly and
-   avoid any allocation. Or maybe it makes sense for you to store things on the
-   heap? Sure, go ahead.
+   small polymorphic objects? Sure, let's store them in a local buffer and
+   avoid any allocation. Or maybe it makes sense for you to store things on
+   the heap? Sure, go ahead.
 
 4. __Fast__<br>
    Storing a pointer to a vtable is just one of many different implementation
@@ -393,8 +393,8 @@ actual object, like one would do with inheritance-based polymorphism. However,
 this is often not the most efficient implementation, and that's why `dyno::poly`
 allows customizing it. To do so, simply pass a storage policy to `dyno::poly`.
 For example, let's define our `drawable` wrapper so that it tries to store
-objects up to `16` bytes on the stack, but then falls back to the heap if the
-object is larger:
+objects up to `16` bytes in a local buffer, but then falls back to the heap
+if the object is larger:
 
 ```c++
 struct drawable {
@@ -420,12 +420,12 @@ a large enough buffer on the heap.
 
 Let's say you actually never want to do an allocation. No problem, just change
 the policy to `dyno::local_storage<16>`. If you try to construct a `drawable`
-from an object that's too large to fit in the stack-allocated storage, your
-program won't compile. Not only are we saving an allocation, but we're also
-saving a pointer indirection every time we access the polymorphic object if
-we compare to the traditional inheritance-based approach. By tweaking these
-(important) implementation details for you specific use case, you can make
-your program much more efficient than with classic inheritance.
+from an object that's too large to fit in the local storage, your program
+won't compile. Not only are we saving an allocation, but we're also saving a
+pointer indirection every time we access the polymorphic object if we compare
+to the traditional inheritance-based approach. By tweaking these (important)
+implementation details for you specific use case, you can make your program
+much more efficient than with classic inheritance.
 
 Other storage policies are also provided, like `dyno::remote_storage` and
 `dyno::non_owning_storage`. `dyno::remote_storage` is the default one, which
