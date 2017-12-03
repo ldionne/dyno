@@ -15,8 +15,8 @@ struct A : decltype(dyno::requires(
 
 struct Foo { };
 
-auto map = dyno::complete_concept_map<A, Foo>(dyno::make_concept_map("f"_s = [](int&) { }));
-
-static_assert(std::is_default_constructible<decltype(map)>{}, "");
-
-int main() { }
+int main() {
+  auto map = dyno::complete_concept_map<A, Foo>(dyno::make_concept_map("f"_s = [](int&) { }));
+  (void)map;
+  static_assert(std::is_default_constructible<decltype(map)>{}, "");
+}

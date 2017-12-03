@@ -98,6 +98,17 @@ int main() {
 ```
 
 
+## Compiler requirements
+This is a C++17 library. No efforts will be made to support older compilers
+(sorry). The library is known to work with the following compilers:
+
+| Compiler    | Version  |
+| ----------- |:--------:|
+| GCC         | >= 7     |
+| Clang       | >= 3.9   |
+| Apple Clang | >= 8.3   |
+
+
 ## Dependencies
 The library depends on [Boost.Hana][] and [Boost.CallableTraits][]. The unit
 tests depend on [libawful][] and the benchmarks on [Google Benchmark][], but

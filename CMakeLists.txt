@@ -12,7 +12,7 @@ project(Dyno VERSION 0.0.1 LANGUAGES CXX)
 ##############################################################################
 add_library(dyno INTERFACE)
 add_library(Dyno::dyno ALIAS dyno)
-target_compile_features(dyno INTERFACE cxx_std_14)
+target_compile_features(dyno INTERFACE cxx_std_17)
 target_include_directories(dyno INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>")
 find_package(Hana REQUIRED)
 find_package(CallableTraits REQUIRED)
@@ -24,12 +24,6 @@ check_cxx_compiler_flag("-Wno-gnu-string-literal-operator-template" DYNO_HAS_WNO
 # warning when we use it.
 if (DYNO_HAS_WNO_GNU_STRING_UDL AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   target_compile_options(dyno INTERFACE -Wno-gnu-string-literal-operator-template)
-endif()
-
-# GCC needs -fpermissive to allow template specializations out of the namespace
-# where the base template was declared, even though C++ allows it.
-if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-  target_compile_options(dyno INTERFACE -fpermissive)
 endif()
 
 

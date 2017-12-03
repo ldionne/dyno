@@ -98,10 +98,10 @@ namespace dyno {
 //         retrieve the size of the type from it and get rid of `uses_heap_`.
 //       - We could also use the low bits of the pointer to the vtable for
 //         `uses_heap_`.
-template <std::size_t Size, std::size_t Align = static_cast<std::size_t>(-1)>
+template <std::size_t Size, std::size_t Align = -1u>
 class sbo_storage {
   static constexpr std::size_t SBSize = Size < sizeof(void*) ? sizeof(void*) : Size;
-  static constexpr std::size_t SBAlign = Align == -1 ? alignof(std::aligned_storage_t<SBSize>) : Align;
+  static constexpr std::size_t SBAlign = Align == -1u ? alignof(std::aligned_storage_t<SBSize>) : Align;
   using SBStorage = std::aligned_storage_t<SBSize, SBAlign>;
 
   union {
@@ -127,7 +127,7 @@ public:
     // TODO: We could also construct the object at an aligned address within
     // the buffer, which would require computing the right address everytime
     // we access the buffer as a T, but would allow more Ts to fit in the SBO.
-    if (can_store(dyno::storage_info_for<RawT>)) {
+    if constexpr (can_store(dyno::storage_info_for<RawT>)) {
       uses_heap_ = false;
       new (&sb_) RawT(std::forward<T>(t));
     } else {
