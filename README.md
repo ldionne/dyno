@@ -27,7 +27,7 @@ using namespace dyno::literals;
 
 // Define the interface of something that can be drawn
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
+  "draw"_s = dyno::method<void (std::ostream&) const>
 )) { };
 
 // Define how concrete types can fulfill that interface
@@ -42,7 +42,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_, out); }
+  { poly_.virtual_("draw"_s)(out); }
 
 private:
   dyno::poly<Drawable> poly_;
@@ -235,18 +235,16 @@ let's define an interface `Drawable` that describes types that can be drawn:
 using namespace dyno::literals;
 
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
+  "draw"_s = dyno::method<void (std::ostream&) const>
 )) { };
 ```
 
 This defines `Drawable` as representing an interface for anything that has a
-function called `draw` taking a reference to a const object of any type, and
-a `std::ostream&`. __Dyno__ calls these interfaces _dynamic concepts_, since
-they describe sets of requirements to be fulfilled by a type (like C++ concepts).
-However, unlike C++ concepts, these _dynamic concepts_ are used to generate
-runtime interfaces, hence the name _dynamic_. The above definition is basically
-equivalent to the following, except we make no statement about whether `draw`
-is a member function or not:
+method called `draw` taking a reference to a `std::ostream`. __Dyno__ calls
+these interfaces _dynamic concepts_, since they describe sets of requirements
+to be fulfilled by a type (like C++ concepts). However, unlike C++ concepts,
+these _dynamic concepts_ are used to generate runtime interfaces, hence the
+name _dynamic_. The above definition is basically equivalent to the following:
 
 ```c++
 struct Drawable {
@@ -254,11 +252,8 @@ struct Drawable {
 };
 ```
 
-In some sense, the `dyno::T const&` parameter used above represents the type of
-the (polymorphic) `this` pointer that would be passed in case of a traditional
-virtual method. When the interface is defined, the next step is to actually
-create a type that satisfies this interface. With inheritance, you would write
-something like this:
+Once the interface is defined, the next step is to actually create a type that
+satisfies this interface. With inheritance, you would write something like this:
 
 ```c++
 struct Square : Drawable {
@@ -285,6 +280,10 @@ auto const dyno::concept_map<Drawable, Square> = dyno::make_concept_map(
 > This construct is the specialization of a C++14 variable template named
 > `concept_map` defined in the `dyno::` namespace. We then initialize that
 > specialization with `dyno::make_concept_map(...)`.
+
+The first parameter of the lambda is the implicit `*this` parameter that is
+implied when we declared `draw` as a method above. It's also possible to
+erase non-member functions (see [the relevant section](#erasing-non-member-functions)).
 
 This _concept map_ defines how the type `Square` satisfies the `Drawable`
 concept. In a sense, it _maps_ the type `Square` to its implementation of
@@ -318,7 +317,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_, out); }
+  { poly_.virtual_("draw"_s)(out); }
 
 private:
   dyno::poly<Drawable> poly_;
@@ -355,7 +354,7 @@ of the `draw` method:
 
 ```c++
 void draw(std::ostream& out) const
-{ poly_.virtual_("draw"_s)(poly_, out); }
+{ poly_.virtual_("draw"_s)(out); }
 ```
 
 What happens here is that when `.draw` is called on our `drawable` object,
@@ -413,7 +412,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_, out); }
+  { poly_.virtual_("draw"_s)(out); }
 
 private:
   dyno::poly<Drawable, dyno::sbo_storage<16>> poly_;
@@ -464,7 +463,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_, out); }
+  { poly_.virtual_("draw"_s)(out); }
 
 private:
   using Storage = dyno::sbo_storage<16>;                      // storage policy
@@ -489,7 +488,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_, out); }
+  { poly_.virtual_("draw"_s)(out); }
 
 private:
   using Storage = dyno::sbo_storage<16>;
@@ -522,7 +521,7 @@ For this, one can use `dyno::default_concept_map`:
 ```c++
 template <typename T>
 auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
-  "draw"_s = [](auto const& t, std::ostream& out) { t.draw(out); }
+  "draw"_s = [](auto const& self, std::ostream& out) { self.draw(out); }
 );
 ```
 
@@ -579,6 +578,63 @@ f(std::vector<int>{1, 2, 3}) // prints "1 2 3 "
 
 > Notice how we do not have to modify `std::vector` at all. How could we do
 > this with classic polymorphism? Answer: no can do.
+
+
+### Erasing non-member functions
+__Dyno__ allows erasing non-member functions and functions that are dispatched
+on an arbitrary argument (but only one argument) too. To do this, simply define
+the concept using `dyno::function` instead of `dyno::method`, and use the
+`dyno::T` placeholder to denote the argument being erased:
+
+```c++
+// Define the interface of something that can be drawn
+struct Drawable : decltype(dyno::requires(
+  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
+)) { };
+```
+
+The `dyno::T const&` parameter used above represents the type of the object
+on which the function is being called. However, it does not have to be the
+first parameter:
+
+```c++
+struct Drawable : decltype(dyno::requires(
+  "draw"_s = dyno::function<void (std::ostream&, dyno::T const&)>
+)) { };
+```
+
+The fulfillment of the concept does not change whether the concept uses a
+method or a function, but make sure that the parameters of your function
+implementation match that of the function declared in the concept:
+
+```c++
+// Define how concrete types can fulfill that interface
+template <typename T>
+auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
+  "draw"_s = [](std::ostream& out, T const& self) { self.draw(out); }
+  //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ matches the concept definition
+);
+```
+
+Finally, when calling a `function` on a `dyno::poly`, you'll have to pass in
+all the parameters explicitly, since __Dyno__ can't guess which one you want
+to dispatch on. The parameter that was declared with a `dyno::T` placeholder
+in the concept should be passed the `dyno::poly` itself:
+
+```c++
+// Define an object that can hold anything that can be drawn.
+struct drawable {
+  template <typename T>
+  drawable(T x) : poly_{x} { }
+
+  void draw(std::ostream& out) const
+  { poly_.virtual_("draw"_s)(out, poly_); }
+  //                              ^^^^^ passing the poly explicitly
+
+private:
+  dyno::poly<Drawable> poly_;
+};
+```
 
 
 <!-- Links -->

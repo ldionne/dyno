@@ -5,6 +5,7 @@
 #ifndef DYNO_DETAIL_DSL_HPP
 #define DYNO_DETAIL_DSL_HPP
 
+#include <boost/hana/bool.hpp>
 #include <boost/hana/core/tag_of.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/string.hpp>
@@ -17,14 +18,59 @@
 
 namespace dyno {
 
+template <typename Signature>
+struct function_t { using type = Signature; };
+
+template <typename Sig1, typename Sig2>
+constexpr auto operator==(function_t<Sig1>, function_t<Sig2>) {
+  return boost::hana::bool_c<std::is_same<Sig1, Sig2>::value>;
+}
+
+template <typename Sig1, typename Sig2>
+constexpr auto operator!=(function_t<Sig1> m1, function_t<Sig2> m2) {
+  return !(m1 == m2);
+}
+
 // Right-hand-side of a clause in a concept that signifies a function with the
 // given signature.
 template <typename Signature>
-constexpr boost::hana::basic_type<Signature> function{};
+constexpr function_t<Signature> function{};
+
+template <typename Signature>
+struct method_t;
+
+// Right-hand-side of a clause in a concept that signifies a method with the
+// given signature. The first parameter of the resulting function is implicitly
+// `dyno::T&` for a non-const method, and `dyno::T const&` for a const method.
+template <typename Signature>
+constexpr method_t<Signature> method{};
 
 // Placeholder type representing the type of ref-unqualified `*this` when
 // defining a clause in a concept.
 struct T;
+
+template <typename R, typename ...Args>
+struct method_t<R(Args...)> { using type = R (dyno::T&, Args...); };
+template <typename R, typename ...Args>
+struct method_t<R(Args...) &> { using type = R (dyno::T&, Args...); };
+template <typename R, typename ...Args>
+struct method_t<R(Args...) &&> { using type = R (dyno::T&&, Args...); };
+
+template <typename R, typename ...Args>
+struct method_t<R(Args...) const> { using type = R (dyno::T const&, Args...); };
+template <typename R, typename ...Args>
+struct method_t<R(Args...) const&> { using type = R (dyno::T const&, Args...); };
+// const&& not supported because it's stupid
+
+template <typename Sig1, typename Sig2>
+constexpr auto operator==(method_t<Sig1>, method_t<Sig2>) {
+  return boost::hana::bool_c<std::is_same<Sig1, Sig2>::value>;
+}
+
+template <typename Sig1, typename Sig2>
+constexpr auto operator!=(method_t<Sig1> m1, method_t<Sig2> m2) {
+  return !(m1 == m2);
+}
 
 namespace detail {
   template <typename Name, typename ...Args>

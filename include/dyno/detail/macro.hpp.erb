@@ -44,23 +44,11 @@
 
 
 // TODOS
-// - Properly bolt `method` into GitHub issue #4: support for method definitions
 // - Allow specifying custom base concepts and base interfaces. By default, a
 //   concept could provide a default interface (e.g. a copy constructor for
 //   CopyConstructible, etc..).
 // - Handle const and non-const more gracefully
 // - Try to get rid of commas in the method definition. Use a BOOST_PP_SEQ
-
-namespace dyno { namespace detail {
-  template <typename ...> struct invalid;
-  template <typename Signature>
-  constexpr detail::invalid<Signature> method;
-
-  template <typename R, typename ...Args>
-  constexpr auto method<R(Args...) const> = dyno::function<R (dyno::T const&, Args...)>;
-  template <typename R, typename ...Args>
-  constexpr auto method<R(Args...)> = dyno::function<R (dyno::T&, Args...)>;
-}} // end namespace dyno::detail
 
 #define DYNO_INTERFACE(name, ...) \
   DYNO_PP_CONCAT(DYNO_PP_INTERFACE_IMPL_, DYNO_PP_NARG(__VA_ARGS__))(name, __VA_ARGS__)
@@ -79,7 +67,7 @@ end
       return ::dyno::requires(                                                \
         <% args.each_with_index do |arg, i| %>                                \
           <%= ',' if i > 0 %>                                                 \
-          <%= dyno_string(arg) %> = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL <%= arg %>>\
+          <%= dyno_string(arg) %> = ::dyno::method<DYNO_PP_VARIADIC_TAIL <%= arg %>>\
         <% end %>                                                             \
       );                                                                      \
     }                                                                         \
@@ -113,7 +101,7 @@ end
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL <%= arg %>>\
       DYNO_PP_VARIADIC_HEAD <%= arg %>(Args&& ...args) {                      \
-        return poly_.virtual_(<%= dyno_string(arg) %>)(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(<%= dyno_string(arg) %>)(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL <%= arg %>>>()\
@@ -124,7 +112,7 @@ end
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL <%= arg %>>\
       DYNO_PP_VARIADIC_HEAD <%= arg %>(Args&& ...args) const {                \
-        return poly_.virtual_(<%= dyno_string(arg) %>)(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(<%= dyno_string(arg) %>)(static_cast<Args&&>(args)...);\
       }                                                                       \
     <% end %>                                                                 \
   private:                                                                    \

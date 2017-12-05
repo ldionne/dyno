@@ -41,23 +41,11 @@
 
 
 // TODOS
-// - Properly bolt `method` into GitHub issue #4: support for method definitions
 // - Allow specifying custom base concepts and base interfaces. By default, a
 //   concept could provide a default interface (e.g. a copy constructor for
 //   CopyConstructible, etc..).
 // - Handle const and non-const more gracefully
 // - Try to get rid of commas in the method definition. Use a BOOST_PP_SEQ
-
-namespace dyno { namespace detail {
-  template <typename ...> struct invalid;
-  template <typename Signature>
-  constexpr detail::invalid<Signature> method;
-
-  template <typename R, typename ...Args>
-  constexpr auto method<R(Args...) const> = dyno::function<R (dyno::T const&, Args...)>;
-  template <typename R, typename ...Args>
-  constexpr auto method<R(Args...)> = dyno::function<R (dyno::T&, Args...)>;
-}} // end namespace dyno::detail
 
 #define DYNO_INTERFACE(name, ...) \
   DYNO_PP_CONCAT(DYNO_PP_INTERFACE_IMPL_, DYNO_PP_NARG(__VA_ARGS__))(name, __VA_ARGS__)
@@ -97,7 +85,7 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -131,7 +119,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -142,7 +130,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -157,10 +145,10 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -201,7 +189,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -212,7 +200,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -224,7 +212,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -235,7 +223,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -250,13 +238,13 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -304,7 +292,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -315,7 +303,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -327,7 +315,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -338,7 +326,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -350,7 +338,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -361,7 +349,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -376,16 +364,16 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -440,7 +428,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -451,7 +439,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -463,7 +451,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -474,7 +462,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -486,7 +474,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -497,7 +485,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -509,7 +497,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -520,7 +508,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -535,19 +523,19 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -609,7 +597,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -620,7 +608,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -632,7 +620,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -643,7 +631,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -655,7 +643,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -666,7 +654,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -678,7 +666,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -689,7 +677,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -701,7 +689,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -712,7 +700,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -727,22 +715,22 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -811,7 +799,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -822,7 +810,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -834,7 +822,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -845,7 +833,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -857,7 +845,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -868,7 +856,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -880,7 +868,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -891,7 +879,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -903,7 +891,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -914,7 +902,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -926,7 +914,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -937,7 +925,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -952,25 +940,25 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -1046,7 +1034,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -1057,7 +1045,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1069,7 +1057,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -1080,7 +1068,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1092,7 +1080,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -1103,7 +1091,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1115,7 +1103,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -1126,7 +1114,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1138,7 +1126,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -1149,7 +1137,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1161,7 +1149,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -1172,7 +1160,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1184,7 +1172,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -1195,7 +1183,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -1210,28 +1198,28 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -1314,7 +1302,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -1325,7 +1313,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1337,7 +1325,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -1348,7 +1336,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1360,7 +1348,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -1371,7 +1359,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1383,7 +1371,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -1394,7 +1382,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1406,7 +1394,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -1417,7 +1405,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1429,7 +1417,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -1440,7 +1428,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1452,7 +1440,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -1463,7 +1451,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1475,7 +1463,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -1486,7 +1474,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -1501,31 +1489,31 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -1615,7 +1603,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -1626,7 +1614,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1638,7 +1626,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -1649,7 +1637,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1661,7 +1649,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -1672,7 +1660,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1684,7 +1672,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -1695,7 +1683,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1707,7 +1695,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -1718,7 +1706,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1730,7 +1718,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -1741,7 +1729,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1753,7 +1741,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -1764,7 +1752,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1776,7 +1764,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -1787,7 +1775,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1799,7 +1787,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -1810,7 +1798,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -1825,34 +1813,34 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -1949,7 +1937,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -1960,7 +1948,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1972,7 +1960,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -1983,7 +1971,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -1995,7 +1983,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -2006,7 +1994,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2018,7 +2006,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -2029,7 +2017,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2041,7 +2029,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -2052,7 +2040,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2064,7 +2052,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -2075,7 +2063,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2087,7 +2075,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -2098,7 +2086,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2110,7 +2098,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -2121,7 +2109,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2133,7 +2121,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -2144,7 +2132,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2156,7 +2144,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -2167,7 +2155,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -2182,37 +2170,37 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -2316,7 +2304,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -2327,7 +2315,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2339,7 +2327,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -2350,7 +2338,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2362,7 +2350,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -2373,7 +2361,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2385,7 +2373,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -2396,7 +2384,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2408,7 +2396,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -2419,7 +2407,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2431,7 +2419,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -2442,7 +2430,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2454,7 +2442,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -2465,7 +2453,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2477,7 +2465,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -2488,7 +2476,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2500,7 +2488,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -2511,7 +2499,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2523,7 +2511,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -2534,7 +2522,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2546,7 +2534,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -2557,7 +2545,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -2572,40 +2560,40 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -2716,7 +2704,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -2727,7 +2715,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2739,7 +2727,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -2750,7 +2738,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2762,7 +2750,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -2773,7 +2761,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2785,7 +2773,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -2796,7 +2784,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2808,7 +2796,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -2819,7 +2807,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2831,7 +2819,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -2842,7 +2830,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2854,7 +2842,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -2865,7 +2853,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2877,7 +2865,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -2888,7 +2876,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2900,7 +2888,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -2911,7 +2899,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2923,7 +2911,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -2934,7 +2922,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2946,7 +2934,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -2957,7 +2945,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -2969,7 +2957,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -2980,7 +2968,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -2995,43 +2983,43 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -3149,7 +3137,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -3160,7 +3148,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3172,7 +3160,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -3183,7 +3171,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3195,7 +3183,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -3206,7 +3194,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3218,7 +3206,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -3229,7 +3217,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3241,7 +3229,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -3252,7 +3240,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3264,7 +3252,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -3275,7 +3263,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3287,7 +3275,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -3298,7 +3286,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3310,7 +3298,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -3321,7 +3309,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3333,7 +3321,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -3344,7 +3332,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3356,7 +3344,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -3367,7 +3355,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3379,7 +3367,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -3390,7 +3378,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3402,7 +3390,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -3413,7 +3401,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3425,7 +3413,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -3436,7 +3424,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -3451,46 +3439,46 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg14>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg14>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -3615,7 +3603,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -3626,7 +3614,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3638,7 +3626,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -3649,7 +3637,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3661,7 +3649,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -3672,7 +3660,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3684,7 +3672,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -3695,7 +3683,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3707,7 +3695,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -3718,7 +3706,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3730,7 +3718,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -3741,7 +3729,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3753,7 +3741,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -3764,7 +3752,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3776,7 +3764,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -3787,7 +3775,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3799,7 +3787,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -3810,7 +3798,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3822,7 +3810,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -3833,7 +3821,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3845,7 +3833,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -3856,7 +3844,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3868,7 +3856,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -3879,7 +3867,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3891,7 +3879,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -3902,7 +3890,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -3914,7 +3902,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg14>>()\
@@ -3925,7 +3913,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -3940,49 +3928,49 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg14>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg14>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg15>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg15>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -4114,7 +4102,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -4125,7 +4113,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4137,7 +4125,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -4148,7 +4136,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4160,7 +4148,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -4171,7 +4159,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4183,7 +4171,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -4194,7 +4182,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4206,7 +4194,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -4217,7 +4205,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4229,7 +4217,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -4240,7 +4228,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4252,7 +4240,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -4263,7 +4251,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4275,7 +4263,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -4286,7 +4274,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4298,7 +4286,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -4309,7 +4297,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4321,7 +4309,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -4332,7 +4320,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4344,7 +4332,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -4355,7 +4343,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4367,7 +4355,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -4378,7 +4366,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4390,7 +4378,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -4401,7 +4389,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4413,7 +4401,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg14>>()\
@@ -4424,7 +4412,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4436,7 +4424,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg15>>()\
@@ -4447,7 +4435,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -4462,52 +4450,52 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg14>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg14>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg15>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg15>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg16>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg16>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -4646,7 +4634,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -4657,7 +4645,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4669,7 +4657,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -4680,7 +4668,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4692,7 +4680,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -4703,7 +4691,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4715,7 +4703,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -4726,7 +4714,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4738,7 +4726,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -4749,7 +4737,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4761,7 +4749,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -4772,7 +4760,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4784,7 +4772,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -4795,7 +4783,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4807,7 +4795,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -4818,7 +4806,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4830,7 +4818,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -4841,7 +4829,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4853,7 +4841,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -4864,7 +4852,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4876,7 +4864,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -4887,7 +4875,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4899,7 +4887,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -4910,7 +4898,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4922,7 +4910,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -4933,7 +4921,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4945,7 +4933,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg14>>()\
@@ -4956,7 +4944,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4968,7 +4956,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg15>>()\
@@ -4979,7 +4967,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -4991,7 +4979,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg16>>()\
@@ -5002,7 +4990,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -5017,55 +5005,55 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg14>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg14>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg15>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg15>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg16>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg16>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg17>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg17>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -5211,7 +5199,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -5222,7 +5210,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5234,7 +5222,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -5245,7 +5233,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5257,7 +5245,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -5268,7 +5256,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5280,7 +5268,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -5291,7 +5279,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5303,7 +5291,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -5314,7 +5302,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5326,7 +5314,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -5337,7 +5325,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5349,7 +5337,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -5360,7 +5348,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5372,7 +5360,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -5383,7 +5371,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5395,7 +5383,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -5406,7 +5394,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5418,7 +5406,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -5429,7 +5417,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5441,7 +5429,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -5452,7 +5440,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5464,7 +5452,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -5475,7 +5463,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5487,7 +5475,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -5498,7 +5486,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5510,7 +5498,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg14>>()\
@@ -5521,7 +5509,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5533,7 +5521,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg15>>()\
@@ -5544,7 +5532,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5556,7 +5544,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg16>>()\
@@ -5567,7 +5555,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5579,7 +5567,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg17>>()\
@@ -5590,7 +5578,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -5605,58 +5593,58 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg14>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg14>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg15>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg15>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg16>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg16>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg17>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg17>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg18>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg18>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -5809,7 +5797,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -5820,7 +5808,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5832,7 +5820,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -5843,7 +5831,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5855,7 +5843,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -5866,7 +5854,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5878,7 +5866,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -5889,7 +5877,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5901,7 +5889,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -5912,7 +5900,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5924,7 +5912,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -5935,7 +5923,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5947,7 +5935,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -5958,7 +5946,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5970,7 +5958,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -5981,7 +5969,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -5993,7 +5981,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -6004,7 +5992,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6016,7 +6004,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -6027,7 +6015,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6039,7 +6027,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -6050,7 +6038,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6062,7 +6050,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -6073,7 +6061,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6085,7 +6073,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -6096,7 +6084,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6108,7 +6096,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg14>>()\
@@ -6119,7 +6107,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6131,7 +6119,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg15>>()\
@@ -6142,7 +6130,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6154,7 +6142,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg16>>()\
@@ -6165,7 +6153,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6177,7 +6165,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg17>>()\
@@ -6188,7 +6176,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6200,7 +6188,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg18>\
       DYNO_PP_VARIADIC_HEAD arg18(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg18>>()\
@@ -6211,7 +6199,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg18>\
       DYNO_PP_VARIADIC_HEAD arg18(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -6226,61 +6214,61 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg14>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg14>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg15>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg15>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg16>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg16>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg17>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg17>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg18>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg18>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg19>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg19>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -6440,7 +6428,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -6451,7 +6439,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6463,7 +6451,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -6474,7 +6462,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6486,7 +6474,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -6497,7 +6485,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6509,7 +6497,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -6520,7 +6508,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6532,7 +6520,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -6543,7 +6531,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6555,7 +6543,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -6566,7 +6554,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6578,7 +6566,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -6589,7 +6577,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6601,7 +6589,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -6612,7 +6600,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6624,7 +6612,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -6635,7 +6623,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6647,7 +6635,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -6658,7 +6646,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6670,7 +6658,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -6681,7 +6669,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6693,7 +6681,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -6704,7 +6692,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6716,7 +6704,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -6727,7 +6715,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6739,7 +6727,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg14>>()\
@@ -6750,7 +6738,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6762,7 +6750,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg15>>()\
@@ -6773,7 +6761,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6785,7 +6773,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg16>>()\
@@ -6796,7 +6784,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6808,7 +6796,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg17>>()\
@@ -6819,7 +6807,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6831,7 +6819,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg18>\
       DYNO_PP_VARIADIC_HEAD arg18(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg18>>()\
@@ -6842,7 +6830,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg18>\
       DYNO_PP_VARIADIC_HEAD arg18(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -6854,7 +6842,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg19>\
       DYNO_PP_VARIADIC_HEAD arg19(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg19>>()\
@@ -6865,7 +6853,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg19>\
       DYNO_PP_VARIADIC_HEAD arg19(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \
@@ -6880,64 +6868,64 @@ namespace dyno { namespace detail {
       return ::dyno::requires(                                                \
                                         \
                                                            \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg1>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg2>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg2>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg3>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg3>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg4>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg4>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg5>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg5>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg6>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg6>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg7>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg7>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg8>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg8>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg9>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg9>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg10>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg10>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg11>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg11>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg12>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg12>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg13>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg13>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg14>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg14>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg15>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg15>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg16>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg16>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg17>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg17>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg18>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg18>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg19>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg19>\
                                         \
           ,                                                 \
-          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg20)) = ::dyno::detail::method<DYNO_PP_VARIADIC_TAIL arg20>\
+          DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg20)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg20>\
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -7104,7 +7092,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg1>>()\
@@ -7115,7 +7103,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg1>\
       DYNO_PP_VARIADIC_HEAD arg1(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7127,7 +7115,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg2>>()\
@@ -7138,7 +7126,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg2>\
       DYNO_PP_VARIADIC_HEAD arg2(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg2)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7150,7 +7138,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg3>>()\
@@ -7161,7 +7149,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg3>\
       DYNO_PP_VARIADIC_HEAD arg3(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg3)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7173,7 +7161,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg4>>()\
@@ -7184,7 +7172,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg4>\
       DYNO_PP_VARIADIC_HEAD arg4(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg4)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7196,7 +7184,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg5>>()\
@@ -7207,7 +7195,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg5>\
       DYNO_PP_VARIADIC_HEAD arg5(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg5)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7219,7 +7207,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg6>>()\
@@ -7230,7 +7218,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg6>\
       DYNO_PP_VARIADIC_HEAD arg6(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg6)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7242,7 +7230,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg7>>()\
@@ -7253,7 +7241,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg7>\
       DYNO_PP_VARIADIC_HEAD arg7(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg7)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7265,7 +7253,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg8>>()\
@@ -7276,7 +7264,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg8>\
       DYNO_PP_VARIADIC_HEAD arg8(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg8)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7288,7 +7276,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg9>>()\
@@ -7299,7 +7287,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg9>\
       DYNO_PP_VARIADIC_HEAD arg9(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg9)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7311,7 +7299,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg10>>()\
@@ -7322,7 +7310,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg10>\
       DYNO_PP_VARIADIC_HEAD arg10(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg10)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7334,7 +7322,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg11>>()\
@@ -7345,7 +7333,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg11>\
       DYNO_PP_VARIADIC_HEAD arg11(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg11)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7357,7 +7345,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg12>>()\
@@ -7368,7 +7356,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg12>\
       DYNO_PP_VARIADIC_HEAD arg12(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg12)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7380,7 +7368,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg13>>()\
@@ -7391,7 +7379,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg13>\
       DYNO_PP_VARIADIC_HEAD arg13(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg13)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7403,7 +7391,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg14>>()\
@@ -7414,7 +7402,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg14>\
       DYNO_PP_VARIADIC_HEAD arg14(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg14)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7426,7 +7414,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg15>>()\
@@ -7437,7 +7425,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg15>\
       DYNO_PP_VARIADIC_HEAD arg15(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg15)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7449,7 +7437,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg16>>()\
@@ -7460,7 +7448,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg16>\
       DYNO_PP_VARIADIC_HEAD arg16(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg16)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7472,7 +7460,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg17>>()\
@@ -7483,7 +7471,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg17>\
       DYNO_PP_VARIADIC_HEAD arg17(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg17)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7495,7 +7483,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg18>\
       DYNO_PP_VARIADIC_HEAD arg18(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg18>>()\
@@ -7506,7 +7494,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg18>\
       DYNO_PP_VARIADIC_HEAD arg18(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg18)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7518,7 +7506,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg19>\
       DYNO_PP_VARIADIC_HEAD arg19(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg19>>()\
@@ -7529,7 +7517,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg19>\
       DYNO_PP_VARIADIC_HEAD arg19(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg19)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                         \
       template <typename ...Args, typename = decltype(                        \
@@ -7541,7 +7529,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg20>\
       DYNO_PP_VARIADIC_HEAD arg20(Args&& ...args) {                      \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg20)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg20)))(static_cast<Args&&>(args)...);\
       }                                                                       \
       template <typename ...Args, typename = decltype(                        \
         ::std::declval<::boost::callable_traits::function_type_t<DYNO_PP_VARIADIC_TAIL arg20>>()\
@@ -7552,7 +7540,7 @@ namespace dyno { namespace detail {
       >>                                                                      \
       ::boost::callable_traits::return_type_t<DYNO_PP_VARIADIC_TAIL arg20>\
       DYNO_PP_VARIADIC_HEAD arg20(Args&& ...args) const {                \
-        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg20)))(poly_, static_cast<Args&&>(args)...);\
+        return poly_.virtual_(DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg20)))(static_cast<Args&&>(args)...);\
       }                                                                       \
                                                                      \
   private:                                                                    \

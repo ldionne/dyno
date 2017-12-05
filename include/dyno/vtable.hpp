@@ -73,12 +73,12 @@ namespace dyno {
 template <typename ...Mappings>
 struct local_vtable;
 
-template <typename ...Name, typename ...Signature>
-struct local_vtable<boost::hana::pair<Name, boost::hana::basic_type<Signature>>...> {
+template <typename ...Name, typename ...Clause>
+struct local_vtable<boost::hana::pair<Name, Clause>...> {
   template <typename ConceptMap>
   constexpr explicit local_vtable(ConceptMap map)
     : vtbl_{boost::hana::make_map(
-      boost::hana::make_pair(Name{}, detail::erase_function<Signature>(map[Name{}]))...
+      boost::hana::make_pair(Name{}, detail::erase_function<typename Clause::type>(map[Name{}]))...
     )} {
     // suppress "unused" warnings for empty parameter packs
     (void) map;
@@ -120,7 +120,7 @@ private:
   }
 
   boost::hana::map<
-    boost::hana::pair<Name, typename detail::erase_signature<Signature>::type*>...
+    boost::hana::pair<Name, typename detail::erase_signature<typename Clause::type>::type*>...
   > vtbl_;
 };
 

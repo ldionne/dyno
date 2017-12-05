@@ -13,7 +13,8 @@
 #include <dyno/vtable.hpp>
 
 #include <boost/hana/contains.hpp>
-#include <boost/hana/type.hpp>
+#include <boost/hana/core/to.hpp>
+#include <boost/hana/map.hpp>
 #include <boost/hana/unpack.hpp>
 
 #include <type_traits>
@@ -57,6 +58,7 @@ namespace dyno {
 //   For example, how would we allow storing the vtable inside the rest
 //   of the storage?
 // - Is it actually OK to require Destructible and Storable all the time?
+// - Test that we can't call e.g. a non-const method on a const poly.
 template <
   typename Concept,
   typename Storage = dyno::remote_storage,
@@ -129,9 +131,25 @@ public:
     bool HasClause = decltype(boost::hana::contains(dyno::clause_names(Concept{}), Function{})){},
     std::enable_if_t<HasClause>* = nullptr
   >
-  constexpr decltype(auto) virtual_(Function name) const {
-    using Signature = typename decltype(Concept{}.get_signature(name))::type;
-    return virtual_impl(boost::hana::basic_type<Signature>{}, name);
+  constexpr decltype(auto) virtual_(Function name) const& {
+    auto clauses = boost::hana::to_map(dyno::clauses(Concept{}));
+    return virtual_impl(clauses[name], name);
+  }
+  template <typename Function,
+    bool HasClause = decltype(boost::hana::contains(dyno::clause_names(Concept{}), Function{})){},
+    std::enable_if_t<HasClause>* = nullptr
+  >
+  constexpr decltype(auto) virtual_(Function name) & {
+    auto clauses = boost::hana::to_map(dyno::clauses(Concept{}));
+    return virtual_impl(clauses[name], name);
+  }
+  template <typename Function,
+    bool HasClause = decltype(boost::hana::contains(dyno::clause_names(Concept{}), Function{})){},
+    std::enable_if_t<HasClause>* = nullptr
+  >
+  constexpr decltype(auto) virtual_(Function name) && {
+    auto clauses = boost::hana::to_map(dyno::clauses(Concept{}));
+    return std::move(*this).virtual_impl(clauses[name], name);
   }
 
   template <typename Function,
@@ -161,13 +179,58 @@ private:
   VTable vtable_;
   Storage storage_;
 
+  // Handle dyno::function
   template <typename R, typename ...T, typename Function>
-  constexpr decltype(auto) virtual_impl(boost::hana::basic_type<R(T...)>, Function name) const {
+  constexpr decltype(auto) virtual_impl(dyno::function_t<R(T...)>, Function name) const {
     auto fptr = vtable_[name];
     return [fptr](auto&& ...args) -> decltype(auto) {
       return fptr(poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
     };
   }
+
+  // Handle dyno::method
+  template <typename R, typename ...T, typename Function>
+  constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...)>, Function name) & {
+    auto fptr = vtable_[name];
+    return [fptr, this](auto&& ...args) -> decltype(auto) {
+      return fptr(poly::unerase_poly<dyno::T&>(*this),
+                  poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
+    };
+  }
+  template <typename R, typename ...T, typename Function>
+  constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...)&>, Function name) & {
+    auto fptr = vtable_[name];
+    return [fptr, this](auto&& ...args) -> decltype(auto) {
+      return fptr(poly::unerase_poly<dyno::T&>(*this),
+                  poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
+    };
+  }
+  template <typename R, typename ...T, typename Function>
+  constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...)&&>, Function name) && {
+    auto fptr = vtable_[name];
+    return [fptr, this](auto&& ...args) -> decltype(auto) {
+      return fptr(poly::unerase_poly<dyno::T&&>(*this),
+                  poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
+    };
+  }
+  template <typename R, typename ...T, typename Function>
+  constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...) const>, Function name) const {
+    auto fptr = vtable_[name];
+    return [fptr, this](auto&& ...args) -> decltype(auto) {
+      return fptr(poly::unerase_poly<dyno::T const&>(*this),
+                  poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
+    };
+  }
+  template <typename R, typename ...T, typename Function>
+  constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...) const&>, Function name) const {
+    auto fptr = vtable_[name];
+    return [fptr, this](auto&& ...args) -> decltype(auto) {
+      return fptr(poly::unerase_poly<dyno::T const&>(*this),
+                  poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
+    };
+  }
+
+  // unerase_poly helper
   template <typename T, typename Arg, std::enable_if_t<!detail::is_placeholder<T>::value, int> = 0>
   static constexpr decltype(auto) unerase_poly(Arg&& arg)
   { return static_cast<Arg&&>(arg); }

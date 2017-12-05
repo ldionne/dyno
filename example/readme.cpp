@@ -11,12 +11,12 @@ using namespace dyno::literals;
 
 
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
+  "draw"_s = dyno::method<void (std::ostream&) const>
 )) { };
 
 template <typename T>
 auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
-  "draw"_s = [](auto const& t, std::ostream& out) { t.draw(out); }
+  "draw"_s = [](auto const& self, std::ostream& out) { self.draw(out); }
 );
 
 struct drawable {
@@ -24,7 +24,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(poly_, out); }
+  { poly_.virtual_("draw"_s)(out); }
 
 private:
   dyno::poly<Drawable> poly_;
