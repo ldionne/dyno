@@ -9,25 +9,19 @@ using namespace dyno::literals;
 
 
 struct Fooable : decltype(dyno::requires(
-  "a"_s = dyno::function<void (dyno::T&)>,
-  "b"_s = dyno::function<void (dyno::T&)>
+  "f"_s = dyno::function<void (dyno::T&)>
 )) { };
 
 template <>
 auto dyno::concept_map<Fooable, int> = dyno::make_concept_map(
-  "a"_s = [](int&) { },
-  "b"_s = [](int&) { }
+  "f"_s = [](int&) { }
 );
 
 int main() {
-  using VTable = dyno::vtable<
-    dyno::local<dyno::only<decltype("a"_s)>>,
-    dyno::remote<dyno::only<decltype("b"_s)>>
-  >;
-  VTable::apply<Fooable> vtable{
+  dyno::vtable<dyno::local<dyno::everything>>::apply<Fooable> vtable{
     dyno::complete_concept_map<Fooable, int>(dyno::concept_map<Fooable, int>)
   };
 
-  // MESSAGE[Request for a virtual function that is not present in any of the joined vtables]
+  // MESSAGE[Request for a virtual function that is not in the vtable]
   auto fail = vtable["inexistent"_s];
 }

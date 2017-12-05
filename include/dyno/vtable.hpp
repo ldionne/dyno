@@ -306,6 +306,16 @@ struct remote {
   Selector selector;
 };
 
+namespace detail {
+  // Returns whether a vtable is empty, such that we can completely skip it
+  // when composing policies below.
+  template <typename VTable>
+  struct is_empty_vtable : boost::hana::false_ { };
+
+  template <>
+  struct is_empty_vtable<dyno::local_vtable<>> : boost::hana::true_ { };
+} // end namespace detail
+
 template <typename Concept, typename Policies>
 constexpr auto generate_vtable(Policies policies) {
   auto functions = boost::hana::to_set(dyno::clause_names(Concept{}));
@@ -318,13 +328,18 @@ constexpr auto generate_vtable(Policies policies) {
     auto remaining = boost::hana::first(selector_split);
     auto matched = boost::hana::second(selector_split);
 
-    auto new_vtable = boost::hana::basic_type<
-      dyno::joined_vtable<
-        typename decltype(vtable)::type,
-        typename decltype(policy.create(Concept{}, matched))::type
-      >
-    >{};
-    return boost::hana::make_pair(remaining, new_vtable);
+    if constexpr (detail::is_empty_vtable<typename decltype(vtable)::type>{}) {
+      auto new_vtable = decltype(policy.create(Concept{}, matched)){};
+      return boost::hana::make_pair(remaining, new_vtable);
+    } else {
+      auto new_vtable = boost::hana::basic_type<
+        dyno::joined_vtable<
+          typename decltype(vtable)::type,
+          typename decltype(policy.create(Concept{}, matched))::type
+        >
+      >{};
+      return boost::hana::make_pair(remaining, new_vtable);
+    }
   });
 
   constexpr bool all_functions_were_taken = decltype(boost::hana::length(boost::hana::first(result)))::value == 0;
