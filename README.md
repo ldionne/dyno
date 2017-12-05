@@ -181,12 +181,14 @@ However, this approach has several drawbacks. It is
    duration at all, and an object with automatic storage duration (e.g. on
    the stack) would have been enough.
 
-4. __Slow__<br>
+4. __Prevents inlining__<br>
    95% of the time, we end up calling a virtual method through a polymorphic
    pointer or reference. That requires three indirections: one for loading the
    pointer to the vtable inside the object, one for loading the right entry in
-   the vtable, and one for the call to the function pointer. All of this but
-   the indirect call can be avoided.
+   the vtable, and one for the indirect call to the function pointer. All this
+   jumping around makes it difficult for the compiler to make good inlining
+   decisions. However, it turns out that all of these indirections except the
+   indirect call can be avoided.
 
 Unfortunately, this is the choice that C++ has made for us, and these are the
 rules that we are bound to when we need dynamic polymorphism. Or is it really?
@@ -215,14 +217,14 @@ drawbacks listed above, and many more goodies. It is:
    avoid any allocation. Or maybe it makes sense for you to store things on
    the heap? Sure, go ahead.
 
-4. __Fast__<br>
+4. __Flexible dispatch mechanism to achieve best possible performance__<br>
    Storing a pointer to a vtable is just one of many different implementation
    strategies for performing dynamic dispatch. __Dyno__ gives you complete
-   control over how dynamic dispatch happens, and can in fact beat vtables.
-   You've got a function that gets called in a hot loop? Sure, let's store it
-   in the object directly and skip the indirection through the vtable. The
-   classic vtable scheme works for you? Sure, let's use this and get exactly
-   the same performance as usual vtables.
+   control over how dynamic dispatch happens, and can in fact beat vtables
+   in some cases. If you have a function that's called in a hot loop, you can
+   for example store it directly in the object and skip the vtable indirection.
+   You can also use application-specific knowledge the compiler could never
+   have to optimize some dynamic calls &mdash; library-level devirtualization.
 
 
 ## Using the library
