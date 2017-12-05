@@ -19,19 +19,12 @@ cache:
 
 matrix:
   include:
-    - env: COMPILER=clang++-3.9
-      addons: { apt: { packages: ["clang-3.9"], sources: ["llvm-toolchain-precise-3.9", "ubuntu-toolchain-r-test"] } }
-
     - env: COMPILER=clang++-4.0
       addons: { apt: { packages: ["clang-4.0"], sources: ["llvm-toolchain-trusty-4.0", "ubuntu-toolchain-r-test"] } }
 
     - env: COMPILER=g++-7
       addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
       dist: trusty
-
-    - os: osx
-      env: COMPILER=clang++
-      osx_image: xcode8.3
 
     - os: osx
       env: COMPILER=clang++

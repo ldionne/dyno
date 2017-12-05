@@ -105,8 +105,8 @@ This is a C++17 library. No efforts will be made to support older compilers
 | Compiler    | Version  |
 | ----------- |:--------:|
 | GCC         | >= 7     |
-| Clang       | >= 3.9   |
-| Apple Clang | >= 8.3   |
+| Clang       | >= 4.0   |
+| Apple Clang | >= 9.1   |
 
 
 ## Dependencies
