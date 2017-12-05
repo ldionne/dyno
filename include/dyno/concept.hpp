@@ -63,6 +63,21 @@ namespace detail {
       return boost::hana::make_basic_tuple(boost::hana::first(c)...);
     }
   };
+
+  template <typename... Clauses>
+  struct check_duplicate_names {
+    template <typename... Pairs>
+    struct check_duplicate_names_impl{};
+  
+    template <typename... Pairs>
+    struct check_duplicate_names_impl<const boost::hana::basic_tuple<Pairs...>> {
+      static constexpr bool value = boost::hana::detail::has_duplicates<
+        decltype(boost::hana::first(Pairs{}))...>::value;
+    };
+
+    static constexpr auto c_ = boost::hana::flatten(boost::hana::make_basic_tuple(detail::expand_clauses(Clauses{})...));
+    static constexpr bool value = check_duplicate_names_impl<decltype(c_)>::value;
+  };
 } // end namespace detail
 
 // Returns a sequence containing all the clauses of the given concept and
@@ -98,6 +113,10 @@ constexpr auto clause_names(Concept c) {
 template <typename ...Clauses>
 struct concept : detail::concept_base {
   boost::hana::basic_tuple<Clauses...> clauses_;
+
+  static_assert(!detail::check_duplicate_names<Clauses...>::value,
+    "Duplicate clauses, check your dyno function names"
+  );
 
   template <typename Name>
   constexpr auto get_signature(Name name) const {
