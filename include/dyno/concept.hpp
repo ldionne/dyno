@@ -40,29 +40,6 @@ namespace detail {
   }
 
   struct concept_base { };
-  struct is_concept {
-    template <typename T, bool IsBase = std::is_base_of<detail::concept_base, T>::value>
-    constexpr boost::hana::bool_<IsBase>
-    operator()(T) const {
-      return {};
-    }
-  };
-
-  struct expand_all_clauses {
-    template <typename ...Clauses>
-    constexpr auto operator()(Clauses ...c) const {
-      return boost::hana::make_basic_tuple(
-        detail::expand_clauses(c)...
-      );
-    }
-  };
-
-  struct get_clause_names {
-    template <typename ...Clause>
-    constexpr auto operator()(Clause ...c) const {
-      return boost::hana::make_basic_tuple(boost::hana::first(c)...);
-    }
-  };
 } // end namespace detail
 
 // Returns a sequence containing all the clauses of the given concept and
@@ -73,7 +50,9 @@ namespace detail {
 // (e.g. a `dyno::function`). The order of clauses is not specified.
 template <typename Concept>
 constexpr auto clauses(Concept c) {
-  auto all = boost::hana::unpack(c.clauses_, detail::expand_all_clauses{});
+  auto all = boost::hana::unpack(c.clauses_, [](auto ...clause) {
+    return boost::hana::make_basic_tuple(detail::expand_clauses(clause)...);
+  });
   return boost::hana::flatten(all);
 }
 
@@ -83,7 +62,9 @@ constexpr auto clauses(Concept c) {
 // The order of the clause names is not specified.
 template <typename Concept>
 constexpr auto clause_names(Concept c) {
-  return boost::hana::unpack(dyno::clauses(c), detail::get_clause_names{});
+  return boost::hana::unpack(dyno::clauses(c), [](auto ...clause) {
+    return boost::hana::make_basic_tuple(boost::hana::first(clause)...);
+  });
 }
 
 // A `concept` is a collection of clauses and refined concepts representing
@@ -112,7 +93,10 @@ struct concept : detail::concept_base {
 // do not get the refined concepts of the refined concepts recursively.
 template <typename Concept>
 constexpr auto refined_concepts(Concept c) {
-  return boost::hana::filter(c.clauses_, detail::is_concept{});
+  return boost::hana::filter(c.clauses_, [](auto t) {
+    constexpr bool IsBase = std::is_base_of<detail::concept_base, decltype(t)>::value;
+    return boost::hana::bool_c<IsBase>;
+  });
 }
 
 // Creates a `concept` with the given clauses. Note that a clause may be a

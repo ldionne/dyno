@@ -91,7 +91,18 @@ struct local_vtable<boost::hana::pair<Name, Clause>...> {
 
   template <typename Name_>
   constexpr auto operator[](Name_ name) const {
-    return get_function(name, contains(name));
+    constexpr bool contains_function = decltype(contains(name))::value;
+    if constexpr (contains_function) {
+      return vtbl_[name];
+    } else {
+      static_assert(contains_function,
+        "dyno::local_vtable::operator[]: Request for a virtual function that is "
+        "not in the vtable. Was this function specified in the concept that "
+        "was used to instantiate this vtable? You can find the contents of the "
+        "vtable and the function you were trying to access in the compiler "
+        "error message, probably in the following format: "
+        "`local_vtable<CONTENTS OF VTABLE>::operator[]<FUNCTION NAME>`");
+    }
   }
 
   friend void swap(local_vtable& a, local_vtable& b) {
@@ -102,23 +113,6 @@ struct local_vtable<boost::hana::pair<Name, Clause>...> {
   }
 
 private:
-  template <typename Name_>
-  constexpr auto get_function(Name_ name, boost::hana::true_) const {
-    return vtbl_[name];
-  }
-
-  template <typename Name_>
-  constexpr auto get_function(Name_, boost::hana::false_) const {
-    constexpr bool always_false = sizeof(Name_) == 0;
-    static_assert(always_false,
-      "dyno::local_vtable::operator[]: Request for a virtual function that is "
-      "not in the vtable. Was this function specified in the concept that "
-      "was used to instantiate this vtable? You can find the contents of the "
-      "vtable and the function you were trying to access in the compiler "
-      "error message, probably in the following format: "
-      "`local_vtable<CONTENTS OF VTABLE>::get_function<FUNCTION NAME>`");
-  }
-
   boost::hana::map<
     boost::hana::pair<Name, typename detail::erase_signature<typename Clause::type>::type*>...
   > vtbl_;
@@ -177,45 +171,37 @@ struct joined_vtable {
 
   template <typename Name>
   constexpr auto operator[](Name name) const {
-    return get_function(name, first_.contains(name), second_.contains(name));
+    auto first_contains_function = first_.contains(name);
+    auto second_contains_function = second_.contains(name);
+
+    if constexpr (first_contains_function && second_contains_function) {
+      static_assert(!first_contains_function || !second_contains_function,
+        "dyno::joined_vtable::operator[]: Request for a virtual function that is "
+        "contained in both vtables of a joined vtable. Since this is most likely "
+        "a programming error, this is not allowed. You can find the contents of "
+        "the vtable and the function you were trying to access in the compiler "
+        "error message, probably in the following format: "
+        "`joined_vtable<VTABLE 1, VTABLE 2>::operator[]<FUNCTION NAME>`");
+
+    } else if constexpr (!first_contains_function && !second_contains_function) {
+      static_assert(first_contains_function || second_contains_function,
+        "dyno::joined_vtable::operator[]: Request for a virtual function that is "
+        "not present in any of the joined vtables. Make sure you meant to look "
+        "this function up, and otherwise check whether the two sub-vtables look "
+        "as expected. You can find the contents of the joined vtables and the "
+        "function you were trying to access in the compiler error message, "
+        "probably in the following format: "
+        "`joined_vtable<VTABLE 1, VTABLE 2>::operator[]<FUNCTION NAME>`");
+
+    } else if constexpr (first_contains_function) {
+      return first_[name];
+
+    } else {
+      return second_[name];
+    }
   }
 
 private:
-  template <typename Name>
-  constexpr auto get_function(Name, boost::hana::true_, boost::hana::true_) const {
-    constexpr bool always_false = sizeof(Name) == 0;
-    static_assert(always_false,
-      "dyno::joined_vtable::operator[]: Request for a virtual function that is "
-      "contained in both vtables of a joined vtable. Since this is most likely "
-      "a programming error, this is not allowed. You can find the contents of "
-      "the vtable and the function you were trying to access in the compiler "
-      "error message, probably in the following format: "
-      "`joined_vtable<VTABLE 1, VTABLE 2>::get_function<FUNCTION NAME>`");
-  }
-
-  template <typename Name>
-  constexpr auto get_function(Name, boost::hana::false_, boost::hana::false_) const {
-    constexpr bool always_false = sizeof(Name) == 0;
-    static_assert(always_false,
-      "dyno::joined_vtable::operator[]: Request for a virtual function that is "
-      "not present in any of the joined vtables. Make sure you meant to look "
-      "this function up, and otherwise check whether the two sub-vtables look "
-      "as expected. You can find the contents of the joined vtables and the "
-      "function you were trying to access in the compiler error message, "
-      "probably in the following format: "
-      "`joined_vtable<VTABLE 1, VTABLE 2>::get_function<FUNCTION NAME>`");
-  }
-
-  template <typename Name>
-  constexpr auto get_function(Name name, boost::hana::true_, boost::hana::false_) const {
-    return first_[name];
-  }
-
-  template <typename Name>
-  constexpr auto get_function(Name name, boost::hana::false_, boost::hana::true_) const {
-    return second_[name];
-  }
-
   First first_;
   Second second_;
 };

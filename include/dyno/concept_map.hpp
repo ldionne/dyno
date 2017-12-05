@@ -70,7 +70,19 @@ struct concept_map_t<Concept, T, boost::hana::pair<Name, Function>...> {
 
   template <typename Name_>
   constexpr auto operator[](Name_ name) const {
-    return get_function(name, boost::hana::contains(as_hana_map{}, name));
+    constexpr bool is_known_function = boost::hana::contains(as_hana_map{}, name);
+    if constexpr (is_known_function) {
+      return boost::hana::at_key(as_hana_map{}, name);
+    } else {
+      static_assert(is_known_function,
+        "dyno::concept_map_t::operator[]: Request for the implementation of a "
+        "function that was not provided in the concept map. Make sure the "
+        "concept map contains the proper functions, and that you're requesting "
+        "the right function from the concept map. You can find the contents of "
+        "the concept map and the function you were trying to access in the "
+        "compiler error message, probably in the following format: "
+        "`concept_map_t<CONCEPT, MODEL, CONTENTS OF CONCEPT MAP>::operator[]<FUNCTION NAME>`");
+    }
   }
 
 private:
@@ -85,23 +97,6 @@ private:
       >
     >...
   >;
-
-  template <typename Name_>
-  static constexpr auto get_function(Name_ name, boost::hana::true_) {
-    return boost::hana::at_key(as_hana_map{}, name);
-  }
-
-  template <typename Name_, bool function_is_in_the_map = false>
-  static constexpr auto get_function(Name_, boost::hana::false_) {
-    static_assert(function_is_in_the_map,
-      "dyno::concept_map_t::operator[]: Request for the implementation of a "
-      "function that was not provided in the concept map. Make sure the "
-      "concept map contains the proper functions, and that you're requesting "
-      "the right function from the concept map. You can find the contents of "
-      "the concept map and the function you were trying to access in the "
-      "compiler error message, probably in the following format: "
-      "`concept_map_t<CONCEPT, MODEL, CONTENTS OF CONCEPT MAP>::get_function<FUNCTION NAME>`");
-  }
 };
 
 // Creates a concept map associating function names to function implementations.
@@ -254,34 +249,26 @@ namespace diagnostic {
 // Also, after looking at the whole refinement tree, including the default
 // concept maps, it is an error if any function required by the concept can't
 // be resolved.
-template <typename Concept, typename T, typename Map,
-  typename Complete = decltype(detail::complete_concept_map_impl<Concept, T>(std::declval<Map>())),
-  bool is_complete = detail::concept_map_is_complete<Concept, T, Complete>::value,
-  typename = std::enable_if_t<is_complete>
->
-constexpr auto complete_concept_map(Map) {
-  return decltype(detail::to_concept_map<Concept, T>(std::declval<Complete>())){};
-}
-
-template <typename Concept, typename T, typename Map,
-  typename Complete = decltype(detail::complete_concept_map_impl<Concept, T>(std::declval<Map>())),
-  bool is_complete = detail::concept_map_is_complete<Concept, T, Complete>::value,
-  typename = std::enable_if_t<!is_complete>
->
-constexpr void complete_concept_map(Map map) {
+template <typename Concept, typename T, typename Map>
+constexpr auto complete_concept_map(Map map) {
   auto complete_map = detail::complete_concept_map_impl<Concept, T>(map);
-  auto required = boost::hana::to_set(dyno::clause_names(Concept{}));
-  auto declared = boost::hana::to_set(boost::hana::keys(complete_map));
-  auto missing = boost::hana::difference(required, declared);
   auto as_concept_map = detail::to_concept_map<Concept, T>(complete_map);
-  diagnostic::INCOMPLETE_CONCEPT_MAP<
-    diagnostic::________________THE_CONCEPT_IS<Concept>,
-    diagnostic::________________YOUR_MODEL_IS<T>,
-    diagnostic::________________FUNCTIONS_MISSING_FROM_YOUR_CONCEPT_MAP<decltype(missing)>,
-    diagnostic::________________FUNCTIONS_DECLARED_IN_YOUR_CONCEPT_MAP<decltype(declared)>,
-    diagnostic::________________FUNCTIONS_REQUIRED_BY_THE_CONCEPT<decltype(required)>,
-    diagnostic::________________EXACT_TYPE_OF_YOUR_CONCEPT_MAP<decltype(as_concept_map)>
-  >();
+  constexpr auto is_complete = detail::concept_map_is_complete<Concept, T, decltype(complete_map)>{};
+  if constexpr (is_complete) {
+    return as_concept_map;
+  } else {
+    auto required = boost::hana::to_set(dyno::clause_names(Concept{}));
+    auto declared = boost::hana::to_set(boost::hana::keys(complete_map));
+    auto missing = boost::hana::difference(required, declared);
+    diagnostic::INCOMPLETE_CONCEPT_MAP<
+      diagnostic::________________THE_CONCEPT_IS<Concept>,
+      diagnostic::________________YOUR_MODEL_IS<T>,
+      diagnostic::________________FUNCTIONS_MISSING_FROM_YOUR_CONCEPT_MAP<decltype(missing)>,
+      diagnostic::________________FUNCTIONS_DECLARED_IN_YOUR_CONCEPT_MAP<decltype(declared)>,
+      diagnostic::________________FUNCTIONS_REQUIRED_BY_THE_CONCEPT<decltype(required)>,
+      diagnostic::________________EXACT_TYPE_OF_YOUR_CONCEPT_MAP<decltype(as_concept_map)>
+    >();
+  }
 }
 
 } // end namespace dyno
