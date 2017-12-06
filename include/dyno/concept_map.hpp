@@ -9,6 +9,7 @@
 #include <dyno/detail/bind_signature.hpp>
 #include <dyno/detail/dsl.hpp>
 #include <dyno/detail/empty_object.hpp>
+#include <dyno/detail/has_duplicates.hpp>
 
 #include <boost/hana/at_key.hpp>
 #include <boost/hana/bool.hpp>
@@ -17,6 +18,7 @@
 #include <boost/hana/difference.hpp>
 #include <boost/hana/fold_left.hpp>
 #include <boost/hana/is_subset.hpp>
+#include <boost/hana/keys.hpp>
 #include <boost/hana/map.hpp>
 #include <boost/hana/pair.hpp>
 #include <boost/hana/set.hpp>
@@ -109,7 +111,14 @@ private:
 // being used, it must be completed using `dyno::complete_concept_map`.
 template <typename ...Name, typename ...Function>
 constexpr auto make_concept_map(boost::hana::pair<Name, Function> ...mappings) {
-  return boost::hana::make_map(mappings...);
+  auto map = boost::hana::make_map(mappings...);
+
+  static_assert(!decltype(detail::has_duplicates(boost::hana::keys(map)))::value,
+    "dyno::make_concept_map: It looks like you have multiple entries with the "
+    "same name in your concept map. This is not allowed; each entry must have "
+    "a different name.");
+
+  return map;
 }
 
 // Customization point for concept writers to provide default models of
