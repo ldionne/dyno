@@ -48,11 +48,9 @@ namespace detail {
 // In the returned sequence, each clause is a pair where the first element
 // is the name of the clause and the second element is the clause itself
 // (e.g. a `dyno::function`). The order of clauses is not specified.
-template <typename Concept>
-constexpr auto clauses(Concept c) {
-  auto all = boost::hana::unpack(c.clauses_, [](auto ...clause) {
-    return boost::hana::make_basic_tuple(detail::expand_clauses(clause)...);
-  });
+template <typename ...Clauses>
+constexpr auto clauses(dyno::concept<Clauses...> const&) {
+  auto all = boost::hana::make_basic_tuple(detail::expand_clauses(Clauses{})...);
   return boost::hana::flatten(all);
 }
 
@@ -60,8 +58,8 @@ constexpr auto clauses(Concept c) {
 // the given concept, and its derived concepts.
 //
 // The order of the clause names is not specified.
-template <typename Concept>
-constexpr auto clause_names(Concept c) {
+template <typename ...Clauses>
+constexpr auto clause_names(dyno::concept<Clauses...> const& c) {
   return boost::hana::unpack(dyno::clauses(c), [](auto ...clause) {
     return boost::hana::make_basic_tuple(boost::hana::first(clause)...);
   });
@@ -78,8 +76,6 @@ constexpr auto clause_names(Concept c) {
 // whether a type satisfies the concept.
 template <typename ...Clauses>
 struct concept : detail::concept_base {
-  boost::hana::basic_tuple<Clauses...> clauses_;
-
   template <typename Name>
   constexpr auto get_signature(Name name) const {
     auto clauses = boost::hana::to_map(dyno::clauses(*this));
@@ -91,9 +87,9 @@ struct concept : detail::concept_base {
 //
 // Only the concepts that are refined directly by `c` are returned, i.e. we
 // do not get the refined concepts of the refined concepts recursively.
-template <typename Concept>
-constexpr auto refined_concepts(Concept c) {
-  return boost::hana::filter(c.clauses_, [](auto t) {
+template <typename ...Clauses>
+constexpr auto refined_concepts(dyno::concept<Clauses...> const&) {
+  return boost::hana::filter(boost::hana::make_basic_tuple(Clauses{}...), [](auto t) {
     constexpr bool IsBase = std::is_base_of<detail::concept_base, decltype(t)>::value;
     return boost::hana::bool_c<IsBase>;
   });
