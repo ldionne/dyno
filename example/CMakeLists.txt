@@ -4,7 +4,8 @@
 
 add_custom_target(examples
   COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-  COMMENT "Build and run all the examples.")
+  COMMENT "Build and run all the examples."
+  USES_TERMINAL)
 add_dependencies(check examples)
 
 file(GLOB_RECURSE EXAMPLES "*.cpp")

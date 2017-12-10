@@ -10,7 +10,8 @@ endif()
 
 add_custom_target(tests
   COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-  COMMENT "Build and run all the unit tests.")
+  COMMENT "Build and run all the unit tests."
+  USES_TERMINAL)
 add_dependencies(check tests)
 
 # Generate tests that include each public header.
