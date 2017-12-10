@@ -63,6 +63,7 @@ ExternalProject_Add(test.deploy.fakeroot
 
 add_custom_target(test.deploy
   DEPENDS test.deploy.fakeroot
+  COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/deploy"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/deploy"
   COMMAND ${CMAKE_COMMAND} -E chdir "${CMAKE_CURRENT_BINARY_DIR}/deploy"
             ${CMAKE_COMMAND} "${CMAKE_CURRENT_SOURCE_DIR}/deploy"
@@ -70,4 +71,5 @@ add_custom_target(test.deploy
                              -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}\;${DYNO_FAKE_INSTALL_DIR}"
   COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/deploy"
 )
-add_dependencies(tests test.deploy)
+add_test(NAME test.deploy
+         COMMAND ${CMAKE_COMMAND} --build "${PROJECT_BINARY_DIR}" --target test.deploy)
