@@ -4,7 +4,7 @@
 
 language: cpp
 os: linux # Use Linux unless specified otherwise
-dist: precise # Use precise unless specified otherwise
+dist: trusty # Use 'trusty' unless specified otherwise
 sudo: false
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
@@ -24,7 +24,6 @@ matrix:
 
     - env: COMPILER=g++-7
       addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
-      dist: trusty
 
     - os: osx
       env: COMPILER=clang++
