@@ -34,9 +34,13 @@ matrix:
       addons: { apt: { packages: ["clang-4.0"], sources: ["llvm-toolchain-trusty-4.0", "ubuntu-toolchain-r-test"] } }
 
 install:
-  # Set the ${CXX} variable properly
-  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
-  - ${CXX} --version
+  # Set the ${CXX} and ${CC} variables properly. They are picked up by CMake
+  # to determine the C++ and C compilers, respectively.
+  - export CXX=${COMPILER}
+  - if [[ "${CXX}" == "g++"* ]]; then export CC="${CXX/++/cc}"; fi
+  - if [[ "${CXX}" == "clang++"* ]]; then export CC="${CXX/++/}"; fi
+  - echo "CXX = ${CXX}" && ${CXX} --version
+  - echo "CC = ${CC}" && ${CC} --version
 
   # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
