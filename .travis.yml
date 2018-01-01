@@ -58,14 +58,11 @@ install:
     fi
   - cmake --version
 
-  # Install libc++ and libc++abi if needed
+  # On Linux, install libc++ and libc++abi when building with Clang.
+  # Otherwise, it uses the libstdc++ provided with the system.
   - |
-    if [[ "${CXX%%+*}" == "clang" ]]; then
-      if   [[ "${CXX}" == "clang++-3.7" ]]; then LLVM_VERSION="3.7.1";
-      elif [[ "${CXX}" == "clang++-3.8" ]]; then LLVM_VERSION="3.8.1";
-      elif [[ "${CXX}" == "clang++-3.9" ]]; then LLVM_VERSION="3.9.1";
-      elif [[ "${CXX}" == "clang++-4.0" ]]; then LLVM_VERSION="4.0.0";
-      fi
+    if [[ "${CXX}" == "clang"* && "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      if [[ "${CXX}" == "clang++-4.0" ]]; then LLVM_VERSION="4.0.0"; fi
 
       LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
       LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
