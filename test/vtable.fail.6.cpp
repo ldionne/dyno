@@ -9,12 +9,12 @@ using namespace dyno::literals;
 
 
 struct Fooable : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T&)>
+  "f"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 template <>
 auto dyno::concept_map<Fooable, int> = dyno::make_concept_map(
-  "f"_s = [](int&) { }
+  "f"_dyno = [](int&) { }
 );
 
 int main() {
@@ -23,5 +23,5 @@ int main() {
   };
 
   // MESSAGE[Request for a virtual function that is not in the vtable]
-  auto fail = vtable["inexistent"_s];
+  auto fail = vtable["inexistent"_dyno];
 }

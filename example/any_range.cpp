@@ -22,24 +22,24 @@ using namespace dyno::literals;
 
 template <typename Value, typename Category>
 struct Range : decltype(dyno::requires(
-  "begin"_s = dyno::function<any_iterator<Value, Category> (dyno::T&)>,
-  "end"_s = dyno::function<any_iterator<Value, Category> (dyno::T&)>,
-  "cbegin"_s = dyno::function<any_iterator<Value const, Category> (dyno::T const&)>,
-  "cend"_s = dyno::function<any_iterator<Value const, Category> (dyno::T const&)>
+  "begin"_dyno = dyno::function<any_iterator<Value, Category> (dyno::T&)>,
+  "end"_dyno = dyno::function<any_iterator<Value, Category> (dyno::T&)>,
+  "cbegin"_dyno = dyno::function<any_iterator<Value const, Category> (dyno::T const&)>,
+  "cend"_dyno = dyno::function<any_iterator<Value const, Category> (dyno::T const&)>
 )) { };
 
 template <typename Value, typename Category, typename R>
 auto const dyno::default_concept_map<Range<Value, Category>, R> = dyno::make_concept_map(
-  "begin"_s = [](R& range) -> any_iterator<Value, Category> {
+  "begin"_dyno = [](R& range) -> any_iterator<Value, Category> {
     return any_iterator<Value, Category>{range.begin()};
   },
-  "end"_s = [](R& range) -> any_iterator<Value, Category> {
+  "end"_dyno = [](R& range) -> any_iterator<Value, Category> {
     return any_iterator<Value, Category>{range.end()};
   },
-  "cbegin"_s = [](R const& range) -> any_iterator<Value const, Category> {
+  "cbegin"_dyno = [](R const& range) -> any_iterator<Value const, Category> {
     return any_iterator<Value const, Category>{range.cbegin()};
   },
-  "cend"_s = [](R const& range) -> any_iterator<Value const, Category> {
+  "cend"_dyno = [](R const& range) -> any_iterator<Value const, Category> {
     return any_iterator<Value const, Category>{range.cend()};
   }
 );
@@ -49,13 +49,13 @@ struct any_range {
   template <typename Range>
   any_range(Range&& r) : poly_{std::forward<Range>(r)} { }
 
-  auto begin()        { return poly_.virtual_("begin"_s)(poly_); }
-  auto end()          { return poly_.virtual_("end"_s)(poly_); }
+  auto begin()        { return poly_.virtual_("begin"_dyno)(poly_); }
+  auto end()          { return poly_.virtual_("end"_dyno)(poly_); }
   auto begin() const  { return cbegin(); }
   auto end() const    { return cend(); }
 
-  auto cbegin() const { return poly_.virtual_("cbegin"_s)(poly_); }
-  auto cend() const   { return poly_.virtual_("cend"_s)(poly_); }
+  auto cbegin() const { return poly_.virtual_("cbegin"_dyno)(poly_); }
+  auto cend() const   { return poly_.virtual_("cend"_dyno)(poly_); }
 
 private:
   dyno::poly<Range<Value, Category>> poly_;

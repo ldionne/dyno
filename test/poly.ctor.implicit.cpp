@@ -15,8 +15,8 @@ using namespace dyno::literals;
 // construct from something that does not model the concept.
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<int (dyno::T&)>,
-  "g"_s = dyno::function<int (dyno::T&)>
+  "f"_dyno = dyno::function<int (dyno::T&)>,
+  "g"_dyno = dyno::function<int (dyno::T&)>
 )) { };
 
 struct Foo { };
@@ -24,13 +24,13 @@ struct Bar { };
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { return 111; },
-  "g"_s = [](Foo&) { return 888; }
+  "f"_dyno = [](Foo&) { return 111; },
+  "g"_dyno = [](Foo&) { return 888; }
 );
 
 template <>
 auto const dyno::concept_map<Concept, Bar> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { return 111; }
+  "f"_dyno = [](Foo&) { return 111; }
   // missing `g` to model the concept
 );
 
@@ -38,8 +38,8 @@ static_assert(std::is_convertible<Foo, dyno::poly<Concept>>{}, "");
 static_assert(!std::is_convertible<Bar, dyno::poly<Concept>>{}, "");
 
 void f(dyno::poly<Concept> poly) {
-  DYNO_CHECK(poly.virtual_("f"_s)(poly) == 111);
-  DYNO_CHECK(poly.virtual_("g"_s)(poly) == 888);
+  DYNO_CHECK(poly.virtual_("f"_dyno)(poly) == 111);
+  DYNO_CHECK(poly.virtual_("g"_dyno)(poly) == 888);
 }
 
 int main() {

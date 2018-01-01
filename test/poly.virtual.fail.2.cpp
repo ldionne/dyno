@@ -11,19 +11,19 @@ using namespace dyno::literals;
 
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<int (dyno::T&)>
+  "f"_dyno = dyno::function<int (dyno::T&)>
 )) { };
 
 struct Foo { };
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { return 111; }
+  "f"_dyno = [](Foo&) { return 111; }
 );
 
 int main() {
   Foo foo;
   dyno::poly<Concept> poly{foo};
   // MESSAGE[dyno::poly::virtual_: Passing a non-poly object as an argument]
-  DYNO_CHECK(poly.virtual_("f"_s)(foo) == 111);
+  DYNO_CHECK(poly.virtual_("f"_dyno)(foo) == 111);
 }

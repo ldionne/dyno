@@ -12,7 +12,7 @@ using namespace dyno::literals;
 // where the size was more than that.
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T&)>
+  "f"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 using Storage = dyno::remote_storage;

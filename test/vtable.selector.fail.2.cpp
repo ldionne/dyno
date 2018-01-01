@@ -9,14 +9,14 @@ using namespace dyno::literals;
 
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T const&)>
+  "f"_dyno = dyno::function<void (dyno::T const&)>
 )) { };
 
 struct Foo { };
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { }
+  "f"_dyno = [](Foo&) { }
 );
 
 int main() {
@@ -24,7 +24,7 @@ int main() {
 
   // MESSAGE[dyno::remote: Provided invalid selector. Valid selectors are]
   dyno::vtable<
-    dyno::local<dyno::only<decltype("f"_s)>>,
+    dyno::local<dyno::only<decltype("f"_dyno)>>,
     dyno::remote<struct inexistent>
   >::apply<Concept> vtable{complete};
 }

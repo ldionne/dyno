@@ -14,9 +14,9 @@ namespace dyno_generic {
   template <typename Reference>
   struct Iterator : decltype(dyno::requires(
     dyno::MoveConstructible{},
-    "increment"_s = dyno::function<void (dyno::T&)>,
-    "dereference"_s = dyno::function<Reference (dyno::T&)>,
-    "equal"_s = dyno::function<bool (dyno::T const&, dyno::T const&)>
+    "increment"_dyno = dyno::function<void (dyno::T&)>,
+    "dereference"_dyno = dyno::function<Reference (dyno::T&)>,
+    "equal"_dyno = dyno::function<bool (dyno::T const&, dyno::T const&)>
   )) { };
 
   template <typename Value, typename StoragePolicy, typename VTablePolicy, typename Reference = Value&>
@@ -27,9 +27,9 @@ namespace dyno_generic {
     template <typename It>
     explicit any_iterator(It it)
       : poly_{std::move(it), dyno::make_concept_map(
-        "increment"_s = [](It& self) { ++self; },
-        "dereference"_s = [](It& self) -> decltype(auto) { return *self; },
-        "equal"_s = [](It const& a, It const& b) -> bool { return a == b; }
+        "increment"_dyno = [](It& self) { ++self; },
+        "dereference"_dyno = [](It& self) -> decltype(auto) { return *self; },
+        "equal"_dyno = [](It const& a, It const& b) -> bool { return a == b; }
       )}
     { }
 
@@ -38,16 +38,16 @@ namespace dyno_generic {
     { }
 
     any_iterator& operator++() {
-      poly_.virtual_("increment"_s)(poly_);
+      poly_.virtual_("increment"_dyno)(poly_);
       return *this;
     }
 
     reference operator*() {
-      return poly_.virtual_("dereference"_s)(poly_);
+      return poly_.virtual_("dereference"_dyno)(poly_);
     }
 
     friend bool operator==(any_iterator const& a, any_iterator const& b) {
-      return a.poly_.virtual_("equal"_s)(a.poly_, b.poly_);
+      return a.poly_.virtual_("equal"_dyno)(a.poly_, b.poly_);
     }
 
   private:
@@ -66,9 +66,9 @@ namespace dyno_generic {
     int,
     dyno::local_storage<16>,
     dyno::vtable<
-      dyno::local<dyno::only<decltype("increment"_s),
-                             decltype("dereference"_s),
-                             decltype("equal"_s)>>,
+      dyno::local<dyno::only<decltype("increment"_dyno),
+                             decltype("dereference"_dyno),
+                             decltype("equal"_dyno)>>,
       dyno::remote<dyno::everything_else>
     >
   >;

@@ -11,20 +11,20 @@ using namespace dyno::literals;
 
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<int (dyno::T&, double)>
+  "f"_dyno = dyno::function<int (dyno::T&, double)>
 )) { };
 
 struct Foo { };
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&, double) { return 111; }
+  "f"_dyno = [](Foo&, double) { return 111; }
 );
 
 int main() {
   Foo foo;
   dyno::poly<Concept> poly{foo};
   // can't store this in a variable; can only use as a temporary
-  auto f = "f"_s(3.3);
+  auto f = "f"_dyno(3.3);
   poly->*f;
 }

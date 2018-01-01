@@ -14,21 +14,21 @@ using namespace dyno::literals;
 // `dyno::poly::virtual_`.
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<int (dyno::T&)>,
-  "g"_s = dyno::function<double (dyno::T&, double)>
+  "f"_dyno = dyno::function<int (dyno::T&)>,
+  "g"_dyno = dyno::function<double (dyno::T&, double)>
 )) { };
 
 struct Foo { };
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { return 111; },
-  "g"_s = [](Foo&, double d) { return d; }
+  "f"_dyno = [](Foo&) { return 111; },
+  "g"_dyno = [](Foo&, double d) { return d; }
 );
 
 int main() {
   Foo foo;
   dyno::poly<Concept> poly{foo};
-  DYNO_CHECK(poly->*"f"_s() == 111);
-  DYNO_CHECK(poly->*"g"_s(3.3) == 3.3);
+  DYNO_CHECK(poly->*"f"_dyno() == 111);
+  DYNO_CHECK(poly->*"g"_dyno(3.3) == 3.3);
 }

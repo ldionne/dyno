@@ -144,15 +144,15 @@ public:
   template <typename VTable>
   sbo_storage(sbo_storage const& other, VTable const& vtable) {
     if (other.uses_heap()) {
-      auto info = vtable["storage_info"_s]();
+      auto info = vtable["storage_info"_dyno]();
       uses_heap_ = true;
       ptr_ = std::malloc(info.size);
       // TODO: That's not a really nice way to handle this
       assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
-      vtable["copy-construct"_s](ptr_, other.get());
+      vtable["copy-construct"_dyno](ptr_, other.get());
     } else {
       uses_heap_ = false;
-      vtable["copy-construct"_s](&sb_, other.get());
+      vtable["copy-construct"_dyno](&sb_, other.get());
     }
   }
 
@@ -164,7 +164,7 @@ public:
       this->ptr_ = other.ptr_;
       other.ptr_ = nullptr;
     } else {
-      vtable["move-construct"_s](this->get(), other.get());
+      vtable["move-construct"_dyno](this->get(), other.get());
     }
   }
 
@@ -181,8 +181,8 @@ public:
         void *ptr = this->ptr_;
 
         // Bring `other`'s contents to `*this`, destructively
-        other_vtable["move-construct"_s](&this->sb_, &other.sb_);
-        other_vtable["destruct"_s](&other.sb_);
+        other_vtable["move-construct"_dyno](&this->sb_, &other.sb_);
+        other_vtable["destruct"_dyno](&other.sb_);
         this->uses_heap_ = false;
 
         // Bring `*this`'s stuff to `other`
@@ -194,8 +194,8 @@ public:
         void *ptr = other.ptr_;
 
         // Bring `*this`'s contents to `other`, destructively
-        this_vtable["move-construct"_s](&other.sb_, &this->sb_);
-        this_vtable["destruct"_s](&this->sb_);
+        this_vtable["move-construct"_dyno](&other.sb_, &this->sb_);
+        this_vtable["destruct"_dyno](&this->sb_);
         other.uses_heap_ = false;
 
         // Bring `other`'s stuff to `*this`
@@ -205,16 +205,16 @@ public:
       } else {
         // Move `other` into temporary local storage, destructively.
         SBStorage tmp;
-        other_vtable["move-construct"_s](&tmp, &other.sb_);
-        other_vtable["destruct"_s](&other.sb_);
+        other_vtable["move-construct"_dyno](&tmp, &other.sb_);
+        other_vtable["destruct"_dyno](&other.sb_);
 
         // Move `*this` into `other`, destructively.
-        this_vtable["move-construct"_s](&other.sb_, &this->sb_);
-        this_vtable["destruct"_s](&this->sb_);
+        this_vtable["move-construct"_dyno](&other.sb_, &this->sb_);
+        this_vtable["destruct"_dyno](&this->sb_);
 
         // Now, bring `tmp` into `*this`, destructively.
-        other_vtable["move-construct"_s](&this->sb_, &tmp);
-        other_vtable["destruct"_s](&tmp);
+        other_vtable["move-construct"_dyno](&this->sb_, &tmp);
+        other_vtable["destruct"_dyno](&tmp);
       }
     }
   }
@@ -226,10 +226,10 @@ public:
       if (ptr_ == nullptr)
         return;
 
-      vtable["destruct"_s](ptr_);
+      vtable["destruct"_dyno](ptr_);
       std::free(ptr_);
     } else {
-      vtable["destruct"_s](&sb_);
+      vtable["destruct"_dyno](&sb_);
     }
   }
 
@@ -269,12 +269,12 @@ struct remote_storage {
 
   template <typename VTable>
   remote_storage(remote_storage const& other, VTable const& vtable)
-    : ptr_{std::malloc(vtable["storage_info"_s]().size)}
+    : ptr_{std::malloc(vtable["storage_info"_dyno]().size)}
   {
     // TODO: That's not a really nice way to handle this
     assert(ptr_ != nullptr && "std::malloc failed, we're doomed");
 
-    vtable["copy-construct"_s](this->get(), other.get());
+    vtable["copy-construct"_dyno](this->get(), other.get());
   }
 
   template <typename VTable>
@@ -295,7 +295,7 @@ struct remote_storage {
     if (ptr_ == nullptr)
       return;
 
-    vtable["destruct"_s](ptr_);
+    vtable["destruct"_dyno](ptr_);
     std::free(ptr_);
   }
 
@@ -418,20 +418,20 @@ public:
 
   template <typename VTable>
   local_storage(local_storage const& other, VTable const& vtable) {
-    assert(can_store(vtable["storage_info"_s]()) &&
+    assert(can_store(vtable["storage_info"_dyno]()) &&
       "dyno::local_storage: Trying to copy-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
-    vtable["copy-construct"_s](this->get(), other.get());
+    vtable["copy-construct"_dyno](this->get(), other.get());
   }
 
   template <typename VTable>
   local_storage(local_storage&& other, VTable const& vtable) {
-    assert(can_store(vtable["storage_info"_s]()) &&
+    assert(can_store(vtable["storage_info"_dyno]()) &&
       "dyno::local_storage: Trying to move-construct using a vtable that "
       "describes an object that won't fit in the storage.");
 
-    vtable["move-construct"_s](this->get(), other.get());
+    vtable["move-construct"_dyno](this->get(), other.get());
   }
 
   template <typename MyVTable, typename OtherVTable>
@@ -441,21 +441,21 @@ public:
 
     // Move `other` into temporary local storage, destructively.
     SBStorage tmp;
-    other_vtable["move-construct"_s](&tmp, &other.buffer_);
-    other_vtable["destruct"_s](&other.buffer_);
+    other_vtable["move-construct"_dyno](&tmp, &other.buffer_);
+    other_vtable["destruct"_dyno](&other.buffer_);
 
     // Move `*this` into `other`, destructively.
-    this_vtable["move-construct"_s](&other.buffer_, &this->buffer_);
-    this_vtable["destruct"_s](&this->buffer_);
+    this_vtable["move-construct"_dyno](&other.buffer_, &this->buffer_);
+    this_vtable["destruct"_dyno](&this->buffer_);
 
     // Now, bring `tmp` into `*this`, destructively.
-    other_vtable["move-construct"_s](&this->buffer_, &tmp);
-    other_vtable["destruct"_s](&tmp);
+    other_vtable["move-construct"_dyno](&this->buffer_, &tmp);
+    other_vtable["destruct"_dyno](&tmp);
   }
 
   template <typename VTable>
   void destruct(VTable const& vtable) {
-    vtable["destruct"_s](&buffer_);
+    vtable["destruct"_dyno](&buffer_);
   }
 
   template <typename T = void>

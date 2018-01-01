@@ -11,7 +11,7 @@ using namespace dyno::literals;
 // to two concepts that we derive from.
 
 struct CommonBase : decltype(dyno::requires(
-  "f"_s = dyno::function<void ()>
+  "f"_dyno = dyno::function<void ()>
 )) { };
 
 struct Base1 : decltype(dyno::requires(

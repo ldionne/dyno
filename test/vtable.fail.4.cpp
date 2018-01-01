@@ -9,14 +9,14 @@ using namespace dyno::literals;
 
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T const&)>
+  "f"_dyno = dyno::function<void (dyno::T const&)>
 )) { };
 
 struct Foo { };
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { }
+  "f"_dyno = [](Foo&) { }
 );
 
 int main() {
@@ -24,7 +24,7 @@ int main() {
 
   // MESSAGE[Some functions specified in this selector are not part of the concept to which the selector was applied]
   dyno::vtable<
-    dyno::local<dyno::only<decltype("nonexistent"_s)>>,
+    dyno::local<dyno::only<decltype("nonexistent"_dyno)>>,
     dyno::remote<dyno::everything_else>
   >::apply<Concept> vtable{complete};
 }

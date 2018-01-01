@@ -220,24 +220,24 @@ namespace diagnostic {
 // the mappings provided explicitly. For example:
 // ```
 // struct A : decltype(dyno::requires(
-//   "f"_s = dyno::function<void (dyno::T&)>
+//   "f"_dyno = dyno::function<void (dyno::T&)>
 // )) { };
 //
 // struct B : decltype(dyno::requires(
 //   A{},
-//   "g"_s = dyno::function<int (dyno::T&)>
+//   "g"_dyno = dyno::function<int (dyno::T&)>
 // )) { };
 //
 // struct Foo { };
 //
 // template <>
 // auto const dyno::concept_map<A, Foo> = dyno::make_concept_map(
-//   "f"_s = [](Foo&) { }
+//   "f"_dyno = [](Foo&) { }
 // );
 //
 // template <>
 // auto const dyno::concept_map<B, Foo> = dyno::make_concept_map(
-//   "g"_s = [](Foo&) { return 0; }
+//   "g"_dyno = [](Foo&) { return 0; }
 // );
 //
 // auto complete = dyno::complete_concept_map<B, Foo>(dyno::concept_map<B, Foo>);

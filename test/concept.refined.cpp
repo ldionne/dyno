@@ -13,12 +13,12 @@ using namespace dyno::literals;
 
 
 struct A : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T&)>
+  "f"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 struct B : decltype(dyno::requires(
   A{},
-  "g"_s = dyno::function<int (dyno::T&)>
+  "g"_dyno = dyno::function<int (dyno::T&)>
 )) { };
 
 struct C : decltype(dyno::requires(
@@ -26,14 +26,14 @@ struct C : decltype(dyno::requires(
 )) { };
 
 struct D : decltype(dyno::requires(
-  "h"_s = dyno::function<void (dyno::T&)>
+  "h"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 struct E : decltype(dyno::requires(
   C{},
-  "i"_s = dyno::function<void (dyno::T&)>,
+  "i"_dyno = dyno::function<void (dyno::T&)>,
   D{},
-  "j"_s = dyno::function<void (dyno::T&)>
+  "j"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 template <typename Concept>

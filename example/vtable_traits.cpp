@@ -27,22 +27,22 @@ struct Iterator : decltype(dyno::requires(
   dyno::Destructible{},
   dyno::Swappable{},
   dyno::EqualityComparable{},
-  "increment"_s = dyno::function<void (dyno::T&)>,
-  "decrement"_s = dyno::function<void (dyno::T&)>,
-  "dereference"_s = dyno::function<Reference (dyno::T&)>,
-  "advance"_s = dyno::function<void (dyno::T&, std::ptrdiff_t)>,
-  "distance"_s = dyno::function<std::ptrdiff_t (dyno::T const&, dyno::T const&)>
+  "increment"_dyno = dyno::function<void (dyno::T&)>,
+  "decrement"_dyno = dyno::function<void (dyno::T&)>,
+  "dereference"_dyno = dyno::function<Reference (dyno::T&)>,
+  "advance"_dyno = dyno::function<void (dyno::T&, std::ptrdiff_t)>,
+  "distance"_dyno = dyno::function<std::ptrdiff_t (dyno::T const&, dyno::T const&)>
 )) { };
 
 template <typename Ref, typename T>
 auto const dyno::default_concept_map<Iterator<Ref>, T> = dyno::make_concept_map(
-  "increment"_s = [](T& self) { ++self; },
-  "decrement"_s = [](T& self) -> void { --self; },
-  "dereference"_s = [](T& self) -> Ref { return *self; },
-  "advance"_s = [](T& self, std::ptrdiff_t diff) -> void {
+  "increment"_dyno = [](T& self) { ++self; },
+  "decrement"_dyno = [](T& self) -> void { --self; },
+  "dereference"_dyno = [](T& self) -> Ref { return *self; },
+  "advance"_dyno = [](T& self, std::ptrdiff_t diff) -> void {
     std::advance(self, diff);
   },
-  "distance"_s = [](T const& first, T const& last) -> std::ptrdiff_t {
+  "distance"_dyno = [](T const& first, T const& last) -> std::ptrdiff_t {
     return std::distance(first, last);
   }
 );
@@ -60,7 +60,7 @@ private:
   using Storage = dyno::remote_storage;
   using VTable = dyno::vtable<
     dyno::local<dyno::only<
-      decltype("increment"_s), decltype("equal"_s), decltype("dereference"_s)
+      decltype("increment"_dyno), decltype("equal"_dyno), decltype("dereference"_dyno)
     >>,
     dyno::remote<dyno::everything_else>
   >;
@@ -86,21 +86,21 @@ public:
   friend void swap(any_iterator& a, any_iterator& b) { a.swap(b); }
 
   any_iterator& operator++() {
-    poly_.virtual_("increment"_s)(poly_);
+    poly_.virtual_("increment"_dyno)(poly_);
     return *this;
   }
 
   any_iterator& operator--() {
-    poly_.virtual_("decrement"_s)(poly_);
+    poly_.virtual_("decrement"_dyno)(poly_);
     return *this;
   }
 
   reference operator*() {
-    return poly_.virtual_("dereference"_s)(poly_);
+    return poly_.virtual_("dereference"_dyno)(poly_);
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    return a.poly_.virtual_("equal"_s)(a.poly_, b.poly_);
+    return a.poly_.virtual_("equal"_dyno)(a.poly_, b.poly_);
   }
 
   friend bool operator!=(any_iterator const& a, any_iterator const& b) {

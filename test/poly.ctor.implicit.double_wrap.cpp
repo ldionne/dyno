@@ -29,8 +29,8 @@ int main() {
   // We expect the objects below to be a copy of the above `poly` (and thus
   // `poly`s holding a `Foo`), not `poly`s holding a `poly`.
   dyno::poly<Concept> explicit_copy{poly};
-  DYNO_CHECK(explicit_copy.virtual_("typeid"_s)() == typeid(Foo));
+  DYNO_CHECK(explicit_copy.virtual_("typeid"_dyno)() == typeid(Foo));
 
   dyno::poly<Concept> implicit_copy = poly;
-  DYNO_CHECK(implicit_copy.virtual_("typeid"_s)() == typeid(Foo));
+  DYNO_CHECK(implicit_copy.virtual_("typeid"_dyno)() == typeid(Foo));
 }

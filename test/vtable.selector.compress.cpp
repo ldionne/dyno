@@ -14,7 +14,7 @@ using namespace dyno::literals;
 // easy to optimize as possible.
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T const&)>
+  "f"_dyno = dyno::function<void (dyno::T const&)>
 )) { };
 
 struct Foo { };
@@ -25,7 +25,7 @@ using GeneratedVTable = dyno::vtable<
 >::apply<Concept>;
 
 using RemoteOnly = dyno::remote_vtable<dyno::local_vtable<
-  decltype("f"_s = dyno::function<void (dyno::T const&)>)
+  decltype("f"_dyno = dyno::function<void (dyno::T const&)>)
 >>;
 
 static_assert(std::is_same<GeneratedVTable, RemoteOnly>{});

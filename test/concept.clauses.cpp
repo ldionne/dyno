@@ -14,13 +14,13 @@ namespace hana = boost::hana;
 
 
 struct A : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T&)>
+  "f"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 struct B : decltype(dyno::requires(
   A{},
-  "g"_s = dyno::function<int (dyno::T&)>,
-  "h"_s = dyno::function<double (dyno::T&, int)>
+  "g"_dyno = dyno::function<int (dyno::T&)>,
+  "h"_dyno = dyno::function<double (dyno::T&, int)>
 )) { };
 
 struct C : decltype(dyno::requires(
@@ -29,21 +29,21 @@ struct C : decltype(dyno::requires(
 
 static_assert(hana::to_set(dyno::clauses(A{})) ==
               hana::to_set(hana::make_tuple(
-                "f"_s = dyno::function<void (dyno::T&)>
+                "f"_dyno = dyno::function<void (dyno::T&)>
               )), "");
 
 static_assert(hana::to_set(dyno::clauses(B{})) ==
               hana::to_set(hana::make_tuple(
-                "f"_s = dyno::function<void (dyno::T&)>,
-                "g"_s = dyno::function<int (dyno::T&)>,
-                "h"_s = dyno::function<double (dyno::T&, int)>
+                "f"_dyno = dyno::function<void (dyno::T&)>,
+                "g"_dyno = dyno::function<int (dyno::T&)>,
+                "h"_dyno = dyno::function<double (dyno::T&, int)>
               )), "");
 
 static_assert(hana::to_set(dyno::clauses(C{})) ==
               hana::to_set(hana::make_tuple(
-                "f"_s = dyno::function<void (dyno::T&)>,
-                "g"_s = dyno::function<int (dyno::T&)>,
-                "h"_s = dyno::function<double (dyno::T&, int)>
+                "f"_dyno = dyno::function<void (dyno::T&)>,
+                "g"_dyno = dyno::function<int (dyno::T&)>,
+                "h"_dyno = dyno::function<double (dyno::T&, int)>
               )), "");
 
 int main() { }

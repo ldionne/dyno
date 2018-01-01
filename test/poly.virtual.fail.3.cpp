@@ -9,19 +9,19 @@ using namespace dyno::literals;
 
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T&)>
+  "f"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 struct Foo { };
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { }
+  "f"_dyno = [](Foo&) { }
 );
 
 int main() {
   Foo foo;
   dyno::poly<Concept> poly{foo};
   // MESSAGE[dyno::poly::virtual_: Trying to access a function that is not part of the Concept]
-  poly.virtual_("g"_s);
+  poly.virtual_("g"_dyno);
 }

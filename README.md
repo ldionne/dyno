@@ -27,13 +27,13 @@ using namespace dyno::literals;
 
 // Define the interface of something that can be drawn
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::method<void (std::ostream&) const>
+  "draw"_dyno = dyno::method<void (std::ostream&) const>
 )) { };
 
 // Define how concrete types can fulfill that interface
 template <typename T>
 auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
-  "draw"_s = [](T const& self, std::ostream& out) { self.draw(out); }
+  "draw"_dyno = [](T const& self, std::ostream& out) { self.draw(out); }
 );
 
 // Define an object that can hold anything that can be drawn.
@@ -42,7 +42,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out); }
+  { poly_.virtual_("draw"_dyno)(out); }
 
 private:
   dyno::poly<Drawable> poly_;
@@ -237,7 +237,7 @@ let's define an interface `Drawable` that describes types that can be drawn:
 using namespace dyno::literals;
 
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::method<void (std::ostream&) const>
+  "draw"_dyno = dyno::method<void (std::ostream&) const>
 )) { };
 ```
 
@@ -273,7 +273,7 @@ struct Square { /* ... */ };
 
 template <>
 auto const dyno::concept_map<Drawable, Square> = dyno::make_concept_map(
-  "draw"_s = [](Square const& square, std::ostream& out) {
+  "draw"_dyno = [](Square const& square, std::ostream& out) {
     out << "square" << std::endl;
   }
 );
@@ -319,7 +319,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out); }
+  { poly_.virtual_("draw"_dyno)(out); }
 
 private:
   dyno::poly<Drawable> poly_;
@@ -356,7 +356,7 @@ of the `draw` method:
 
 ```c++
 void draw(std::ostream& out) const
-{ poly_.virtual_("draw"_s)(out); }
+{ poly_.virtual_("draw"_dyno)(out); }
 ```
 
 What happens here is that when `.draw` is called on our `drawable` object,
@@ -414,7 +414,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out); }
+  { poly_.virtual_("draw"_dyno)(out); }
 
 private:
   dyno::poly<Drawable, dyno::sbo_storage<16>> poly_;
@@ -465,7 +465,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out); }
+  { poly_.virtual_("draw"_dyno)(out); }
 
 private:
   using Storage = dyno::sbo_storage<16>;                      // storage policy
@@ -490,12 +490,12 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out); }
+  { poly_.virtual_("draw"_dyno)(out); }
 
 private:
   using Storage = dyno::sbo_storage<16>;
   using VTable = dyno::vtable<
-    dyno::local<dyno::only<decltype("draw"_s)>>,
+    dyno::local<dyno::only<decltype("draw"_dyno)>>,
     dyno::remote<dyno::everything_else>
   >;
   dyno::poly<Drawable, Storage, VTable> poly_;
@@ -523,7 +523,7 @@ For this, one can use `dyno::default_concept_map`:
 ```c++
 template <typename T>
 auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
-  "draw"_s = [](auto const& self, std::ostream& out) { self.draw(out); }
+  "draw"_dyno = [](auto const& self, std::ostream& out) { self.draw(out); }
 );
 ```
 
@@ -549,7 +549,7 @@ default one:
 ```c++
 template <>
 auto dyno::concept_map<Drawable, Circle> = dyno::make_concept_map(
-  "draw"_s = [](Circle const& circle, std::ostream& out) {
+  "draw"_dyno = [](Circle const& circle, std::ostream& out) {
     out << "triangle" << std::endl;
   }
 );
@@ -569,7 +569,7 @@ template <typename T>
 auto const dyno::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
   std::cout << std::declval<T>()
 )>> = dyno::make_concept_map(
-  "draw"_s = [](std::vector<T> const& v, std::ostream& out) {
+  "draw"_dyno = [](std::vector<T> const& v, std::ostream& out) {
     for (auto const& x : v)
       out << x << ' ';
   }
@@ -591,7 +591,7 @@ the concept using `dyno::function` instead of `dyno::method`, and use the
 ```c++
 // Define the interface of something that can be drawn
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
+  "draw"_dyno = dyno::function<void (dyno::T const&, std::ostream&)>
 )) { };
 ```
 
@@ -601,7 +601,7 @@ first parameter:
 
 ```c++
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::function<void (std::ostream&, dyno::T const&)>
+  "draw"_dyno = dyno::function<void (std::ostream&, dyno::T const&)>
 )) { };
 ```
 
@@ -613,7 +613,7 @@ implementation match that of the function declared in the concept:
 // Define how concrete types can fulfill that interface
 template <typename T>
 auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
-  "draw"_s = [](std::ostream& out, T const& self) { self.draw(out); }
+  "draw"_dyno = [](std::ostream& out, T const& self) { self.draw(out); }
   //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ matches the concept definition
 );
 ```
@@ -630,7 +630,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out, poly_); }
+  { poly_.virtual_("draw"_dyno)(out, poly_); }
   //                              ^^^^^ passing the poly explicitly
 
 private:

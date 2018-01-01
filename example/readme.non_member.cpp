@@ -15,13 +15,13 @@ using namespace dyno::literals;
 
 // Define the interface of something that can be drawn
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::function<void (std::ostream&, dyno::T const&)>
+  "draw"_dyno = dyno::function<void (std::ostream&, dyno::T const&)>
 )) { };
 
 // Define how concrete types can fulfill that interface
 template <typename T>
 auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
-  "draw"_s = [](std::ostream& out, T const& self) { self.draw(out); }
+  "draw"_dyno = [](std::ostream& out, T const& self) { self.draw(out); }
   //            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ matches the concept definition
 );
 
@@ -31,7 +31,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out, poly_); }
+  { poly_.virtual_("draw"_dyno)(out, poly_); }
   //                              ^^^^^ passing the poly explicitly
 
 private:
