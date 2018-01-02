@@ -66,9 +66,7 @@ namespace dyno_generic {
     int,
     dyno::local_storage<16>,
     dyno::vtable<
-      dyno::local<dyno::only<decltype("increment"_s),
-                             decltype("dereference"_s),
-                             decltype("equal"_s)>>,
+      dyno::local<dyno::only<"increment"_s, "dereference"_s, "equal"_s>>,
       dyno::remote<dyno::everything_else>
     >
   >;

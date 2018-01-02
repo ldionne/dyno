@@ -59,9 +59,7 @@ private:
   using Concept = Iterator<reference>;
   using Storage = dyno::remote_storage;
   using VTable = dyno::vtable<
-    dyno::local<dyno::only<
-      decltype("increment"_s), decltype("equal"_s), decltype("dereference"_s)
-    >>,
+    dyno::local<dyno::only<"increment"_s, "equal"_s, "dereference"_s>>,
     dyno::remote<dyno::everything_else>
   >;
   dyno::poly<Concept, Storage, VTable> poly_;
