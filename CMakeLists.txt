@@ -20,9 +20,7 @@ target_link_libraries(dyno INTERFACE hana callable_traits)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-Wno-gnu-string-literal-operator-template" DYNO_HAS_WNO_GNU_STRING_UDL)
-# GCC pretends to have the flag, but produces a "unrecognized command line option"
-# warning when we use it.
-if (DYNO_HAS_WNO_GNU_STRING_UDL AND NOT ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+if (DYNO_HAS_WNO_GNU_STRING_UDL)
   target_compile_options(dyno INTERFACE -Wno-gnu-string-literal-operator-template)
 endif()
 
