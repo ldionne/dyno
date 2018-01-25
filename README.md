@@ -111,10 +111,10 @@ This is a C++17 library. No efforts will be made to support older compilers
 
 ## Dependencies
 The library depends on [Boost.Hana][] and [Boost.CallableTraits][]. The unit
-tests depend on [libawful][] and the benchmarks on [Google Benchmark][], but
-you don't need them to use the library. For local development, the
-`dependencies/install.sh` script can be used to install all the
-dependencies automatically.
+tests depend on [libawful][] and the benchmarks depend on [Google Benchmark][],
+[Boost.TypeErasure][] and [Mpark.Variant][], but you don't need them to use
+the library. For local development, the `dependencies/install.sh` script can
+be used to install all the dependencies automatically.
 
 
 ## Building the library
@@ -645,11 +645,13 @@ private:
 [badge.Travis]: https://travis-ci.org/ldionne/dyno.svg?branch=master
 [Boost.CallableTraits]: https://github.com/badair/callable_traits
 [Boost.Hana]: https://github.com/boostorg/hana
+[Boost.TypeErasure]: http://www.boost.org/doc/libs/release/doc/html/boost_typeerasure.html
 [C++0x Concept Maps]: https://isocpp.org/wiki/faq/cpp0x-concepts-history#cpp0x-concept-maps
 [Go interfaces]: https://gobyexample.com/interfaces
 [Google Benchmark]: https://github.com/google/benchmark
 [Haskell type classes]: http://learnyouahaskell.com/types-and-typeclasses
 [libawful]: https://github.com/ldionne/libawful
+[Mpark.Variant]: https://github.com/mpark/variant
 [Rust trait objects]: https://doc.rust-lang.org/book/first-edition/trait-objects.html
 [type erasure]: https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Type_Erasure
 [virtual concepts]: https://github.com/andyprowl/virtual-concepts
