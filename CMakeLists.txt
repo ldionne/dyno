@@ -29,16 +29,17 @@ endif()
 # Setup the installation target for dyno and the related exports.
 ##############################################################################
 install(TARGETS dyno
-  EXPORT DynoConfig
+  EXPORT dyno-targets
   INCLUDES DESTINATION include
 )
-install(EXPORT DynoConfig
-  FILE DynoConfig.cmake
+install(EXPORT dyno-targets
+  FILE dyno-targets.cmake
   NAMESPACE Dyno::
-  DESTINATION lib/cmake/Dyno
+  DESTINATION lib/cmake/dyno
 )
-install(FILES     include/dyno.hpp DESTINATION include)
-install(DIRECTORY include/dyno     DESTINATION include FILES_MATCHING PATTERN "*.hpp")
+install(FILES     cmake/dyno-config.cmake DESTINATION lib/cmake/dyno)
+install(FILES     include/dyno.hpp        DESTINATION include)
+install(DIRECTORY include/dyno            DESTINATION include FILES_MATCHING PATTERN "*.hpp")
 
 
 ##############################################################################

@@ -44,9 +44,8 @@ foreach(ut IN LISTS UNIT_TESTS)
   target_link_libraries(${target} PRIVATE awful)
 endforeach()
 
-# Add the deployment test, which checks that we can indeed install `dyno` and
-# then use the provided `DynoConfig.cmake` config file to use `dyno` from an
-# external project.
+# Add the deployment test, which checks that we can indeed install dyno and
+# then use `find_package` to depend on it from another CMake project.
 include(ExternalProject)
 set(DYNO_FAKE_INSTALL_DIR "${PROJECT_BINARY_DIR}/fakeroot")
 ExternalProject_Add(test.deploy.fakeroot
