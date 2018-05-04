@@ -7,6 +7,7 @@
 
 #include <dyno.hpp>
 #include <benchmark/benchmark.h>
+#include <memory>
 #include <utility>
 using namespace dyno::literals;
 
