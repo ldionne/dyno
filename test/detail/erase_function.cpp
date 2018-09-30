@@ -7,6 +7,8 @@
 #include <dyno/concept.hpp>
 #include <dyno/detail/erase_function.hpp>
 
+#include <utility>
+
 
 int main() {
   // erase_function should work with stateless lambdas
@@ -71,5 +73,17 @@ int main() {
       int result = f(static_cast<void*>(&i));
       DYNO_CHECK(result == 3);
     }
+  }
+
+  // erase_function should be able to erase a function returning an rvalue reference
+  {
+    static int i = 3;
+    auto f = dyno::detail::erase_function<dyno::T&& ()>([]() -> int&& {
+      return std::move(i);
+    });
+    void* result = f();
+    int* casted = static_cast<int*>(result);
+    DYNO_CHECK(casted == &i);
+    DYNO_CHECK(*casted == 3);
   }
 }

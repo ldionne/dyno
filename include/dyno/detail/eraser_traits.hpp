@@ -100,7 +100,7 @@ template <>
 struct erase<void, dyno::T&&> {
   template <typename Arg>
   static constexpr void* apply(Arg&& arg) {
-    static_assert(std::is_rvalue_reference<Arg>::value, "will move from non-rvalue");
+    static_assert(std::is_rvalue_reference<Arg&&>::value, "will move from non-rvalue");
     return &arg;
   }
 };
