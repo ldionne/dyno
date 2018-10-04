@@ -24,8 +24,8 @@ struct Iterator : decltype(dyno::requires(
   dyno::CopyAssignable{},
   dyno::Destructible{},
   dyno::Swappable{},
-  "increment"_s = dyno::function<void (dyno::T&)>,
-  "dereference"_s = dyno::function<Reference (dyno::T&)>
+  "increment"_dyno = dyno::function<void (dyno::T&)>,
+  "dereference"_dyno = dyno::function<Reference (dyno::T&)>
 )) { };
 
 template <typename Reference>
@@ -43,14 +43,14 @@ struct ForwardIterator : decltype(dyno::requires(
 template <typename Reference>
 struct BidirectionalIterator : decltype(dyno::requires(
   ForwardIterator<Reference>{},
-  "decrement"_s = dyno::function<void (dyno::T&)>
+  "decrement"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 template <typename Reference, typename Difference>
 struct RandomAccessIterator : decltype(dyno::requires(
   BidirectionalIterator<Reference>{},
-  "advance"_s = dyno::function<void (dyno::T&, Difference)>,
-  "distance"_s = dyno::function<Difference (dyno::T const&, dyno::T const&)>
+  "advance"_dyno = dyno::function<void (dyno::T&, Difference)>,
+  "distance"_dyno = dyno::function<Difference (dyno::T const&, dyno::T const&)>
 )) { };
 
 
@@ -59,22 +59,22 @@ struct RandomAccessIterator : decltype(dyno::requires(
 // specific iterator type.
 template <typename Ref, typename T>
 auto const dyno::default_concept_map<Iterator<Ref>, T> = dyno::make_concept_map(
-  "increment"_s = [](T& self) { ++self; },
-  "dereference"_s = [](T& self) -> Ref { return *self; }
+  "increment"_dyno = [](T& self) { ++self; },
+  "dereference"_dyno = [](T& self) -> Ref { return *self; }
 );
 
 template <typename Ref, typename T>
 auto const dyno::default_concept_map<BidirectionalIterator<Ref>, T> = dyno::make_concept_map(
-  "decrement"_s = [](T& self) -> void { --self; }
+  "decrement"_dyno = [](T& self) -> void { --self; }
 );
 
 template <typename Ref, typename Diff, typename T>
 auto const dyno::default_concept_map<RandomAccessIterator<Ref, Diff>, T> = dyno::make_concept_map(
-  "advance"_s = [](T& self, Diff diff) -> void {
+  "advance"_dyno = [](T& self, Diff diff) -> void {
     std::advance(self, diff);
   },
 
-  "distance"_s = [](T const& first, T const& last) -> Diff {
+  "distance"_dyno = [](T const& first, T const& last) -> Diff {
     return std::distance(first, last);
   }
 );
@@ -176,24 +176,24 @@ public:
   friend void swap(any_iterator& a, any_iterator& b) { a.swap(b); }
 
   any_iterator& operator++() {
-    poly_.virtual_("increment"_s)(poly_);
+    poly_.virtual_("increment"_dyno)(poly_);
     return *this;
   }
 
   template <bool True = true, typename = std::enable_if_t<True &&
     std::is_base_of<std::bidirectional_iterator_tag, iterator_category>{}
   >> any_iterator& operator--() {
-    poly_.virtual_("decrement"_s)(poly_);
+    poly_.virtual_("decrement"_dyno)(poly_);
     return *this;
   }
 
   reference operator*() {
-    return poly_.virtual_("dereference"_s)(poly_);
+    return poly_.virtual_("dereference"_dyno)(poly_);
   }
 
   friend bool operator==(any_iterator const& a, any_iterator const& b) {
-    assert(a.poly_.virtual_("typeid"_s)() == b.poly_.virtual_("typeid"_s)());
-    return a.poly_.virtual_("equal"_s)(a.poly_, b.poly_);
+    assert(a.poly_.virtual_("typeid"_dyno)() == b.poly_.virtual_("typeid"_dyno)());
+    return a.poly_.virtual_("equal"_dyno)(a.poly_, b.poly_);
   }
 
   friend bool operator!=(any_iterator const& a, any_iterator const& b) {

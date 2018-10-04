@@ -8,14 +8,14 @@ using namespace dyno::literals;
 
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<void ()>
+  "f"_dyno = dyno::function<void ()>
 )) { };
 
 // MESSAGE[dyno::make_concept_map: It looks like you have multiple entries with the same name in your concept map]
 template <>
 auto dyno::concept_map<Concept, int> = dyno::make_concept_map(
-  "f"_s = []() { },
-  "f"_s = [](int) { }
+  "f"_dyno = []() { },
+  "f"_dyno = [](int) { }
 );
 
 int main() { }

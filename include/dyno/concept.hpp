@@ -144,7 +144,7 @@ struct concept : detail::concept_base {
 // template <typename Reference>
 // struct Iterator : decltype(dyno::requires(
 //   Incrementable{},
-//   "dereference"_s = dyno::function<Reference (dyno::T&)>
+//   "dereference"_dyno = dyno::function<Reference (dyno::T&)>
 //   ...
 // )) { };
 // ```

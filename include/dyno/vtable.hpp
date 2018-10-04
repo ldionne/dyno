@@ -390,11 +390,11 @@ constexpr auto generate_vtable(Policies policies) {
 //
 //  dyno::only<functions...>
 //    Picks only the specified functions from a concept. `functions` must be
-//    compile-time strings, such as `dyno::only<decltype("foo"_s), decltype("bar"_s)>`.
+//    compile-time strings, such as `dyno::only<decltype("foo"_dyno), decltype("bar"_dyno)>`.
 //
 //  dyno::except<functions...>
 //    Picks all but the specified functions from a concept. `functions` must
-//    be compile-time strings, such as `dyno::except<decltype("foo"_s), decltype("bar"_s)>`.
+//    be compile-time strings, such as `dyno::except<decltype("foo"_dyno), decltype("bar"_dyno)>`.
 //
 //  dyno::everything
 //    Picks all the functions from a concept.

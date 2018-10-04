@@ -8,13 +8,13 @@ using namespace dyno::literals;
 
 
 struct Fooable : decltype(dyno::requires(
-  "foo"_s = dyno::function<void (dyno::T&)>,
-  "bar"_s = dyno::function<void (dyno::T&)>
+  "foo"_dyno = dyno::function<void (dyno::T&)>,
+  "bar"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 template <>
 auto const dyno::concept_map<Fooable, int> = dyno::make_concept_map(
-  "foo"_s = [](int&) { }
+  "foo"_dyno = [](int&) { }
 );
 
 // MESSAGE[Incomplete definition of your concept map]

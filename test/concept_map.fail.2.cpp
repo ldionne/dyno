@@ -8,17 +8,17 @@ using namespace dyno::literals;
 
 
 struct Fooable : decltype(dyno::requires(
-  "foo"_s = dyno::function<void (dyno::T&)>
+  "foo"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 template <>
 auto dyno::concept_map<Fooable, int> = dyno::make_concept_map(
-  "foo"_s = [](int& x) { ++x; }
+  "foo"_dyno = [](int& x) { ++x; }
 );
 
 int main() {
   auto const& map = dyno::complete_concept_map<Fooable, int>(dyno::concept_map<Fooable, int>);
 
   // MESSAGE[Request for the implementation of a function that was not provided in the concept map]
-  auto bar = map["bar"_s];
+  auto bar = map["bar"_dyno];
 }

@@ -55,7 +55,7 @@ void draw(document_t<Object> const& self, std::ostream& out) {
 
 
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
+  "draw"_dyno = dyno::function<void (dyno::T const&, std::ostream&)>
 )) { };
 
 class object_t {
@@ -63,12 +63,12 @@ public:
   template <typename T>
   object_t(T x)
     : poly_{std::move(x), dyno::make_concept_map(
-      "draw"_s = [](T const& self, std::ostream& out) { draw(self, out); }
+      "draw"_dyno = [](T const& self, std::ostream& out) { draw(self, out); }
     )}
   { }
 
   friend void draw(object_t const& x, std::ostream& out) {
-    x.poly_.virtual_("draw"_s)(x.poly_, out);
+    x.poly_.virtual_("draw"_dyno)(x.poly_, out);
   }
 
 private:

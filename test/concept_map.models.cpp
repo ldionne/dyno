@@ -8,12 +8,12 @@ using namespace dyno::literals;
 
 
 struct A : decltype(dyno::requires(
-  "f"_s = dyno::function<void (dyno::T&)>
+  "f"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 struct B : decltype(dyno::requires(
   A{},
-  "g"_s = dyno::function<void (dyno::T&)>
+  "g"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 struct C : decltype(dyno::requires(B{})) { };
@@ -23,12 +23,12 @@ struct Bar { };
 struct Baz { };
 
 template <>
-auto const dyno::concept_map<A, Foo> = dyno::make_concept_map("f"_s = [](Foo&) { });
+auto const dyno::concept_map<A, Foo> = dyno::make_concept_map("f"_dyno = [](Foo&) { });
 template <>
-auto const dyno::concept_map<B, Foo> = dyno::make_concept_map("g"_s = [](Foo&) { });
+auto const dyno::concept_map<B, Foo> = dyno::make_concept_map("g"_dyno = [](Foo&) { });
 
 template <>
-auto const dyno::concept_map<B, Bar> = dyno::make_concept_map("g"_s = [](Bar&) { });
+auto const dyno::concept_map<B, Bar> = dyno::make_concept_map("g"_dyno = [](Bar&) { });
 
 template <>
 auto const dyno::concept_map<A, Baz> = dyno::make_concept_map();

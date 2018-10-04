@@ -7,14 +7,14 @@ using namespace dyno::literals;
 
 
 struct Base : decltype(dyno::requires(
-  "f"_s = dyno::function<void ()>,
-  "g"_s = dyno::function<void ()>
+  "f"_dyno = dyno::function<void ()>,
+  "g"_dyno = dyno::function<void ()>
 )) { };
 
 // MESSAGE[dyno::concept: It looks like you are redefining a clause that is already defined in a base concept]
 struct Derived : decltype(dyno::requires(
   Base{},
-  "f"_s = dyno::function<void ()>
+  "f"_dyno = dyno::function<void ()>
 )) { };
 
 int main() { }

@@ -11,12 +11,12 @@ using namespace dyno::literals;
 
 
 struct Drawable : decltype(dyno::requires(
-  "draw"_s = dyno::method<void (std::ostream&) const>
+  "draw"_dyno = dyno::method<void (std::ostream&) const>
 )) { };
 
 template <typename T>
 auto const dyno::default_concept_map<Drawable, T> = dyno::make_concept_map(
-  "draw"_s = [](auto const& self, std::ostream& out) { self.draw(out); }
+  "draw"_dyno = [](auto const& self, std::ostream& out) { self.draw(out); }
 );
 
 struct drawable {
@@ -24,7 +24,7 @@ struct drawable {
   drawable(T x) : poly_{x} { }
 
   void draw(std::ostream& out) const
-  { poly_.virtual_("draw"_s)(out); }
+  { poly_.virtual_("draw"_dyno)(out); }
 
 private:
   dyno::poly<Drawable> poly_;
@@ -35,7 +35,7 @@ struct Square { /* ... */ };
 
 template <>
 auto const dyno::concept_map<Drawable, Square> = dyno::make_concept_map(
-  "draw"_s = [](Square const& /*square*/, std::ostream& out) {
+  "draw"_dyno = [](Square const& /*square*/, std::ostream& out) {
     out << "square" << std::endl;
   }
 );
@@ -52,7 +52,7 @@ template <typename T>
 auto const dyno::concept_map<Drawable, std::vector<T>, std::void_t<decltype(
   std::cout << std::declval<T>()
 )>> = dyno::make_concept_map(
-  "draw"_s = [](std::vector<T> const& v, std::ostream& out) {
+  "draw"_dyno = [](std::vector<T> const& v, std::ostream& out) {
     for (auto const& x : v)
       out << x << ' ';
   }

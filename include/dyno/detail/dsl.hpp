@@ -121,7 +121,7 @@ inline namespace literals {
   // Creates a compile-time string that can be used as the left-hand-side when
   // defining clauses or filling concept maps.
   template <typename CharT, CharT ...c>
-  constexpr auto operator""_s() { return detail::string<c...>{}; }
+  constexpr auto operator""_dyno() { return detail::string<c...>{}; }
 } // end namespace literals
 
 // Creates a Dyno compile-time string without requiring the use of a

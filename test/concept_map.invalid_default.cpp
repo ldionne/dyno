@@ -10,8 +10,8 @@ using namespace dyno::literals;
 
 
 struct Concept : decltype(dyno::requires(
-  "f"_s = dyno::function<int (dyno::T&)>,
-  "g"_s = dyno::function<int (dyno::T&)>
+  "f"_dyno = dyno::function<int (dyno::T&)>,
+  "g"_dyno = dyno::function<int (dyno::T&)>
 )) { };
 
 // Since the definition of `f` would be invalid, we need to use a generic
@@ -20,8 +20,8 @@ struct Concept : decltype(dyno::requires(
 
 template <typename T>
 auto const dyno::default_concept_map<Concept, T> = dyno::make_concept_map(
-  "f"_s = [](auto& t) { t.invalid(); return 222; },
-  "g"_s = [](auto& t) { t.valid(); return 333; }
+  "f"_dyno = [](auto& t) { t.invalid(); return 222; },
+  "g"_dyno = [](auto& t) { t.valid(); return 333; }
 );
 
 struct Foo {
@@ -31,12 +31,12 @@ struct Foo {
 
 template <>
 auto const dyno::concept_map<Concept, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { return 444; }
+  "f"_dyno = [](Foo&) { return 444; }
 );
 
 int main() {
   Foo foo;
   auto complete = dyno::complete_concept_map<Concept, Foo>(dyno::concept_map<Concept, Foo>);
-  DYNO_CHECK(complete["f"_s](foo) == 444);
-  DYNO_CHECK(complete["g"_s](foo) == 333);
+  DYNO_CHECK(complete["f"_dyno](foo) == 444);
+  DYNO_CHECK(complete["g"_dyno](foo) == 333);
 }

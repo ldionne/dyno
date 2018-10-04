@@ -180,11 +180,11 @@ namespace { namespace dyno_remote {
   using namespace dyno::literals;
 
   struct Concept : decltype(dyno::requires(
-    "f1"_s = dyno::function<void (dyno::T&)>,
-    "f2"_s = dyno::function<void (dyno::T&)>,
-    "f3"_s = dyno::function<void (dyno::T&)>,
-    "f4"_s = dyno::function<void (dyno::T&)>,
-    "f5"_s = dyno::function<void (dyno::T&)>
+    "f1"_dyno = dyno::function<void (dyno::T&)>,
+    "f2"_dyno = dyno::function<void (dyno::T&)>,
+    "f3"_dyno = dyno::function<void (dyno::T&)>,
+    "f4"_dyno = dyno::function<void (dyno::T&)>,
+    "f5"_dyno = dyno::function<void (dyno::T&)>
   )) { };
 
   template <typename Policy>
@@ -193,21 +193,21 @@ namespace { namespace dyno_remote {
     explicit any_template(T t)
       : vtable_{
         dyno::complete_concept_map<Concept, T>(dyno::make_concept_map(
-          "f1"_s = [](T& self) { ++self; },
-          "f2"_s = [](T& self) { --self; },
-          "f3"_s = [](T& self) { ++self; },
-          "f4"_s = [](T& self) { --self; },
-          "f5"_s = [](T& self) { ++self; }
+          "f1"_dyno = [](T& self) { ++self; },
+          "f2"_dyno = [](T& self) { --self; },
+          "f3"_dyno = [](T& self) { ++self; },
+          "f4"_dyno = [](T& self) { --self; },
+          "f5"_dyno = [](T& self) { ++self; }
         ))
       }
       , self_{new T(t)}
     { }
 
-    any_template& f1() { vtable_["f1"_s](self_); return *this; }
-    any_template& f2() { vtable_["f2"_s](self_); return *this; }
-    any_template& f3() { vtable_["f3"_s](self_); return *this; }
-    any_template& f4() { vtable_["f4"_s](self_); return *this; }
-    any_template& f5() { vtable_["f5"_s](self_); return *this; }
+    any_template& f1() { vtable_["f1"_dyno](self_); return *this; }
+    any_template& f2() { vtable_["f2"_dyno](self_); return *this; }
+    any_template& f3() { vtable_["f3"_dyno](self_); return *this; }
+    any_template& f4() { vtable_["f4"_dyno](self_); return *this; }
+    any_template& f5() { vtable_["f5"_dyno](self_); return *this; }
 
   private:
     using VTable = typename dyno::vtable<Policy>::template apply<Concept>;

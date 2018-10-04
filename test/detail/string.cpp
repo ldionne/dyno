@@ -12,7 +12,7 @@
 static auto foobar = DYNO_STRING("foobar");
 
 using namespace dyno::literals;
-static_assert(std::is_same<decltype(foobar), decltype("foobar"_s)>{}, "");
+static_assert(std::is_same<decltype(foobar), decltype("foobar"_dyno)>{}, "");
 
 int main() {
   (void)foobar;

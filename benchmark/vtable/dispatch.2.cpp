@@ -36,6 +36,6 @@ using inline_only = dyno::vtable<
 static constexpr int N = 100;
 BENCHMARK_TEMPLATE(BM_dispatch2, inheritance_tag)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch2, inline_only<>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch2, inline_only<decltype("f1"_s)>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch2, inline_only<decltype("f1"_s), decltype("f2"_s)>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch2, inline_only<decltype("f1"_dyno)>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch2, inline_only<decltype("f1"_dyno), decltype("f2"_dyno)>)->Arg(N);
 BENCHMARK_MAIN();

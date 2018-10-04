@@ -25,12 +25,12 @@ struct Callable<R(Args...)> : decltype(dyno::requires(
   dyno::CopyConstructible{},
   dyno::MoveConstructible{},
   dyno::Destructible{},
-  "call"_s = dyno::function<R (dyno::T const&, Args...)>
+  "call"_dyno = dyno::function<R (dyno::T const&, Args...)>
 )) { };
 
 template <typename R, typename ...Args, typename F>
 auto const dyno::default_concept_map<Callable<R(Args...)>, F> = dyno::make_concept_map(
-  "call"_s = [](F const& f, Args ...args) -> R {
+  "call"_dyno = [](F const& f, Args ...args) -> R {
     return f(std::forward<Args>(args)...);
   }
 );
@@ -44,7 +44,7 @@ struct basic_function<R(Args...), StoragePolicy> {
   basic_function(F&& f) : poly_{std::forward<F>(f)} { }
 
   R operator()(Args ...args) const
-  { return poly_.virtual_("call"_s)(poly_, std::forward<Args>(args)...); }
+  { return poly_.virtual_("call"_dyno)(poly_, std::forward<Args>(args)...); }
 
 private:
   dyno::poly<Callable<R(Args...)>, StoragePolicy> poly_;

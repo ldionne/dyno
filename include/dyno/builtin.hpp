@@ -28,48 +28,48 @@ template <typename T>
 constexpr auto storage_info_for = storage_info{sizeof(T), alignof(T)};
 
 struct Storable : decltype(dyno::requires(
-  "storage_info"_s = dyno::function<dyno::storage_info()>
+  "storage_info"_dyno = dyno::function<dyno::storage_info()>
 )) { };
 
 template <typename T>
 auto const default_concept_map<Storable, T> = dyno::make_concept_map(
-  "storage_info"_s = []() { return dyno::storage_info_for<T>; }
+  "storage_info"_dyno = []() { return dyno::storage_info_for<T>; }
 );
 
 
 struct TypeId : decltype(dyno::requires(
-  "typeid"_s = dyno::function<std::type_info const&()>
+  "typeid"_dyno = dyno::function<std::type_info const&()>
 )) { };
 
 template <typename T>
 auto const default_concept_map<TypeId, T> = dyno::make_concept_map(
-  "typeid"_s = []() -> std::type_info const& { return typeid(T); }
+  "typeid"_dyno = []() -> std::type_info const& { return typeid(T); }
 );
 
 
 struct DefaultConstructible : decltype(dyno::requires(
-  "default-construct"_s = dyno::function<void (void*)>
+  "default-construct"_dyno = dyno::function<void (void*)>
 )) { };
 
 template <typename T>
 auto const default_concept_map<DefaultConstructible, T,
   std::enable_if_t<std::is_default_constructible<T>::value>
 > = dyno::make_concept_map(
-  "default-construct"_s = [](void* p) {
+  "default-construct"_dyno = [](void* p) {
     new (p) T();
   }
 );
 
 
 struct MoveConstructible : decltype(dyno::requires(
-  "move-construct"_s = dyno::function<void (void*, dyno::T&&)>
+  "move-construct"_dyno = dyno::function<void (void*, dyno::T&&)>
 )) { };
 
 template <typename T>
 auto const default_concept_map<MoveConstructible, T,
   std::enable_if_t<std::is_move_constructible<T>::value>
 > = dyno::make_concept_map(
-  "move-construct"_s = [](void* p, T&& other) {
+  "move-construct"_dyno = [](void* p, T&& other) {
     new (p) T(std::move(other));
   }
 );
@@ -77,14 +77,14 @@ auto const default_concept_map<MoveConstructible, T,
 
 struct CopyConstructible : decltype(dyno::requires(
   dyno::MoveConstructible{},
-  "copy-construct"_s = dyno::function<void (void*, dyno::T const&)>
+  "copy-construct"_dyno = dyno::function<void (void*, dyno::T const&)>
 )) { };
 
 template <typename T>
 auto const default_concept_map<CopyConstructible, T,
   std::enable_if_t<std::is_copy_constructible<T>::value>
 > = dyno::make_concept_map(
-  "copy-construct"_s = [](void* p, T const& other) {
+  "copy-construct"_dyno = [](void* p, T const& other) {
     new (p) T(other);
   }
 );
@@ -107,26 +107,26 @@ struct Swappable : decltype(dyno::requires(
 
 
 struct EqualityComparable : decltype(dyno::requires(
-  "equal"_s = dyno::function<bool (dyno::T const&, dyno::T const&)>
+  "equal"_dyno = dyno::function<bool (dyno::T const&, dyno::T const&)>
 )) { };
 
 template <typename T>
 auto const default_concept_map<EqualityComparable, T,
   decltype((void)(std::declval<T>() == std::declval<T>()))
 > = dyno::make_concept_map(
-  "equal"_s = [](T const& a, T const& b) -> bool { return a == b; }
+  "equal"_dyno = [](T const& a, T const& b) -> bool { return a == b; }
 );
 
 
 struct Destructible : decltype(dyno::requires(
-  "destruct"_s = dyno::function<void (dyno::T&)>
+  "destruct"_dyno = dyno::function<void (dyno::T&)>
 )) { };
 
 template <typename T>
 auto const default_concept_map<Destructible, T,
   std::enable_if_t<std::is_destructible<T>::value>
 > = dyno::make_concept_map(
-  "destruct"_s = [](T& self) { self.~T(); }
+  "destruct"_dyno = [](T& self) { self.~T(); }
 );
 
 } // end namespace dyno

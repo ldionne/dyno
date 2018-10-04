@@ -10,12 +10,12 @@ using namespace dyno::literals;
 
 
 struct A : decltype(dyno::requires(
-  "f"_s = dyno::function<int (dyno::T&)>
+  "f"_dyno = dyno::function<int (dyno::T&)>
 )) { };
 
 struct B : decltype(dyno::requires(
   A{},
-  "g"_s = dyno::function<int (dyno::T&)>
+  "g"_dyno = dyno::function<int (dyno::T&)>
 )) { };
 
 struct C : decltype(dyno::requires(B{})) { };
@@ -24,12 +24,12 @@ struct Foo { };
 
 template <>
 auto const dyno::concept_map<A, Foo> = dyno::make_concept_map(
-  "f"_s = [](Foo&) { return 222; }
+  "f"_dyno = [](Foo&) { return 222; }
 );
 
 template <>
 auto const dyno::concept_map<B, Foo> = dyno::make_concept_map(
-  "g"_s = [](Foo&) { return 333; }
+  "g"_dyno = [](Foo&) { return 333; }
 );
 
 int main() {
@@ -37,16 +37,16 @@ int main() {
 
   {
     auto complete = dyno::complete_concept_map<C, Foo>(dyno::concept_map<C, Foo>);
-    DYNO_CHECK(complete["f"_s](foo) == 222);
-    DYNO_CHECK(complete["g"_s](foo) == 333);
+    DYNO_CHECK(complete["f"_dyno](foo) == 222);
+    DYNO_CHECK(complete["g"_dyno](foo) == 333);
   }
   {
     auto complete = dyno::complete_concept_map<B, Foo>(dyno::concept_map<B, Foo>);
-    DYNO_CHECK(complete["f"_s](foo) == 222);
-    DYNO_CHECK(complete["g"_s](foo) == 333);
+    DYNO_CHECK(complete["f"_dyno](foo) == 222);
+    DYNO_CHECK(complete["g"_dyno](foo) == 333);
   }
   {
     auto complete = dyno::complete_concept_map<A, Foo>(dyno::concept_map<A, Foo>);
-    DYNO_CHECK(complete["f"_s](foo) == 222);
+    DYNO_CHECK(complete["f"_dyno](foo) == 222);
   }
 }
