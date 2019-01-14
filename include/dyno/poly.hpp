@@ -59,13 +59,11 @@ namespace dyno {
 //   of the storage?
 // - Is it actually OK to require Destructible and Storable all the time?
 // - Test that we can't call e.g. a non-const method on a const poly.
-template <
-  typename Concept,
-  typename Storage = dyno::remote_storage,
-  typename VTablePolicy = dyno::vtable<dyno::remote<dyno::everything>>
->
-struct poly {
-private:
+namespace detail {
+
+template <typename Concept, typename Storage, typename VTablePolicy>
+struct poly_base {
+protected:
   using ActualConcept = decltype(dyno::requires(
     Concept{},
     dyno::Destructible{},
@@ -75,48 +73,113 @@ private:
 
 public:
   template <typename T, typename RawT = std::decay_t<T>, typename ConceptMap>
-  poly(T&& t, ConceptMap map)
+  poly_base(T&& t, ConceptMap map)
     : vtable_{dyno::complete_concept_map<ActualConcept, RawT>(map)}
     , storage_{std::forward<T>(t)}
   { }
 
   template <typename T, typename RawT = std::decay_t<T>,
-    typename = std::enable_if_t<!std::is_same<RawT, poly>::value>,
+    typename = std::enable_if_t<!std::is_base_of<poly_base, RawT>::value>,
     typename = std::enable_if_t<dyno::models<ActualConcept, RawT>>
   >
-  poly(T&& t)
-    : poly{std::forward<T>(t), dyno::concept_map<ActualConcept, RawT>}
+  poly_base(T&& t)
+    : poly_base{std::forward<T>(t), dyno::concept_map<ActualConcept, RawT>}
   { }
 
-  poly(poly const& other)
+  poly_base(poly_base const& other)
     : vtable_{other.vtable_}
     , storage_{other.storage_, vtable_}
   { }
 
-  poly(poly&& other)
+  poly_base(poly_base&& other)
     : vtable_{std::move(other.vtable_)}
     , storage_{std::move(other.storage_), vtable_}
   { }
 
-  poly& operator=(poly const& other) {
-    poly(other).swap(*this);
+  poly_base& operator=(poly_base const& other) {
+    poly_base(other).swap(*this);
     return *this;
   }
 
-  poly& operator=(poly&& other) {
-    poly(std::move(other)).swap(*this);
+  poly_base& operator=(poly_base&& other) {
+    poly_base(std::move(other)).swap(*this);
     return *this;
   }
 
-  void swap(poly& other) {
+  void swap(poly_base& other) {
     storage_.swap(vtable_, other.storage_, other.vtable_);
     using std::swap;
     swap(vtable_, other.vtable_);
   }
 
-  friend void swap(poly& a, poly& b) { a.swap(b); }
+  friend void swap(poly_base& a, poly_base& b) { a.swap(b); }
 
-  ~poly() { storage_.destruct(vtable_); }
+  ~poly_base() { storage_.destruct(vtable_); }
+
+protected:
+  VTable vtable_;
+  Storage storage_;
+};
+
+// a separate base class to ensure that a poly that uses non_owning_storage
+// is trivially copyable
+template <typename Concept, typename VTablePolicy>
+struct poly_base<Concept, dyno::non_owning_storage, VTablePolicy> {
+protected:
+  // do not need to add Destructible or Storable in this case
+  using ActualConcept = Concept;
+  using VTable = typename VTablePolicy::template apply<ActualConcept>;
+
+public:
+  template <typename T, typename RawT = std::decay_t<T>, typename ConceptMap>
+  poly_base(T&& t, ConceptMap map)
+    : vtable_{dyno::complete_concept_map<ActualConcept, RawT>(map)}
+    , storage_{std::forward<T>(t)}
+  { }
+
+  template <typename T, typename RawT = std::decay_t<T>,
+    typename = std::enable_if_t<!std::is_base_of<poly_base, RawT>::value>,
+    typename = std::enable_if_t<dyno::models<ActualConcept, RawT>>
+  >
+  poly_base(T&& t)
+    : poly_base{std::forward<T>(t), dyno::concept_map<ActualConcept, RawT>}
+  { }
+
+  poly_base(poly_base const&) = default;
+  poly_base(poly_base&&) = default;
+  poly_base& operator=(poly_base const&) = default;
+  poly_base& operator=(poly_base&&) = default;
+  ~poly_base() = default;
+
+protected:
+  VTable vtable_;
+  dyno::non_owning_storage storage_;
+};
+
+} // end namespace detail
+
+template <
+  typename Concept,
+  typename Storage = dyno::remote_storage,
+  typename VTablePolicy = dyno::vtable<dyno::remote<dyno::everything>>
+>
+struct poly
+  : detail::poly_base<Concept, Storage, VTablePolicy>
+{
+private:
+  using base = detail::poly_base<Concept, Storage, VTablePolicy>;
+  using ActualConcept = typename base::ActualConcept;
+
+public:
+  using base::base;
+  using base::operator=;
+
+  void swap(poly& other) {
+    using std::swap;
+    swap(static_cast<base&>(*this), static_cast<base&>(other));
+  }
+
+  friend void swap(poly& a, poly& b) { a.swap(b); }
 
   template <typename ...T, typename Name, typename ...Args>
   decltype(auto) operator->*(dyno::detail::delayed_call<Name, Args...>&& delayed) {
@@ -170,19 +233,16 @@ public:
   // The behavior is undefined if the requested type is not cv-qualified `void`
   // and the underlying storage is not of the requested type.
   template <typename T>
-  T* unsafe_get() { return storage_.template get<T>(); }
+  T* unsafe_get() { return this->storage_.template get<T>(); }
 
   template <typename T>
-  T const* unsafe_get() const { return storage_.template get<T>(); }
+  T const* unsafe_get() const { return this->storage_.template get<T>(); }
 
 private:
-  VTable vtable_;
-  Storage storage_;
-
   // Handle dyno::function
   template <typename R, typename ...T, typename Function>
   constexpr decltype(auto) virtual_impl(dyno::function_t<R(T...)>, Function name) const {
-    auto fptr = vtable_[name];
+    auto fptr = this->vtable_[name];
     return [fptr](auto&& ...args) -> decltype(auto) {
       return fptr(poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
     };
@@ -191,7 +251,7 @@ private:
   // Handle dyno::method
   template <typename R, typename ...T, typename Function>
   constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...)>, Function name) & {
-    auto fptr = vtable_[name];
+    auto fptr = this->vtable_[name];
     return [fptr, this](auto&& ...args) -> decltype(auto) {
       return fptr(poly::unerase_poly<dyno::T&>(*this),
                   poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
@@ -199,7 +259,7 @@ private:
   }
   template <typename R, typename ...T, typename Function>
   constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...)&>, Function name) & {
-    auto fptr = vtable_[name];
+    auto fptr = this->vtable_[name];
     return [fptr, this](auto&& ...args) -> decltype(auto) {
       return fptr(poly::unerase_poly<dyno::T&>(*this),
                   poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
@@ -207,7 +267,7 @@ private:
   }
   template <typename R, typename ...T, typename Function>
   constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...)&&>, Function name) && {
-    auto fptr = vtable_[name];
+    auto fptr = this->vtable_[name];
     return [fptr, this](auto&& ...args) -> decltype(auto) {
       return fptr(poly::unerase_poly<dyno::T&&>(*this),
                   poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
@@ -215,7 +275,7 @@ private:
   }
   template <typename R, typename ...T, typename Function>
   constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...) const>, Function name) const {
-    auto fptr = vtable_[name];
+    auto fptr = this->vtable_[name];
     return [fptr, this](auto&& ...args) -> decltype(auto) {
       return fptr(poly::unerase_poly<dyno::T const&>(*this),
                   poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
@@ -223,7 +283,7 @@ private:
   }
   template <typename R, typename ...T, typename Function>
   constexpr decltype(auto) virtual_impl(dyno::method_t<R(T...) const&>, Function name) const {
-    auto fptr = vtable_[name];
+    auto fptr = this->vtable_[name];
     return [fptr, this](auto&& ...args) -> decltype(auto) {
       return fptr(poly::unerase_poly<dyno::T const&>(*this),
                   poly::unerase_poly<T>(static_cast<decltype(args)&&>(args))...);
