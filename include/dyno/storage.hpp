@@ -474,34 +474,15 @@ public:
 // does not construct or destruct it. The referenced object must outlive the
 // polymorphic storage that references it, otherwise the behavior is undefined.
 struct non_owning_storage {
-  non_owning_storage() = delete;
-  non_owning_storage(non_owning_storage const&) = delete;
-  non_owning_storage(non_owning_storage&&) = delete;
-  non_owning_storage& operator=(non_owning_storage&&) = delete;
-  non_owning_storage& operator=(non_owning_storage const&) = delete;
+  non_owning_storage(non_owning_storage const&) = default;
+  non_owning_storage(non_owning_storage&&) = default;
+  non_owning_storage& operator=(non_owning_storage&&) = default;
+  non_owning_storage& operator=(non_owning_storage const&) = default;
 
   template <typename T>
   explicit non_owning_storage(T& t)
     : ptr_{&t}
   { }
-
-  template <typename VTable>
-  non_owning_storage(non_owning_storage const& other, VTable const&)
-    : ptr_{other.ptr_}
-  { }
-
-  template <typename VTable>
-  non_owning_storage(non_owning_storage&& other, VTable const&)
-    : ptr_{other.ptr_}
-  { }
-
-  template <typename MyVTable, typename OtherVTable>
-  void swap(MyVTable const&, non_owning_storage& other, OtherVTable const&) {
-    std::swap(this->ptr_, other.ptr_);
-  }
-
-  template <typename VTable>
-  void destruct(VTable const&) { }
 
   template <typename T = void>
   T* get() {
