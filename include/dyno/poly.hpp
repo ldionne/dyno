@@ -66,7 +66,7 @@ template <
 >
 struct poly {
 private:
-  using ActualConcept = decltype(dyno::requires(
+  using ActualConcept = decltype(dyno::requires_(
     Concept{},
     dyno::Destructible{},
     dyno::Storable{}

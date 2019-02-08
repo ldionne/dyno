@@ -14,7 +14,7 @@ using namespace dyno::literals;
 // when a function in a concept is defined using `method` instead of
 // `function`.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "a"_s = dyno::method<int (int)>,
   "b"_s = dyno::method<int (int) &>,
   "c"_s = dyno::method<int (int) &&>,

@@ -20,7 +20,7 @@ using namespace dyno::literals;
 // other functions (e.g. the destructor) in a remote vtable.
 
 template <typename Reference>
-struct Iterator : decltype(dyno::requires(
+struct Iterator : decltype(dyno::requires_(
   dyno::DefaultConstructible{},
   dyno::CopyConstructible{},
   dyno::CopyAssignable{},

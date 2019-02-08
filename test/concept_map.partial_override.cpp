@@ -12,7 +12,7 @@ using namespace dyno::literals;
 // This test makes sure that any function defined in a concept map will override
 // that of a default concept map.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "f"_s = dyno::function<int (dyno::T&)>,
   "g"_s = dyno::function<int (dyno::T&)>
 )) { };

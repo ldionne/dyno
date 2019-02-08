@@ -13,7 +13,7 @@
 using namespace dyno::literals;
 
 // Define the interface of something that can be drawn
-struct Drawable : decltype(dyno::requires(
+struct Drawable : decltype(dyno::requires_(
   "draw"_s = dyno::method<void (std::ostream&) const>
 )) { };
 

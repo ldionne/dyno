@@ -6,8 +6,8 @@
 using namespace dyno::literals;
 
 
-// MESSAGE[dyno::concept: It looks like you have multiple clauses with the same name in your concept definition]
-struct Concept : decltype(dyno::requires(
+// MESSAGE[dyno::concept_: It looks like you have multiple clauses with the same name in your concept definition]
+struct Concept : decltype(dyno::requires_(
   "f"_s = dyno::function<void ()>,
   "f"_s = dyno::function<void (int)>
 )) { };

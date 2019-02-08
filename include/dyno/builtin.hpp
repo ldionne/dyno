@@ -27,7 +27,7 @@ struct storage_info {
 template <typename T>
 constexpr auto storage_info_for = storage_info{sizeof(T), alignof(T)};
 
-struct Storable : decltype(dyno::requires(
+struct Storable : decltype(dyno::requires_(
   "storage_info"_s = dyno::function<dyno::storage_info()>
 )) { };
 
@@ -37,7 +37,7 @@ auto const default_concept_map<Storable, T> = dyno::make_concept_map(
 );
 
 
-struct TypeId : decltype(dyno::requires(
+struct TypeId : decltype(dyno::requires_(
   "typeid"_s = dyno::function<std::type_info const&()>
 )) { };
 
@@ -47,7 +47,7 @@ auto const default_concept_map<TypeId, T> = dyno::make_concept_map(
 );
 
 
-struct DefaultConstructible : decltype(dyno::requires(
+struct DefaultConstructible : decltype(dyno::requires_(
   "default-construct"_s = dyno::function<void (void*)>
 )) { };
 
@@ -61,7 +61,7 @@ auto const default_concept_map<DefaultConstructible, T,
 );
 
 
-struct MoveConstructible : decltype(dyno::requires(
+struct MoveConstructible : decltype(dyno::requires_(
   "move-construct"_s = dyno::function<void (void*, dyno::T&&)>
 )) { };
 
@@ -75,7 +75,7 @@ auto const default_concept_map<MoveConstructible, T,
 );
 
 
-struct CopyConstructible : decltype(dyno::requires(
+struct CopyConstructible : decltype(dyno::requires_(
   dyno::MoveConstructible{},
   "copy-construct"_s = dyno::function<void (void*, dyno::T const&)>
 )) { };
@@ -90,23 +90,23 @@ auto const default_concept_map<CopyConstructible, T,
 );
 
 
-struct MoveAssignable : decltype(dyno::requires(
+struct MoveAssignable : decltype(dyno::requires_(
   // No virtual function required to support this so far
 )) { };
 
 
-struct CopyAssignable : decltype(dyno::requires(
+struct CopyAssignable : decltype(dyno::requires_(
   dyno::MoveAssignable{}
   // No additional virtual functions required to support this so far
 )) { };
 
 
-struct Swappable : decltype(dyno::requires(
+struct Swappable : decltype(dyno::requires_(
   // No virtual functions required to support this so far
 )) { };
 
 
-struct EqualityComparable : decltype(dyno::requires(
+struct EqualityComparable : decltype(dyno::requires_(
   "equal"_s = dyno::function<bool (dyno::T const&, dyno::T const&)>
 )) { };
 
@@ -118,7 +118,7 @@ auto const default_concept_map<EqualityComparable, T,
 );
 
 
-struct Destructible : decltype(dyno::requires(
+struct Destructible : decltype(dyno::requires_(
   "destruct"_s = dyno::function<void (dyno::T&)>
 )) { };
 

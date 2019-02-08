@@ -55,7 +55,7 @@
 #define DYNO_PP_INTERFACE_IMPL_0(name)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                                                      \
       );                                                                      \
     }                                                                         \
@@ -82,7 +82,7 @@
 #define DYNO_PP_INTERFACE_IMPL_1(name, arg1)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -142,7 +142,7 @@
 #define DYNO_PP_INTERFACE_IMPL_2(name, arg1, arg2)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -235,7 +235,7 @@
 #define DYNO_PP_INTERFACE_IMPL_3(name, arg1, arg2, arg3)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -361,7 +361,7 @@
 #define DYNO_PP_INTERFACE_IMPL_4(name, arg1, arg2, arg3, arg4)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -520,7 +520,7 @@
 #define DYNO_PP_INTERFACE_IMPL_5(name, arg1, arg2, arg3, arg4, arg5)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -712,7 +712,7 @@
 #define DYNO_PP_INTERFACE_IMPL_6(name, arg1, arg2, arg3, arg4, arg5, arg6)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -937,7 +937,7 @@
 #define DYNO_PP_INTERFACE_IMPL_7(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -1195,7 +1195,7 @@
 #define DYNO_PP_INTERFACE_IMPL_8(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -1486,7 +1486,7 @@
 #define DYNO_PP_INTERFACE_IMPL_9(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -1810,7 +1810,7 @@
 #define DYNO_PP_INTERFACE_IMPL_10(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -2167,7 +2167,7 @@
 #define DYNO_PP_INTERFACE_IMPL_11(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -2557,7 +2557,7 @@
 #define DYNO_PP_INTERFACE_IMPL_12(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -2980,7 +2980,7 @@
 #define DYNO_PP_INTERFACE_IMPL_13(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -3436,7 +3436,7 @@
 #define DYNO_PP_INTERFACE_IMPL_14(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -3925,7 +3925,7 @@
 #define DYNO_PP_INTERFACE_IMPL_15(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -4447,7 +4447,7 @@
 #define DYNO_PP_INTERFACE_IMPL_16(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -5002,7 +5002,7 @@
 #define DYNO_PP_INTERFACE_IMPL_17(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -5590,7 +5590,7 @@
 #define DYNO_PP_INTERFACE_IMPL_18(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -6211,7 +6211,7 @@
 #define DYNO_PP_INTERFACE_IMPL_19(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\
@@ -6865,7 +6865,7 @@
 #define DYNO_PP_INTERFACE_IMPL_20(name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, arg17, arg18, arg19, arg20)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
                                         \
                                                            \
           DYNO_STRING(DYNO_PP_STRINGIZE(DYNO_PP_VARIADIC_HEAD arg1)) = ::dyno::method<DYNO_PP_VARIADIC_TAIL arg1>\

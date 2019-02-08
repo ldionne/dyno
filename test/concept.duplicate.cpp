@@ -10,19 +10,19 @@ using namespace dyno::literals;
 // seemingly duplicate function is in fact defined in a concept that is common
 // to two concepts that we derive from.
 
-struct CommonBase : decltype(dyno::requires(
+struct CommonBase : decltype(dyno::requires_(
   "f"_s = dyno::function<void ()>
 )) { };
 
-struct Base1 : decltype(dyno::requires(
+struct Base1 : decltype(dyno::requires_(
   CommonBase{}
 )) { };
 
-struct Base2 : decltype(dyno::requires(
+struct Base2 : decltype(dyno::requires_(
   CommonBase{}
 )) { };
 
-struct Derived : decltype(dyno::requires(
+struct Derived : decltype(dyno::requires_(
   Base1{},
   Base2{}
 )) { };

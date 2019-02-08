@@ -14,7 +14,7 @@ using namespace dyno::literals;
 // virtual functions with placeholders. The expected behavior is that we
 // pass a `dyno::poly`, and it gets translated to a `void*` internally.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "a"_s = dyno::function<int (dyno::T&)>,
   "b"_s = dyno::function<int (dyno::T&&)>,
   "c"_s = dyno::function<int (dyno::T*)>,

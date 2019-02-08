@@ -14,7 +14,7 @@ using namespace dyno::literals;
 // anything that satisfies the concept in the poly. We also check that we can't
 // construct from something that does not model the concept.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "f"_s = dyno::function<int (dyno::T&)>,
   "g"_s = dyno::function<int (dyno::T&)>
 )) { };

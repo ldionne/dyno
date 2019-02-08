@@ -11,7 +11,7 @@ using namespace dyno::literals;
 // policy and a remote vtable is the size of 2 pointers. There was once a bug
 // where the size was more than that.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "f"_s = dyno::function<void (dyno::T&)>
 )) { };
 

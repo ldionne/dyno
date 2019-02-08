@@ -12,17 +12,17 @@ using namespace dyno::literals;
 namespace hana = boost::hana;
 
 
-struct A : decltype(dyno::requires(
+struct A : decltype(dyno::requires_(
   "f"_s = dyno::function<void (dyno::T&)>
 )) { };
 
-struct B : decltype(dyno::requires(
+struct B : decltype(dyno::requires_(
   A{},
   "g"_s = dyno::function<int (dyno::T&)>,
   "h"_s = dyno::function<double (dyno::T&, int)>
 )) { };
 
-struct C : decltype(dyno::requires(
+struct C : decltype(dyno::requires_(
   B{}
 )) { };
 
