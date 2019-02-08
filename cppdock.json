@@ -1,0 +1,33 @@
+{
+  "cppdock": {
+    "name": "dyno"
+  },
+  "platforms": {
+    "develop": {
+      "type": "linux_x64",
+      "deps": [
+        [
+          {
+            "name": "boostorg/hana",
+            "tag": "develop",
+            "revision": "30e09ad3006d18d8d40a8be466d6e1e160315e4c"
+          }
+        ],
+        [
+          {
+            "name": "boostorg/callable_traits",
+            "revision": "684dfbd7dfbdd0438ef3670be10002ca33a71715",
+            "tag": "master"
+          }
+        ],
+        [
+          {
+            "name": "ldionne/libawful",
+            "revision": "d76ec919b9978da24023539fcfb7d8b157f7e535",
+            "tag": "master"
+          }
+        ]
+      ]
+    }
+  }
+}

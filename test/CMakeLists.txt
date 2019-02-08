@@ -56,6 +56,7 @@ ExternalProject_Add(test.deploy.fakeroot
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
              -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
+             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
   TEST_COMMAND ""      # Disable test step
   UPDATE_COMMAND ""    # Disable source work-tree update
 )
@@ -68,6 +69,7 @@ add_custom_target(test.deploy
             ${CMAKE_COMMAND} "${CMAKE_CURRENT_SOURCE_DIR}/deploy"
                              -DCMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}"
                              -DCMAKE_PREFIX_PATH="${CMAKE_PREFIX_PATH}\;${DYNO_FAKE_INSTALL_DIR}"
+                             -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
   COMMAND ${CMAKE_COMMAND} --build "${CMAKE_CURRENT_BINARY_DIR}/deploy"
 )
 add_test(NAME test.deploy
