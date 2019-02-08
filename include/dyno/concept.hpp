@@ -28,7 +28,7 @@
 namespace dyno {
 
 template <typename ...Clauses>
-struct concept;
+struct concept_;
 
 namespace detail {
   template <typename Str, typename Fun>
@@ -37,7 +37,7 @@ namespace detail {
   { return {}; }
 
   template <typename ...Clauses>
-  constexpr auto expand_clauses(dyno::concept<Clauses...> const&) {
+  constexpr auto expand_clauses(dyno::concept_<Clauses...> const&) {
     return boost::hana::flatten(
       boost::hana::make_basic_tuple(detail::expand_clauses(Clauses{})...)
     );
@@ -53,7 +53,7 @@ namespace detail {
 // is the name of the clause and the second element is the clause itself
 // (e.g. a `dyno::function`). The order of clauses is not specified.
 template <typename ...Clauses>
-constexpr auto clauses(dyno::concept<Clauses...> const&) {
+constexpr auto clauses(dyno::concept_<Clauses...> const&) {
   auto all = boost::hana::make_basic_tuple(detail::expand_clauses(Clauses{})...);
   return boost::hana::flatten(all);
 }
@@ -63,7 +63,7 @@ constexpr auto clauses(dyno::concept<Clauses...> const&) {
 //
 // The order of the clause names is not specified.
 template <typename ...Clauses>
-constexpr auto clause_names(dyno::concept<Clauses...> const& c) {
+constexpr auto clause_names(dyno::concept_<Clauses...> const& c) {
   return boost::hana::transform(dyno::clauses(c), boost::hana::first);
 }
 
@@ -72,7 +72,7 @@ constexpr auto clause_names(dyno::concept<Clauses...> const& c) {
 // Only the concepts that are refined directly by `c` are returned, i.e. we
 // do not get the refined concepts of the refined concepts recursively.
 template <typename ...Clauses>
-constexpr auto refined_concepts(dyno::concept<Clauses...> const&) {
+constexpr auto refined_concepts(dyno::concept_<Clauses...> const&) {
   return boost::hana::filter(boost::hana::make_basic_tuple(Clauses{}...), [](auto t) {
     constexpr bool IsBase = std::is_base_of<detail::concept_base, decltype(t)>::value;
     return boost::hana::bool_c<IsBase>;
@@ -81,7 +81,7 @@ constexpr auto refined_concepts(dyno::concept<Clauses...> const&) {
 
 namespace detail {
   template <typename ...Clauses>
-  constexpr auto direct_clauses(dyno::concept<Clauses...> const&) {
+  constexpr auto direct_clauses(dyno::concept_<Clauses...> const&) {
     return boost::hana::filter(boost::hana::make_basic_tuple(Clauses{}...), [](auto t) {
       constexpr bool IsBase = std::is_base_of<detail::concept_base, decltype(t)>::value;
       return boost::hana::bool_c<!IsBase>;
@@ -89,13 +89,13 @@ namespace detail {
   }
 
   template <typename ...Clauses>
-  constexpr auto has_duplicate_clause(dyno::concept<Clauses...> const& c) {
+  constexpr auto has_duplicate_clause(dyno::concept_<Clauses...> const& c) {
     auto direct = detail::direct_clauses(c);
     return detail::has_duplicates(boost::hana::transform(direct, boost::hana::first));
   }
 
   template <typename ...Clauses>
-  constexpr auto is_redefining_base_concept_clause(dyno::concept<Clauses...> const& c) {
+  constexpr auto is_redefining_base_concept_clause(dyno::concept_<Clauses...> const& c) {
     auto bases = dyno::refined_concepts(c);
     auto base_clause_names = boost::hana::unpack(bases, [](auto ...bases) {
       auto all = boost::hana::flatten(boost::hana::make_basic_tuple(dyno::clauses(bases)...));
@@ -107,24 +107,24 @@ namespace detail {
   }
 } // end namespace detail
 
-// A `concept` is a collection of clauses and refined concepts representing
+// A `concept_` is a collection of clauses and refined concepts representing
 // requirements for a type to model the concept.
 //
-// A concept is created by using `dyno::requires`.
+// A concept is created by using `dyno::requires_`.
 //
-// From a `concept`, one can generate a virtual function table by looking at
+// From a `concept_`, one can generate a virtual function table by looking at
 // the signatures of the functions defined in the concept. In the future, it
 // would also be possible to do much more, like getting a predicate that checks
 // whether a type satisfies the concept.
 template <typename ...Clauses>
-struct concept : detail::concept_base {
-  static_assert(!decltype(detail::has_duplicate_clause(std::declval<concept>())){},
-    "dyno::concept: It looks like you have multiple clauses with the same "
+struct concept_ : detail::concept_base {
+  static_assert(!decltype(detail::has_duplicate_clause(std::declval<concept_>())){},
+    "dyno::concept_: It looks like you have multiple clauses with the same "
     "name in your concept definition. This is not allowed; each clause must "
     "have a different name.");
 
-  static_assert(!decltype(detail::is_redefining_base_concept_clause(std::declval<concept>())){},
-    "dyno::concept: It looks like you are redefining a clause that is already "
+  static_assert(!decltype(detail::is_redefining_base_concept_clause(std::declval<concept_>())){},
+    "dyno::concept_: It looks like you are redefining a clause that is already "
     "defined in a base concept. This is not allowed; clauses defined in a "
     "concept must have a distinct name from clauses defined in base concepts "
     "if there are any.");
@@ -136,13 +136,13 @@ struct concept : detail::concept_base {
   }
 };
 
-// Creates a `concept` with the given clauses. Note that a clause may be a
+// Creates a `concept_` with the given clauses. Note that a clause may be a
 // concept itself, in which case the clauses of that concept are used, and
 // that, recursively. For example:
 //
 // ```
 // template <typename Reference>
-// struct Iterator : decltype(dyno::requires(
+// struct Iterator : decltype(dyno::requires_(
 //   Incrementable{},
 //   "dereference"_s = dyno::function<Reference (dyno::T&)>
 //   ...
@@ -153,7 +153,7 @@ struct concept : detail::concept_base {
 // alias), as above, because that ensures the uniqueness of concepts that have
 // the same clauses.
 template <typename ...Clauses>
-constexpr dyno::concept<Clauses...> requires(Clauses ...) {
+constexpr dyno::concept_<Clauses...> requires_(Clauses ...) {
   return {};
 }
 

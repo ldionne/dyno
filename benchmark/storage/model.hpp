@@ -12,7 +12,7 @@
 using namespace dyno::literals;
 
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   dyno::CopyConstructible{},
   dyno::Swappable{},
   dyno::Destructible{},

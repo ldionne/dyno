@@ -10,7 +10,7 @@
 // This test makes sure that we get a compiler error if we try to construct a
 // `dyno::poly` using non-owning storage from a temporary.
 
-struct Concept : decltype(dyno::requires()) { };
+struct Concept : decltype(dyno::requires_()) { };
 
 struct Foo { };
 

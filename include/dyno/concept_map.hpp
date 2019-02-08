@@ -219,11 +219,11 @@ namespace diagnostic {
 // The concept maps for all the concepts that `Concept` refines are merged with
 // the mappings provided explicitly. For example:
 // ```
-// struct A : decltype(dyno::requires(
+// struct A : decltype(dyno::requires_(
 //   "f"_s = dyno::function<void (dyno::T&)>
 // )) { };
 //
-// struct B : decltype(dyno::requires(
+// struct B : decltype(dyno::requires_(
 //   A{},
 //   "g"_s = dyno::function<int (dyno::T&)>
 // )) { };

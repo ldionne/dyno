@@ -64,7 +64,7 @@ end
 #define DYNO_PP_INTERFACE_IMPL_<%= n %>(name<%= args.map { |arg| ", #{arg}" }.join %>)\
   struct DYNO_PP_CONCAT(dyno_concept_for_, name) {                            \
     static auto make_type() {                                                 \
-      return ::dyno::requires(                                                \
+      return ::dyno::requires_(                                                \
         <% args.each_with_index do |arg, i| %>                                \
           <%= ',' if i > 0 %>                                                 \
           <%= dyno_string(arg) %> = ::dyno::method<DYNO_PP_VARIADIC_TAIL <%= arg %>>\

@@ -13,7 +13,7 @@ using namespace dyno::literals;
 // This test makes sure that `dyno::poly::operator->*` is equivalent to
 // `dyno::poly::virtual_`.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "f"_s = dyno::function<int (dyno::T&)>,
   "g"_s = dyno::function<double (dyno::T&, double)>
 )) { };

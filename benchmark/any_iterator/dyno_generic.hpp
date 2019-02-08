@@ -12,7 +12,7 @@ namespace dyno_generic {
   using namespace dyno::literals;
 
   template <typename Reference>
-  struct Iterator : decltype(dyno::requires(
+  struct Iterator : decltype(dyno::requires_(
     dyno::MoveConstructible{},
     "increment"_s = dyno::function<void (dyno::T&)>,
     "dereference"_s = dyno::function<Reference (dyno::T&)>,

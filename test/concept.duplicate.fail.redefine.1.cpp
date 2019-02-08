@@ -6,13 +6,13 @@
 using namespace dyno::literals;
 
 
-struct Base : decltype(dyno::requires(
+struct Base : decltype(dyno::requires_(
   "f"_s = dyno::function<void ()>,
   "g"_s = dyno::function<void ()>
 )) { };
 
-// MESSAGE[dyno::concept: It looks like you are redefining a clause that is already defined in a base concept]
-struct Derived : decltype(dyno::requires(
+// MESSAGE[dyno::concept_: It looks like you are redefining a clause that is already defined in a base concept]
+struct Derived : decltype(dyno::requires_(
   Base{},
   "f"_s = dyno::function<void ()>
 )) { };

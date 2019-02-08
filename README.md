@@ -26,7 +26,7 @@ the idea behind [`std::any`][], [`std::function`][] and many other useful types.
 using namespace dyno::literals;
 
 // Define the interface of something that can be drawn
-struct Drawable : decltype(dyno::requires(
+struct Drawable : decltype(dyno::requires_(
   "draw"_s = dyno::method<void (std::ostream&) const>
 )) { };
 
@@ -236,7 +236,7 @@ let's define an interface `Drawable` that describes types that can be drawn:
 #include <dyno.hpp>
 using namespace dyno::literals;
 
-struct Drawable : decltype(dyno::requires(
+struct Drawable : decltype(dyno::requires_(
   "draw"_s = dyno::method<void (std::ostream&) const>
 )) { };
 ```
@@ -590,7 +590,7 @@ the concept using `dyno::function` instead of `dyno::method`, and use the
 
 ```c++
 // Define the interface of something that can be drawn
-struct Drawable : decltype(dyno::requires(
+struct Drawable : decltype(dyno::requires_(
   "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
 )) { };
 ```
@@ -600,7 +600,7 @@ on which the function is being called. However, it does not have to be the
 first parameter:
 
 ```c++
-struct Drawable : decltype(dyno::requires(
+struct Drawable : decltype(dyno::requires_(
   "draw"_s = dyno::function<void (std::ostream&, dyno::T const&)>
 )) { };
 ```

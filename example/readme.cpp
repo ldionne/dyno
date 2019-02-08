@@ -10,7 +10,7 @@
 using namespace dyno::literals;
 
 
-struct Drawable : decltype(dyno::requires(
+struct Drawable : decltype(dyno::requires_(
   "draw"_s = dyno::method<void (std::ostream&) const>
 )) { };
 

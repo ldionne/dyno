@@ -15,7 +15,7 @@ using namespace dyno::literals;
 // that is more cv-qualified than the corresponding function in the concept.
 //
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "f1"_s = dyno::function<int (dyno::T&)>,
   "f2"_s = dyno::function<int (dyno::T*)>,
   "f3"_s = dyno::function<int (dyno::T&)>,

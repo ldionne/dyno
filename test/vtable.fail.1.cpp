@@ -8,7 +8,7 @@
 using namespace dyno::literals;
 
 
-struct Fooable : decltype(dyno::requires(
+struct Fooable : decltype(dyno::requires_(
   "a"_s = dyno::function<void (dyno::T&)>,
   "b"_s = dyno::function<void (dyno::T&)>
 )) { };

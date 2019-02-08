@@ -181,7 +181,7 @@ namespace { namespace classic {
 namespace { namespace dyno_remote {
   using namespace dyno::literals;
 
-  struct Concept : decltype(dyno::requires(
+  struct Concept : decltype(dyno::requires_(
     "f1"_s = dyno::function<void (dyno::T&)>,
     "f2"_s = dyno::function<void (dyno::T&)>,
     "f3"_s = dyno::function<void (dyno::T&)>,

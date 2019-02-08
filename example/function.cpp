@@ -21,7 +21,7 @@ template <typename Signature>
 struct Callable;
 
 template <typename R, typename ...Args>
-struct Callable<R(Args...)> : decltype(dyno::requires(
+struct Callable<R(Args...)> : decltype(dyno::requires_(
   dyno::CopyConstructible{},
   dyno::MoveConstructible{},
   dyno::Destructible{},

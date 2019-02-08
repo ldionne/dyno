@@ -9,7 +9,7 @@
 using namespace dyno::literals;
 
 
-struct A : decltype(dyno::requires(
+struct A : decltype(dyno::requires_(
   "f"_s = dyno::function<void (dyno::T&)>
 )) { };
 

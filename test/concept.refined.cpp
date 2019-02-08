@@ -12,24 +12,24 @@
 using namespace dyno::literals;
 
 
-struct A : decltype(dyno::requires(
+struct A : decltype(dyno::requires_(
   "f"_s = dyno::function<void (dyno::T&)>
 )) { };
 
-struct B : decltype(dyno::requires(
+struct B : decltype(dyno::requires_(
   A{},
   "g"_s = dyno::function<int (dyno::T&)>
 )) { };
 
-struct C : decltype(dyno::requires(
+struct C : decltype(dyno::requires_(
   B{}
 )) { };
 
-struct D : decltype(dyno::requires(
+struct D : decltype(dyno::requires_(
   "h"_s = dyno::function<void (dyno::T&)>
 )) { };
 
-struct E : decltype(dyno::requires(
+struct E : decltype(dyno::requires_(
   C{},
   "i"_s = dyno::function<void (dyno::T&)>,
   D{},

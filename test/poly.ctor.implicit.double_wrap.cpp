@@ -19,7 +19,7 @@ using namespace dyno::literals;
 struct Foo { };
 
 struct Concept
-  : decltype(dyno::requires(dyno::CopyConstructible{}, dyno::TypeId{}))
+  : decltype(dyno::requires_(dyno::CopyConstructible{}, dyno::TypeId{}))
 { };
 
 int main() {

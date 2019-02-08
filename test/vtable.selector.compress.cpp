@@ -13,7 +13,7 @@ using namespace dyno::literals;
 // This is especially important for ensuring that vtables are as small and
 // easy to optimize as possible.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "f"_s = dyno::function<void (dyno::T const&)>
 )) { };
 

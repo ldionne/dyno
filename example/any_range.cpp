@@ -21,7 +21,7 @@ using namespace dyno::literals;
 //
 
 template <typename Value, typename Category>
-struct Range : decltype(dyno::requires(
+struct Range : decltype(dyno::requires_(
   "begin"_s = dyno::function<any_iterator<Value, Category> (dyno::T&)>,
   "end"_s = dyno::function<any_iterator<Value, Category> (dyno::T&)>,
   "cbegin"_s = dyno::function<any_iterator<Value const, Category> (dyno::T const&)>,

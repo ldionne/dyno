@@ -54,7 +54,7 @@ void draw(document_t<Object> const& self, std::ostream& out) {
 
 
 
-struct Drawable : decltype(dyno::requires(
+struct Drawable : decltype(dyno::requires_(
   "draw"_s = dyno::function<void (dyno::T const&, std::ostream&)>
 )) { };
 

@@ -19,7 +19,7 @@ using namespace dyno::literals;
 // interface in terms of compile-time strings, assuming these may be fulfilled
 // in possibly many different ways.
 template <typename Reference>
-struct Iterator : decltype(dyno::requires(
+struct Iterator : decltype(dyno::requires_(
   dyno::CopyConstructible{},
   dyno::CopyAssignable{},
   dyno::Destructible{},
@@ -29,25 +29,25 @@ struct Iterator : decltype(dyno::requires(
 )) { };
 
 template <typename Reference>
-struct InputIterator : decltype(dyno::requires(
+struct InputIterator : decltype(dyno::requires_(
   Iterator<Reference>{},
   dyno::EqualityComparable{}
 )) { };
 
 template <typename Reference>
-struct ForwardIterator : decltype(dyno::requires(
+struct ForwardIterator : decltype(dyno::requires_(
   InputIterator<Reference>{},
   dyno::DefaultConstructible{}
 )) { };
 
 template <typename Reference>
-struct BidirectionalIterator : decltype(dyno::requires(
+struct BidirectionalIterator : decltype(dyno::requires_(
   ForwardIterator<Reference>{},
   "decrement"_s = dyno::function<void (dyno::T&)>
 )) { };
 
 template <typename Reference, typename Difference>
-struct RandomAccessIterator : decltype(dyno::requires(
+struct RandomAccessIterator : decltype(dyno::requires_(
   BidirectionalIterator<Reference>{},
   "advance"_s = dyno::function<void (dyno::T&, Difference)>,
   "distance"_s = dyno::function<Difference (dyno::T const&, dyno::T const&)>
@@ -126,7 +126,7 @@ private:
   using Concept = typename detail::iterator_category_to_concept<
     iterator_category, reference, difference_type
   >::type;
-  using ActualConcept = decltype(dyno::requires(
+  using ActualConcept = decltype(dyno::requires_(
     Concept{},
     dyno::TypeId{} // For assertion in operator==
   ));

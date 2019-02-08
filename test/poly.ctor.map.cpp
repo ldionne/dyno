@@ -13,7 +13,7 @@ using namespace dyno::literals;
 // This test makes sure that `dyno::poly` allows overriding the concept map used
 // for a type at construction time.
 
-struct Concept : decltype(dyno::requires(
+struct Concept : decltype(dyno::requires_(
   "f"_s = dyno::function<int (dyno::T&)>,
   "g"_s = dyno::function<int (dyno::T&)>
 )) { };
