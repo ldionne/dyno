@@ -15,8 +15,8 @@ branches:
 
 matrix:
   include:
-    - env: COMPILER=clang++-4.0
-      addons: { apt: { packages: ["clang-4.0"], sources: ["llvm-toolchain-trusty-4.0", "ubuntu-toolchain-r-test"] } }
+    - env: COMPILER=clang++-7.0
+      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-trusty-7", "ubuntu-toolchain-r-test"] } }
 
     - env: COMPILER=g++-7
       addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
@@ -26,8 +26,11 @@ matrix:
       osx_image: xcode9.1
 
     # Build without the optional dependencies
-    - env: COMPILER=clang++-4.0 NO_OPTIONAL_DEPENDENCIES=true
-      addons: { apt: { packages: ["clang-4.0"], sources: ["llvm-toolchain-trusty-4.0", "ubuntu-toolchain-r-test"] } }
+    - env: COMPILER=clang++-7.0 NO_OPTIONAL_DEPENDENCIES=true
+      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-trusty-7", "ubuntu-toolchain-r-test"] } }
+
+  allow_failures:
+    - env: COMPILER=g++-7
 
 install:
   # Set the ${CXX} and ${CC} variables properly. They are picked up by CMake
