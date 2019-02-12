@@ -137,7 +137,9 @@ namespace { namespace handrolled_local {
       T value_;
     };
 
-    VTable const vtbl_;
+    // TODO: Until https://github.com/google/benchmark/issues/764 is fixed,
+    //       we can't make this member const.
+    VTable vtbl_;
     void* self_;
   };
 }} // end namespace handrolled_local
