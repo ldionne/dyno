@@ -25,6 +25,14 @@ matrix:
       env: COMPILER=clang++
       osx_image: xcode9.1
 
+    - os: osx
+      env: COMPILER=clang++
+      osx_image: xcode10.2
+
+    - os: osx
+      env: COMPILER=clang++
+      osx_image: xcode11
+
     # Build without the optional dependencies
     - env: COMPILER=clang++-7 NO_OPTIONAL_DEPENDENCIES=true
       addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-xenial-7", "ubuntu-toolchain-r-test"] } }
