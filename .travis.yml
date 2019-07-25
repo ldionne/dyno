@@ -4,7 +4,7 @@
 
 language: cpp
 os: linux # Use Linux unless specified otherwise
-dist: trusty # Use 'trusty' unless specified otherwise
+dist: xenial # Use 'xenial' unless specified otherwise
 sudo: false
 
 # Do not build branches of the form "pr/*". By prefixing pull requests coming
@@ -16,7 +16,7 @@ branches:
 matrix:
   include:
     - env: COMPILER=clang++-7
-      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-trusty-7", "ubuntu-toolchain-r-test"] } }
+      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-xenial-7", "ubuntu-toolchain-r-test"] } }
 
     - env: COMPILER=g++-7
       addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
@@ -27,7 +27,7 @@ matrix:
 
     # Build without the optional dependencies
     - env: COMPILER=clang++-7 NO_OPTIONAL_DEPENDENCIES=true
-      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-trusty-7", "ubuntu-toolchain-r-test"] } }
+      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-xenial-7", "ubuntu-toolchain-r-test"] } }
 
   allow_failures:
     - env: COMPILER=g++-7
