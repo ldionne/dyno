@@ -2,23 +2,23 @@
 
 set -e
 
-CMAKE_BINARY_DIR="${PWD}/build"
-CMAKE_INSTALL_PREFIX="${PWD}/install"
-CMAKE_SOURCE_DIR="${PWD}"
+DYNO_ROOT="$(git rev-parse --show-toplevel)"
+BUILD_DIR="${DYNO_ROOT}/dependencies/build"
+INSTALL_DIR="${DYNO_ROOT}/dependencies/install"
 
-rm -rf "${CMAKE_INSTALL_PREFIX}" "${CMAKE_BINARY_DIR}"
-mkdir -p "${CMAKE_INSTALL_PREFIX}" "${CMAKE_BINARY_DIR}"
-cd "${CMAKE_BINARY_DIR}"
+rm -rf "${INSTALL_DIR}" "${BUILD_DIR}"
+mkdir -p "${INSTALL_DIR}" "${BUILD_DIR}"
+cd "${BUILD_DIR}"
 
 if [[ $# -ge 0 && "$1" == "--minimal" ]]; then
   shift
-  cmake "${CMAKE_SOURCE_DIR}" -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" -DMINIMAL="true" "${@}"
+  cmake "${DYNO_ROOT}/dependencies" -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" -DMINIMAL="true" "${@}"
 else
-  cmake "${CMAKE_SOURCE_DIR}" -DCMAKE_INSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}" "${@}"
+  cmake "${DYNO_ROOT}/dependencies" -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" "${@}"
 fi
 
-cmake --build "${CMAKE_BINARY_DIR}"
+cmake --build "${BUILD_DIR}"
 
 echo "************************************************************************"
-echo "When setting up Dyno, you should add '${CMAKE_INSTALL_PREFIX}' to 'CMAKE_PREFIX_PATH'"
+echo "When setting up Dyno, you should add '${INSTALL_DIR}' to 'CMAKE_PREFIX_PATH'"
 echo "************************************************************************"
