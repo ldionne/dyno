@@ -121,7 +121,16 @@ public:
   template <typename ...T, typename Name, typename ...Args>
   decltype(auto) operator->*(dyno::detail::delayed_call<Name, Args...>&& delayed) {
     auto f = virtual_(Name{});
-    auto injected = [f,this](auto&& ...args) -> decltype(auto) {
+    auto injected = [f, this](auto&& ...args) -> decltype(auto) {
+      return f(*this, static_cast<decltype(args)&&>(args)...);
+    };
+    return boost::hana::unpack(std::move(delayed.args), injected);
+  }
+
+  template <typename ...T, typename Name, typename ...Args>
+  decltype(auto) operator->*(dyno::detail::delayed_call<Name, Args...>&& delayed) const {
+    auto f = virtual_(Name{});
+    auto injected = [f, this](auto&& ...args) -> decltype(auto) {
       return f(*this, static_cast<decltype(args)&&>(args)...);
     };
     return boost::hana::unpack(std::move(delayed.args), injected);
