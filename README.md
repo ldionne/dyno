@@ -652,6 +652,6 @@ private:
 [Haskell type classes]: http://learnyouahaskell.com/types-and-typeclasses
 [libawful]: https://github.com/ldionne/libawful
 [Mpark.Variant]: https://github.com/mpark/variant
-[Rust trait objects]: https://doc.rust-lang.org/book/first-edition/trait-objects.html
+[Rust trait objects]: https://doc.rust-lang.org/book/ch17-02-trait-objects.html
 [type erasure]: https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Type_Erasure
 [virtual concepts]: https://github.com/andyprowl/virtual-concepts
