@@ -10,7 +10,7 @@ Use at your own risks.
 __Dyno__ solves the problem of runtime polymorphism better than vanilla C++
 does. It provides a way to define interfaces that can be fulfilled
 non-intrusively, and it provides a fully customizable way of storing
-polymorphic objects and dispaching to virtual methods. It does not
+polymorphic objects and dispatching to virtual methods. It does not
 require inheritance, heap allocation or leaving the comfortable world
 of value semantics, and it can do so while outperforming vanilla C++.
 
