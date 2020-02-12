@@ -25,5 +25,5 @@ int main() {
   auto complete = dyno::complete_concept_map<Concept, Foo>(dyno::concept_map<Concept, Foo>);
 
   // MESSAGE[The policies specified in the vtable did not fully cover all the functions provided by the concept]
-  dyno::vtable<dyno::local<dyno::only<decltype("f"_s)>>>::apply<Concept> vtable{complete};
+  dyno::vtable<dyno::local<dyno::only<"f"_s>>>::apply<Concept> vtable{complete};
 }

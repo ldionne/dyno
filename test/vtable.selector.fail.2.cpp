@@ -24,7 +24,7 @@ int main() {
 
   // MESSAGE[dyno::remote: Provided invalid selector. Valid selectors are]
   dyno::vtable<
-    dyno::local<dyno::only<decltype("f"_s)>>,
+    dyno::local<dyno::only<"f"_s>>,
     dyno::remote<struct inexistent>
   >::apply<Concept> vtable{complete};
 }

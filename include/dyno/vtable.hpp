@@ -6,6 +6,7 @@
 #define DYNO_VTABLE_HPP
 
 #include <dyno/concept.hpp>
+#include <dyno/detail/dsl.hpp>
 #include <dyno/detail/erase_function.hpp>
 #include <dyno/detail/erase_signature.hpp>
 
@@ -208,11 +209,11 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 // Selectors
-template <typename ...Functions>
+template <char const* ...Functions>
 struct only {
   template <typename All>
   constexpr auto operator()(All all) const {
-    auto matched = boost::hana::make_set(Functions{}...);
+    auto matched = boost::hana::make_set(detail::make_string<Functions>()...);
     static_assert(decltype(boost::hana::is_subset(matched, all))::value,
       "dyno::only: Some functions specified in this selector are not part of "
       "the concept to which the selector was applied.");
@@ -223,11 +224,11 @@ struct only {
   }
 };
 
-template <typename ...Functions>
+template <char const* ...Functions>
 struct except {
   template <typename All>
   constexpr auto operator()(All all) const {
-    auto not_matched = boost::hana::make_set(Functions{}...);
+    auto not_matched = boost::hana::make_set(detail::make_string<Functions>()...);
     static_assert(decltype(boost::hana::is_subset(not_matched, all))::value,
       "dyno::except: Some functions specified in this selector are not part of "
       "the concept to which the selector was applied.");
@@ -251,12 +252,12 @@ namespace detail {
   template <typename T>
   struct is_valid_selector : boost::hana::false_ { };
 
-  template <typename ...Methods>
+  template <char const* ...Methods>
   struct is_valid_selector<dyno::only<Methods...>>
     : boost::hana::true_
   { };
 
-  template <typename ...Methods>
+  template <char const* ...Methods>
   struct is_valid_selector<dyno::except<Methods...>>
     : boost::hana::true_
   { };
@@ -389,12 +390,12 @@ constexpr auto generate_vtable(Policies policies) {
 // cumbersome. Selectors provided by the library are:
 //
 //  dyno::only<functions...>
-//    Picks only the specified functions from a concept. `functions` must be
-//    compile-time strings, such as `dyno::only<decltype("foo"_s), decltype("bar"_s)>`.
+//    Picks only the specified functions from a concept. `functions...` must
+//    be compile-time strings, such as `dyno::only<"foo"_s, "bar"_s>`.
 //
 //  dyno::except<functions...>
-//    Picks all but the specified functions from a concept. `functions` must
-//    be compile-time strings, such as `dyno::except<decltype("foo"_s), decltype("bar"_s)>`.
+//    Picks all but the specified functions from a concept. `functions...`
+//    must be compile-time strings, such as `dyno::except<"foo"_s, "bar"_s>`.
 //
 //  dyno::everything
 //    Picks all the functions from a concept.

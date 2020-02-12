@@ -495,7 +495,7 @@ struct drawable {
 private:
   using Storage = dyno::sbo_storage<16>;
   using VTable = dyno::vtable<
-    dyno::local<dyno::only<decltype("draw"_s)>>,
+    dyno::local<dyno::only<"draw"_s>>,
     dyno::remote<dyno::everything_else>
   >;
   dyno::poly<Drawable, Storage, VTable> poly_;

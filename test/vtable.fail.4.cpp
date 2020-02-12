@@ -24,7 +24,7 @@ int main() {
 
   // MESSAGE[Some functions specified in this selector are not part of the concept to which the selector was applied]
   dyno::vtable<
-    dyno::local<dyno::only<decltype("nonexistent"_s)>>,
+    dyno::local<dyno::only<"nonexistent"_s>>,
     dyno::remote<dyno::everything_else>
   >::apply<Concept> vtable{complete};
 }

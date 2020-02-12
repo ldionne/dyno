@@ -104,6 +104,9 @@ namespace detail {
       return detail::delayed_call<string, Args&&...>{std::forward<Args>(args)...};
     }
 
+    static constexpr char storage_[] = {c..., '\0'};
+    constexpr operator char const*() const { return storage_; }
+
     using hana_tag = typename boost::hana::tag_of<boost::hana::string<c...>>::type;
   };
 
@@ -114,6 +117,21 @@ namespace detail {
   template <typename S>
   constexpr auto prepare_string(S) {
     return detail::prepare_string_impl<S>(std::make_index_sequence<S::size()>{});
+  }
+
+  constexpr std::size_t constexpr_strlen(char const* s) {
+    std::size_t len = 0;
+    while (*s++ != '\0') ++len;
+    return len;
+  }
+
+  template <char const* s>
+  constexpr auto make_string() {
+    struct tmp {
+        static constexpr std::size_t size() { return detail::constexpr_strlen(s); }
+        static constexpr char const* get() { return s; }
+    };
+    return detail::prepare_string(tmp{});
   }
 } // end namespace detail
 

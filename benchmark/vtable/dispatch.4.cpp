@@ -29,7 +29,7 @@ static void BM_dispatch4(benchmark::State& state) {
   }
 }
 
-template <typename ...InlineMethods>
+template <char const* ...InlineMethods>
 using inline_only = dyno::vtable<
   dyno::local<dyno::only<InlineMethods...>>,
   dyno::remote<dyno::everything_else>
@@ -38,8 +38,8 @@ using inline_only = dyno::vtable<
 static constexpr int N = 100;
 BENCHMARK_TEMPLATE(BM_dispatch4, inheritance_tag)->Arg(N);
 BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s)>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s), decltype("f2"_s)>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s), decltype("f2"_s), decltype("f3"_s)>)->Arg(N);
-BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<decltype("f1"_s), decltype("f2"_s), decltype("f3"_s), decltype("f4"_s)>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<"f1"_s>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<"f1"_s, "f2"_s>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<"f1"_s, "f2"_s, "f3"_s>)->Arg(N);
+BENCHMARK_TEMPLATE(BM_dispatch4, inline_only<"f1"_s, "f2"_s, "f3"_s, "f4"_s>)->Arg(N);
 BENCHMARK_MAIN();

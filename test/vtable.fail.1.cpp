@@ -21,8 +21,8 @@ auto dyno::concept_map<Fooable, int> = dyno::make_concept_map(
 
 int main() {
   using VTable = dyno::vtable<
-    dyno::local<dyno::only<decltype("a"_s)>>,
-    dyno::remote<dyno::only<decltype("b"_s)>>
+    dyno::local<dyno::only<"a"_s>>,
+    dyno::remote<dyno::only<"b"_s>>
   >;
   VTable::apply<Fooable> vtable{
     dyno::complete_concept_map<Fooable, int>(dyno::concept_map<Fooable, int>)
