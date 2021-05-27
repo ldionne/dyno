@@ -15,30 +15,26 @@ branches:
 
 matrix:
   include:
-    - env: COMPILER=clang++-7
-      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-xenial-7", "ubuntu-toolchain-r-test"] } }
+    - env: COMPILER=clang++-8
+      addons: { apt: { packages: ["clang-8"], sources: ["llvm-toolchain-xenial-8", "ubuntu-toolchain-r-test"] } }
 
-    - env: COMPILER=g++-7
-      addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
-
-    - os: osx
-      env: COMPILER=clang++
-      osx_image: xcode9.1
-
-    - os: osx
-      env: COMPILER=clang++
-      osx_image: xcode10.2
+    - env: COMPILER=g++-8
+      addons: { apt: { packages: ["g++-8"], sources: ["ubuntu-toolchain-r-test"] } }
 
     - os: osx
       env: COMPILER=clang++
       osx_image: xcode11
 
+    # Build using C++17
+    - env: COMPILER=clang++-8 CXX_STD=17
+      addons: { apt: { packages: ["clang-8"], sources: ["llvm-toolchain-xenial-8", "ubuntu-toolchain-r-test"] } }
+
     # Build without the optional dependencies
-    - env: COMPILER=clang++-7 NO_OPTIONAL_DEPENDENCIES=true
-      addons: { apt: { packages: ["clang-7"], sources: ["llvm-toolchain-xenial-7", "ubuntu-toolchain-r-test"] } }
+    - env: COMPILER=clang++-8 NO_OPTIONAL_DEPENDENCIES=true
+      addons: { apt: { packages: ["clang-8"], sources: ["llvm-toolchain-xenial-8", "ubuntu-toolchain-r-test"] } }
 
   allow_failures:
-    - env: COMPILER=g++-7
+    - env: COMPILER=g++-8
 
 install:
   # Set the ${CXX} and ${CC} variables properly. They are picked up by CMake
@@ -49,12 +45,15 @@ install:
   - echo "CXX = ${CXX}" && ${CXX} --version
   - echo "CC = ${CC}" && ${CC} --version
 
+  # Set the default C++ Standard for testing
+  - if [[ "${CXX_STD}" == "" ]]; then CXX_STD="20"; fi
+
   # Dependencies required by the CI are installed in ${TRAVIS_BUILD_DIR}/deps/
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
 
   # Install a recent CMake
-  - CMAKE_VERSION=3.15.0
+  - CMAKE_VERSION=3.17.0
   - CMAKE_DIR=${DEPS_DIR}/cmake-${CMAKE_VERSION}
   - |
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
@@ -67,35 +66,12 @@ install:
     fi
   - cmake --version
 
-  # On Linux, install libc++ and libc++abi when building with Clang.
-  # Otherwise, it uses the libstdc++ provided with the system.
-  - |
-    if [[ "${CXX}" == "clang"* && "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      if [[ "${CXX}" == "clang++-7" ]]; then LLVM_VERSION="7.0.1"; fi
-
-      LLVM_URL="http://llvm.org/releases/${LLVM_VERSION}/llvm-${LLVM_VERSION}.src.tar.xz"
-      LIBCXX_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxx-${LLVM_VERSION}.src.tar.xz"
-      LIBCXXABI_URL="http://llvm.org/releases/${LLVM_VERSION}/libcxxabi-${LLVM_VERSION}.src.tar.xz"
-
-      mkdir -p llvm llvm/build llvm/projects/libcxx llvm/projects/libcxxabi
-      travis_retry wget -O - ${LLVM_URL} | tar --strip-components=1 -xJ -C llvm
-      travis_retry wget -O - ${LIBCXX_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxx
-      travis_retry wget -O - ${LIBCXXABI_URL} | tar --strip-components=1 -xJ -C llvm/projects/libcxxabi
-      (cd llvm/build && cmake .. -DCMAKE_INSTALL_PREFIX=${DEPS_DIR}/llvm/install)
-      (cd llvm/build/projects/libcxx && make install -j2)
-      (cd llvm/build/projects/libcxxabi && make install -j2)
-
-      export CXXFLAGS="-isystem ${DEPS_DIR}/llvm/install/include/c++/v1"
-      export LDFLAGS="-L ${DEPS_DIR}/llvm/install/lib -l c++ -l c++abi"
-      export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${DEPS_DIR}/llvm/install/lib"
-    fi
-
   # Install Boost headers
-  - BOOST_VERSION=1.65.1
+  - BOOST_VERSION=1.75.0
   - BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
   - |
     if [[ "${NO_OPTIONAL_DEPENDENCIES}" != "true" ]]; then
-      BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.gz"
+      BOOST_URL="https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.gz"
       mkdir -p ${BOOST_DIR}
       { travis_retry wget -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
     fi
@@ -110,7 +86,14 @@ install:
 
 before_script:
   - cd "${TRAVIS_BUILD_DIR}"
-  - (mkdir build && cd build && cmake .. -DBOOST_ROOT="${BOOST_DIR}" -DCMAKE_PREFIX_PATH="${TRAVIS_BUILD_DIR}/dependencies/install" -DCMAKE_INSTALL_PREFIX="${TRAVIS_BUILD_DIR}/build/install")
+  - mkdir build
+  - |
+    cmake -S . -B build \
+      -DBOOST_ROOT="${BOOST_DIR}" \
+      -DCMAKE_PREFIX_PATH="${TRAVIS_BUILD_DIR}/dependencies/install" \
+      -DCMAKE_INSTALL_PREFIX="${TRAVIS_BUILD_DIR}/build/install" \
+      -DCMAKE_CXX_STANDARD=${CXX_STD} \
+      -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
 script:
   - cmake --build build --target check
